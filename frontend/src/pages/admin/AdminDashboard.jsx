@@ -126,6 +126,7 @@ function AdminDashboard() {
 
             <button
               type="button"
+              onClick={() => navigate("/admin/enquiries")}
               className="mt-5 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700"
             >
               Manage Enquiries

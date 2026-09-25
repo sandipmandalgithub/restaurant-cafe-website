@@ -13,6 +13,7 @@ import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminMenu from "./pages/admin/AdminMenu";
 import AdminGallery from "./pages/admin/AdminGallery";
+import AdminEnquiries from "./pages/admin/AdminEnquiries";
 
 import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
 
@@ -38,6 +39,7 @@ function App() {
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/menu" element={<AdminMenu />} />
           <Route path="/admin/gallery" element={<AdminGallery />} />
+          <Route path="/admin/enquiries" element={<AdminEnquiries />} />
         </Route>
       </Routes>
     </BrowserRouter>
