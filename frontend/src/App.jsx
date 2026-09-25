@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import MainLayout from "./layouts/MainLayout";
+import AdminLayout from "./layouts/AdminLayout";
 
 import Home from "./pages/Home";
 import About from "./pages/About";
@@ -36,10 +37,27 @@ function App() {
 
         {/* Protected Admin Routes */}
         <Route element={<AdminProtectedRoute />}>
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/menu" element={<AdminMenu />} />
-          <Route path="/admin/gallery" element={<AdminGallery />} />
-          <Route path="/admin/enquiries" element={<AdminEnquiries />} />
+          <Route element={<AdminLayout />}>
+            <Route
+              path="/admin/dashboard"
+              element={<AdminDashboard />}
+            />
+
+            <Route
+              path="/admin/menu"
+              element={<AdminMenu />}
+            />
+
+            <Route
+              path="/admin/gallery"
+              element={<AdminGallery />}
+            />
+
+            <Route
+              path="/admin/enquiries"
+              element={<AdminEnquiries />}
+            />
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>

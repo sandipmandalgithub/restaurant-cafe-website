@@ -107,32 +107,21 @@ function AdminEnquiries() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-        {/* Header */}
-        <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-widest text-green-600">
-              Admin Panel
-            </p>
+    <div className="min-h-screen bg-gray-100">
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        {/* Page Header */}
+        <div className="mb-8">
+          <p className="text-sm font-semibold uppercase tracking-widest text-green-600">
+            Admin Panel
+          </p>
 
-            <h1 className="mt-2 text-3xl font-bold text-gray-900">
-              Enquiry Management
-            </h1>
+          <h1 className="mt-2 text-3xl font-bold text-gray-900">
+            Enquiry Management
+          </h1>
 
-            <p className="mt-2 text-sm text-gray-600 sm:text-base">
-              View and manage customer enquiries.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={fetchEnquiries}
-            disabled={isLoading}
-            className="rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isLoading ? "Loading..." : "Refresh"}
-          </button>
+          <p className="mt-2 text-sm text-gray-600 sm:text-base">
+            View and manage customer enquiries.
+          </p>
         </div>
 
         {/* Messages */}
@@ -203,6 +192,28 @@ function AdminEnquiries() {
           </div>
         </div>
 
+        {/* Enquiry Section Header */}
+        <div className="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">
+              Customer Enquiries
+            </h2>
+
+            <p className="mt-1 text-sm text-gray-500">
+              Manage submitted customer enquiries and their status.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={fetchEnquiries}
+            disabled={isLoading}
+            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isLoading ? "Loading..." : "Refresh"}
+          </button>
+        </div>
+
         {/* Enquiry List */}
         {isLoading ? (
           <div className="rounded-2xl bg-white p-10 text-center shadow-sm">
@@ -227,6 +238,7 @@ function AdminEnquiries() {
                 key={enquiry._id}
                 className="rounded-2xl bg-white p-6 shadow-sm sm:p-8"
               >
+                {/* Enquiry Header */}
                 <div className="flex flex-col justify-between gap-4 border-b border-gray-100 pb-5 lg:flex-row lg:items-start">
                   <div>
                     <div className="flex flex-wrap items-center gap-3">
@@ -313,7 +325,7 @@ function AdminEnquiries() {
                   </div>
                 </div>
 
-                {/* Message */}
+                {/* Customer Message */}
                 <div className="mt-6 rounded-xl bg-gray-50 p-5">
                   <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
                     Customer Message
@@ -327,7 +339,7 @@ function AdminEnquiries() {
             ))}
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }

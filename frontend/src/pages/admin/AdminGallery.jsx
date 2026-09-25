@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import {
   createGallery,
   deleteGallery,
@@ -158,9 +159,9 @@ function AdminGallery() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-        {/* Header */}
+    <div className="min-h-screen bg-gray-100">
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        {/* Page Header */}
         <div className="mb-8">
           <p className="text-sm font-semibold uppercase tracking-widest text-orange-600">
             Admin Panel
@@ -406,7 +407,7 @@ function AdminGallery() {
             </div>
           )}
         </div>
-      </div>
+      </main>
     </div>
   );
 }
