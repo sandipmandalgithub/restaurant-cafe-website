@@ -1,4 +1,7 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+import { getDashboardStats } from "../../services/adminDashboardService";
 
 function AdminDashboard() {
   const navigate = useNavigate();
@@ -6,6 +9,37 @@ function AdminDashboard() {
   const adminData = JSON.parse(
     localStorage.getItem("adminData") || "{}"
   );
+
+  const [stats, setStats] = useState({
+    totalMenus: 0,
+    totalGallery: 0,
+    totalEnquiries: 0,
+    newEnquiries: 0,
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasLoadedStats, setHasLoadedStats] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const handleLoadStats = async () => {
+    try {
+      setIsLoading(true);
+      setErrorMessage("");
+
+      const data = await getDashboardStats();
+
+      setStats(data);
+      setHasLoadedStats(true);
+    } catch (error) {
+      console.error("Failed to load dashboard stats:", error);
+
+      setErrorMessage(
+        error.message || "Unable to load dashboard statistics."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("adminToken");
@@ -43,23 +77,126 @@ function AdminDashboard() {
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Welcome Section */}
         <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
-          <p className="text-sm font-semibold uppercase tracking-widest text-orange-600">
-            Admin Dashboard
-          </p>
+          <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-widest text-orange-600">
+                Admin Dashboard
+              </p>
 
-          <h2 className="mt-2 text-2xl font-bold text-gray-900 sm:text-3xl">
-            Welcome, {adminData.name || "Admin"}
-          </h2>
+              <h2 className="mt-2 text-2xl font-bold text-gray-900 sm:text-3xl">
+                Welcome, {adminData.name || "Admin"}
+              </h2>
 
-          <p className="mt-2 text-sm text-gray-600 sm:text-base">
-            Manage your CaféNest website from here.
-          </p>
+              <p className="mt-2 text-sm text-gray-600 sm:text-base">
+                Manage your CaféNest website from here.
+              </p>
 
-          {adminData.email && (
-            <p className="mt-2 text-sm text-gray-500">
-              {adminData.email}
-            </p>
-          )}
+              {adminData.email && (
+                <p className="mt-2 text-sm text-gray-500">
+                  {adminData.email}
+                </p>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleLoadStats}
+              disabled={isLoading}
+              className="rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isLoading
+                ? "Loading..."
+                : hasLoadedStats
+                  ? "Refresh Stats"
+                  : "Load Stats"}
+            </button>
+          </div>
+        </div>
+
+        {/* Error Message */}
+        {errorMessage && (
+          <div className="mt-6 rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+            {errorMessage}
+          </div>
+        )}
+
+        {/* Statistics */}
+        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {/* Total Menu */}
+          <div className="rounded-2xl bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-500">
+                  Total Menu Items
+                </p>
+
+                <p className="mt-2 text-3xl font-bold text-gray-900">
+                  {stats.totalMenus}
+                </p>
+              </div>
+
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-100 text-xl">
+                🍽️
+              </div>
+            </div>
+          </div>
+
+          {/* Total Gallery */}
+          <div className="rounded-2xl bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-500">
+                  Gallery Items
+                </p>
+
+                <p className="mt-2 text-3xl font-bold text-gray-900">
+                  {stats.totalGallery}
+                </p>
+              </div>
+
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-xl">
+                🖼️
+              </div>
+            </div>
+          </div>
+
+          {/* Total Enquiries */}
+          <div className="rounded-2xl bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-500">
+                  Total Enquiries
+                </p>
+
+                <p className="mt-2 text-3xl font-bold text-gray-900">
+                  {stats.totalEnquiries}
+                </p>
+              </div>
+
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-100 text-xl">
+                📩
+              </div>
+            </div>
+          </div>
+
+          {/* New Enquiries */}
+          <div className="rounded-2xl bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-500">
+                  New Enquiries
+                </p>
+
+                <p className="mt-2 text-3xl font-bold text-gray-900">
+                  {stats.newEnquiries}
+                </p>
+              </div>
+
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-yellow-100 text-xl">
+                🆕
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Management Cards */}
