@@ -108,6 +108,11 @@ function Menu() {
 
   // Add item to cart
   const handleAddToCart = (item) => {
+    // Prevent adding unavailable items
+    if (item.isAvailable === false) {
+      return;
+    }
+
     setCart((previousCart) => {
       const existingItem = previousCart.find(
         (cartItem) => cartItem._id === item._id
@@ -133,6 +138,7 @@ function Menu() {
           price: Number(item.price),
           image: item.image,
           category: item.category,
+          isAvailable: item.isAvailable !== false,
           quantity: 1,
         },
       ];
@@ -299,66 +305,124 @@ function Menu() {
           {/* Menu Cards */}
           {!loading && !error && filteredMenu.length > 0 && (
             <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredMenu.map((item) => (
-                <article
-                  key={item._id}
-                  className="group flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
-                >
-                  {/* Image */}
-                  <div className="aspect-[4/3] overflow-hidden bg-gray-100">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      onError={handleImageError}
-                      loading="lazy"
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                    />
-                  </div>
+              {filteredMenu.map((item) => {
+                const isAvailable = item.isAvailable !== false;
 
-                  {/* Content */}
-                  <div className="flex flex-1 flex-col p-6">
-                    {/* Name and Price */}
-                    <div className="flex items-start justify-between gap-4">
-                      <h2 className="text-xl font-bold text-gray-900">
-                        {item.name}
-                      </h2>
+                return (
+                  <article
+                    key={item._id}
+                    className={`group flex h-full flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition duration-300 ${
+                      isAvailable
+                        ? "border-gray-200 hover:-translate-y-1 hover:shadow-lg"
+                        : "border-red-100"
+                    }`}
+                  >
+                    {/* Image */}
+                    <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        onError={handleImageError}
+                        loading="lazy"
+                        className={`h-full w-full object-cover transition duration-500 ${
+                          isAvailable
+                            ? "group-hover:scale-105"
+                            : "grayscale opacity-60"
+                        }`}
+                      />
 
-                      <span className="whitespace-nowrap text-lg font-bold text-orange-600">
-                        ₹{formatPrice(item.price)}
+                      {/* Availability Badge */}
+                      <div className="absolute right-3 top-3">
+                        <span
+                          className={`rounded-full px-3 py-1.5 text-xs font-bold shadow-sm ${
+                            isAvailable
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700"
+                          }`}
+                        >
+                          {isAvailable
+                            ? "Available"
+                            : "Out of Stock"}
+                        </span>
+                      </div>
+
+                      {/* Out of Stock Overlay */}
+                      {!isAvailable && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="rounded-lg bg-black/65 px-5 py-2.5 text-sm font-bold tracking-wide text-white shadow-lg">
+                            OUT OF STOCK
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex flex-1 flex-col p-6">
+                      {/* Name and Price */}
+                      <div className="flex items-start justify-between gap-4">
+                        <h2
+                          className={`text-xl font-bold ${
+                            isAvailable
+                              ? "text-gray-900"
+                              : "text-gray-600"
+                          }`}
+                        >
+                          {item.name}
+                        </h2>
+
+                        <span
+                          className={`whitespace-nowrap text-lg font-bold ${
+                            isAvailable
+                              ? "text-orange-600"
+                              : "text-gray-500"
+                          }`}
+                        >
+                          ₹{formatPrice(item.price)}
+                        </span>
+                      </div>
+
+                      {/* Category */}
+                      <span className="mt-3 inline-block w-fit rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">
+                        {item.category}
                       </span>
+
+                      {/* Description */}
+                      <p className="mt-4 text-sm leading-6 text-gray-600">
+                        {item.description}
+                      </p>
+
+                      {/* Buttons */}
+                      <div className="mt-auto pt-6">
+                        {isAvailable ? (
+                          <button
+                            type="button"
+                            onClick={() => handleAddToCart(item)}
+                            className="block w-full rounded-lg bg-orange-600 px-5 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:ring-offset-2"
+                          >
+                            Add to Cart
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            disabled
+                            className="block w-full cursor-not-allowed rounded-lg bg-gray-200 px-5 py-3 text-center text-sm font-semibold text-gray-500"
+                          >
+                            Out of Stock
+                          </button>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => handleEnquiry(item.name)}
+                          className="mt-3 block w-full rounded-lg border border-green-600 px-5 py-3 text-center text-sm font-semibold text-green-700 transition hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2"
+                        >
+                          Enquire Now
+                        </button>
+                      </div>
                     </div>
-
-                    {/* Category */}
-                    <span className="mt-3 inline-block w-fit rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">
-                      {item.category}
-                    </span>
-
-                    {/* Description */}
-                    <p className="mt-4 text-sm leading-6 text-gray-600">
-                      {item.description}
-                    </p>
-
-                    {/* Buttons */}
-                    <div className="mt-auto pt-6">
-                      <button
-                        type="button"
-                        onClick={() => handleAddToCart(item)}
-                        className="block w-full rounded-lg bg-orange-600 px-5 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:ring-offset-2"
-                      >
-                        Add to Cart
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleEnquiry(item.name)}
-                        className="mt-3 block w-full rounded-lg border border-green-600 px-5 py-3 text-center text-sm font-semibold text-green-700 transition hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2"
-                      >
-                        Enquire Now
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           )}
 

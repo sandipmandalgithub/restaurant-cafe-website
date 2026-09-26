@@ -5,9 +5,22 @@ const Menu = require("../models/Menu");
 // Create Menu Item
 const createMenu = async (req, res) => {
   try {
-    const { name, description, price, image, category } = req.body;
+    const {
+      name,
+      description,
+      price,
+      image,
+      category,
+      isAvailable,
+    } = req.body;
 
-    if (!name || !description || price === undefined || !image || !category) {
+    if (
+      !name ||
+      !description ||
+      price === undefined ||
+      !image ||
+      !category
+    ) {
       return res.status(400).json({
         success: false,
         message:
@@ -28,6 +41,8 @@ const createMenu = async (req, res) => {
       price,
       image,
       category,
+      isAvailable:
+        isAvailable === undefined ? true : Boolean(isAvailable),
     });
 
     res.status(201).json({
@@ -77,9 +92,22 @@ const updateMenu = async (req, res) => {
       });
     }
 
-    const { name, description, price, image, category } = req.body;
+    const {
+      name,
+      description,
+      price,
+      image,
+      category,
+      isAvailable,
+    } = req.body;
 
-    if (!name || !description || price === undefined || !image || !category) {
+    if (
+      !name ||
+      !description ||
+      price === undefined ||
+      !image ||
+      !category
+    ) {
       return res.status(400).json({
         success: false,
         message:
@@ -94,15 +122,21 @@ const updateMenu = async (req, res) => {
       });
     }
 
+    const updateData = {
+      name,
+      description,
+      price,
+      image,
+      category,
+    };
+
+    if (isAvailable !== undefined) {
+      updateData.isAvailable = Boolean(isAvailable);
+    }
+
     const updatedMenuItem = await Menu.findByIdAndUpdate(
       id,
-      {
-        name,
-        description,
-        price,
-        image,
-        category,
-      },
+      updateData,
       {
         new: true,
         runValidators: true,

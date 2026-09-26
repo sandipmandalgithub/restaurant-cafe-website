@@ -13,6 +13,7 @@ const initialFormData = {
   price: "",
   image: "",
   category: "",
+  isAvailable: true,
 };
 
 function AdminMenu() {
@@ -23,6 +24,8 @@ function AdminMenu() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [updatingAvailabilityId, setUpdatingAvailabilityId] =
+    useState(null);
 
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -55,11 +58,11 @@ function AdminMenu() {
   };
 
   const handleChange = (event) => {
-    const { name, value } = event.target;
+    const { name, value, type, checked } = event.target;
 
     setFormData((previousData) => ({
       ...previousData,
-      [name]: value,
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
@@ -84,6 +87,7 @@ function AdminMenu() {
         price: Number(formData.price),
         image: formData.image.trim(),
         category: formData.category.trim(),
+        isAvailable: formData.isAvailable,
       };
 
       if (editingId) {
@@ -120,6 +124,7 @@ function AdminMenu() {
       price: menu.price ?? "",
       image: menu.image || "",
       category: menu.category || "",
+      isAvailable: menu.isAvailable !== false,
     });
 
     setErrorMessage("");
@@ -160,6 +165,51 @@ function AdminMenu() {
       setErrorMessage(
         error.message || "Unable to delete menu item."
       );
+    }
+  };
+
+  const handleAvailabilityToggle = async (menu) => {
+    const newAvailability = menu.isAvailable === false;
+
+    try {
+      setUpdatingAvailabilityId(menu._id);
+      setErrorMessage("");
+      setSuccessMessage("");
+
+      const updatedMenu = await updateMenu(menu._id, {
+        name: menu.name,
+        description: menu.description,
+        price: Number(menu.price),
+        image: menu.image,
+        category: menu.category,
+        isAvailable: newAvailability,
+      });
+
+      setMenus((previousMenus) =>
+        previousMenus.map((item) =>
+          item._id === menu._id
+            ? updatedMenu
+            : item
+        )
+      );
+
+      setSuccessMessage(
+        newAvailability
+          ? `${menu.name} is now available.`
+          : `${menu.name} is now out of stock.`
+      );
+    } catch (error) {
+      console.error(
+        "Failed to update menu availability:",
+        error
+      );
+
+      setErrorMessage(
+        error.message ||
+          "Unable to update menu availability."
+      );
+    } finally {
+      setUpdatingAvailabilityId(null);
     }
   };
 
@@ -243,8 +293,8 @@ function AdminMenu() {
           </h1>
 
           <p className="mt-2 text-sm text-gray-600 sm:text-base">
-            Add, edit, delete, search, and filter restaurant menu
-            items.
+            Add, edit, delete, search, filter, and manage menu
+            availability.
           </p>
         </div>
 
@@ -396,6 +446,59 @@ function AdminMenu() {
                 placeholder="Describe the food item..."
                 className="w-full resize-none rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
               />
+            </div>
+
+            {/* Availability */}
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 md:col-span-2">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">
+                    Menu Availability
+                  </p>
+
+                  <p className="mt-1 text-xs text-gray-500">
+                    Control whether customers can order this item.
+                  </p>
+                </div>
+
+                <label className="inline-flex cursor-pointer items-center gap-3">
+                  <input
+                    type="checkbox"
+                    name="isAvailable"
+                    checked={formData.isAvailable}
+                    onChange={handleChange}
+                    className="peer sr-only"
+                  />
+
+                  <span
+                    className={`relative h-6 w-11 rounded-full transition ${
+                      formData.isAvailable
+                        ? "bg-green-500"
+                        : "bg-gray-300"
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow-sm transition ${
+                        formData.isAvailable
+                          ? "left-6"
+                          : "left-1"
+                      }`}
+                    />
+                  </span>
+
+                  <span
+                    className={`text-sm font-semibold ${
+                      formData.isAvailable
+                        ? "text-green-700"
+                        : "text-red-600"
+                    }`}
+                  >
+                    {formData.isAvailable
+                      ? "Available"
+                      : "Out of Stock"}
+                  </span>
+                </label>
+              </div>
             </div>
 
             {/* Submit */}
@@ -607,56 +710,124 @@ function AdminMenu() {
             </div>
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredMenus.map((menu) => (
-                <div
-                  key={menu._id}
-                  className="overflow-hidden rounded-2xl bg-white shadow-sm"
-                >
-                  <img
-                    src={menu.image}
-                    alt={menu.name}
-                    className="h-48 w-full object-cover"
-                  />
+              {filteredMenus.map((menu) => {
+                const isAvailable = menu.isAvailable !== false;
+                const isUpdating =
+                  updatingAvailabilityId === menu._id;
 
-                  <div className="p-5">
-                    <div className="flex items-start justify-between gap-3">
-                      <h3 className="text-lg font-bold text-gray-900">
-                        {menu.name}
-                      </h3>
+                return (
+                  <div
+                    key={menu._id}
+                    className={`overflow-hidden rounded-2xl bg-white shadow-sm ${
+                      !isAvailable
+                        ? "ring-2 ring-red-100"
+                        : ""
+                    }`}
+                  >
+                    <div className="relative">
+                      <img
+                        src={menu.image}
+                        alt={menu.name}
+                        className={`h-48 w-full object-cover ${
+                          !isAvailable
+                            ? "opacity-60 grayscale"
+                            : ""
+                        }`}
+                      />
 
-                      <span className="whitespace-nowrap text-lg font-bold text-orange-600">
-                        ₹{menu.price}
-                      </span>
+                      <div className="absolute right-3 top-3">
+                        <span
+                          className={`rounded-full px-3 py-1.5 text-xs font-bold shadow-sm ${
+                            isAvailable
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700"
+                          }`}
+                        >
+                          {isAvailable
+                            ? "Available"
+                            : "Out of Stock"}
+                        </span>
+                      </div>
+
+                      {!isAvailable && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="rounded-lg bg-black/60 px-4 py-2 text-sm font-bold text-white">
+                            OUT OF STOCK
+                          </span>
+                        </div>
+                      )}
                     </div>
 
-                    <p className="mt-2 inline-block rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-700">
-                      {menu.category}
-                    </p>
+                    <div className="p-5">
+                      <div className="flex items-start justify-between gap-3">
+                        <h3 className="text-lg font-bold text-gray-900">
+                          {menu.name}
+                        </h3>
 
-                    <p className="mt-4 text-sm leading-6 text-gray-600">
-                      {menu.description}
-                    </p>
+                        <span className="whitespace-nowrap text-lg font-bold text-orange-600">
+                          ₹{menu.price}
+                        </span>
+                      </div>
 
-                    <div className="mt-5 flex gap-3">
+                      <p className="mt-2 inline-block rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-700">
+                        {menu.category}
+                      </p>
+
+                      <p className="mt-4 text-sm leading-6 text-gray-600">
+                        {menu.description}
+                      </p>
+
+                      {/* Availability Toggle */}
                       <button
                         type="button"
-                        onClick={() => handleEdit(menu)}
-                        className="flex-1 rounded-lg border border-blue-600 px-4 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-50"
+                        onClick={() =>
+                          handleAvailabilityToggle(menu)
+                        }
+                        disabled={isUpdating}
+                        className={`mt-5 flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                          isAvailable
+                            ? "border border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
+                            : "border border-green-200 bg-green-50 text-green-700 hover:bg-green-100"
+                        }`}
                       >
-                        Edit
+                        {isUpdating ? (
+                          "Updating..."
+                        ) : isAvailable ? (
+                          <>
+                            <span>✕</span>
+                            Mark as Out of Stock
+                          </>
+                        ) : (
+                          <>
+                            <span>✓</span>
+                            Mark as Available
+                          </>
+                        )}
                       </button>
 
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(menu._id)}
-                        className="flex-1 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
-                      >
-                        Delete
-                      </button>
+                      <div className="mt-3 flex gap-3">
+                        <button
+                          type="button"
+                          onClick={() => handleEdit(menu)}
+                          className="flex-1 rounded-lg border border-blue-600 px-4 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-50"
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleDelete(menu._id)
+                          }
+                          className="flex-1 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

@@ -31,6 +31,11 @@ const menuSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+
+    isAvailable: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,
