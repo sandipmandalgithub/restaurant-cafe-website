@@ -1,40 +1,109 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { getGallery } from "../services/galleryService";
 
 function Gallery() {
   const [galleryItems, setGalleryItems] = useState([]);
+  const [selectedCategory, setSelectedCategory] =
+    useState("All");
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const fetchGallery = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const data = await getGallery();
+
+      setGalleryItems(data);
+    } catch (error) {
+      console.error(
+        "Failed to fetch gallery items:",
+        error
+      );
+
+      setError(
+        "Unable to load gallery. Please check your connection and try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
 
-    getGallery()
-      .then((data) => {
+    const loadGallery = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const data = await getGallery();
+
         if (!cancelled) {
           setGalleryItems(data);
-          setLoading(false);
         }
-      })
-      .catch((error) => {
-        console.error("Failed to fetch gallery items:", error);
+      } catch (error) {
+        console.error(
+          "Failed to fetch gallery items:",
+          error
+        );
 
         if (!cancelled) {
           setError(
             "Unable to load gallery. Please check your connection and try again."
           );
+        }
+      } finally {
+        if (!cancelled) {
           setLoading(false);
         }
-      });
+      }
+    };
+
+    loadGallery();
 
     return () => {
       cancelled = true;
     };
   }, []);
 
-  const handleRetry = () => {
-    window.location.reload();
+  const categories = useMemo(() => {
+    const uniqueCategories = [
+      ...new Set(
+        galleryItems
+          .map((item) => item.category?.trim())
+          .filter(Boolean)
+      ),
+    ];
+
+    return uniqueCategories.sort((a, b) =>
+      a.localeCompare(b)
+    );
+  }, [galleryItems]);
+
+  const filteredGallery = useMemo(() => {
+    if (selectedCategory === "All") {
+      return galleryItems;
+    }
+
+    return galleryItems.filter(
+      (item) => item.category === selectedCategory
+    );
+  }, [galleryItems, selectedCategory]);
+
+  const handleImageError = (event) => {
+    event.currentTarget.onerror = null;
+
+    event.currentTarget.src =
+      "https://placehold.co/800x600?text=Image+Unavailable";
+  };
+
+  const handleRetry = async () => {
+    setSelectedCategory("All");
+    await fetchGallery();
   };
 
   return (
@@ -51,7 +120,8 @@ function Gallery() {
           </h1>
 
           <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-gray-300 sm:text-lg">
-            Take a look at our food, ambience, and memorable moments.
+            Take a look at our food, ambience, and memorable
+            moments.
           </p>
         </div>
       </section>
@@ -62,7 +132,11 @@ function Gallery() {
           {/* Loading State */}
           {loading && (
             <div className="py-16 text-center">
-              <p className="text-base font-medium text-gray-600">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-50">
+                <span className="text-xl">🖼️</span>
+              </div>
+
+              <p className="mt-4 text-base font-medium text-gray-600">
                 Loading gallery...
               </p>
             </div>
@@ -70,8 +144,18 @@ function Gallery() {
 
           {/* Error State */}
           {!loading && error && (
-            <div className="rounded-2xl bg-red-50 px-6 py-10 text-center">
-              <p className="text-base font-medium text-red-600">{error}</p>
+            <div className="rounded-2xl border border-red-200 bg-red-50 px-6 py-10 text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-100 text-xl">
+                !
+              </div>
+
+              <h2 className="mt-4 text-lg font-bold text-red-800">
+                Unable to Load Gallery
+              </h2>
+
+              <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-red-600">
+                {error}
+              </p>
 
               <button
                 type="button"
@@ -84,58 +168,154 @@ function Gallery() {
           )}
 
           {/* Empty State */}
-          {!loading && !error && galleryItems.length === 0 && (
-            <div className="py-16 text-center">
-              <p className="text-lg font-medium text-gray-700">
-                No gallery items available right now.
-              </p>
+          {!loading &&
+            !error &&
+            galleryItems.length === 0 && (
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 px-6 py-16 text-center">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-orange-50 text-2xl">
+                  🖼️
+                </div>
 
-              <p className="mt-2 text-sm text-gray-500">
-                Please check again later.
-              </p>
-            </div>
-          )}
+                <h2 className="mt-5 text-2xl font-bold text-gray-900">
+                  Gallery Coming Soon
+                </h2>
 
-          {/* Gallery Grid */}
-          {!loading && !error && galleryItems.length > 0 && (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {galleryItems.map((item) => (
-                <article
-                  key={item._id}
-                  className="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
-                >
-                  {/* Image */}
-                  <div className="aspect-[4/3] overflow-hidden bg-gray-100">
-                    <img
-                      src={item.image}
-                      alt={item.title}
-                      loading="lazy"
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                    />
-                  </div>
+                <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-gray-600">
+                  We are currently updating our gallery.
+                  Please check back soon to see our food and
+                  café moments.
+                </p>
+              </div>
+            )}
 
-                  {/* Content */}
-                  <div className="p-5">
-                    <div className="flex items-start justify-between gap-3">
-                      <h2 className="text-xl font-bold text-gray-900">
-                        {item.title}
+          {/* Gallery Content */}
+          {!loading &&
+            !error &&
+            galleryItems.length > 0 && (
+              <>
+                {/* Filter */}
+                <div className="mb-8 rounded-2xl border border-gray-200 bg-gray-50 p-5 sm:p-6">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                      <h2 className="text-lg font-bold text-gray-900">
+                        Explore Our Gallery
                       </h2>
 
-                      <span className="shrink-0 rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-600">
-                        {item.category}
-                      </span>
+                      <p className="mt-1 text-sm text-gray-500">
+                        Showing{" "}
+                        <span className="font-semibold text-gray-900">
+                          {filteredGallery.length}
+                        </span>{" "}
+                        of{" "}
+                        <span className="font-semibold text-gray-900">
+                          {galleryItems.length}
+                        </span>{" "}
+                        images
+                      </p>
                     </div>
 
-                    {item.description && (
-                      <p className="mt-3 text-sm leading-6 text-gray-600">
-                        {item.description}
-                      </p>
+                    {categories.length > 0 && (
+                      <div className="w-full lg:max-w-xs">
+                        <label
+                          htmlFor="galleryCategory"
+                          className="mb-2 block text-sm font-medium text-gray-700"
+                        >
+                          Filter by Category
+                        </label>
+
+                        <select
+                          id="galleryCategory"
+                          value={selectedCategory}
+                          onChange={(event) =>
+                            setSelectedCategory(
+                              event.target.value
+                            )
+                          }
+                          className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                        >
+                          <option value="All">
+                            All Categories
+                          </option>
+
+                          {categories.map((category) => (
+                            <option
+                              key={category}
+                              value={category}
+                            >
+                              {category}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     )}
                   </div>
-                </article>
-              ))}
-            </div>
-          )}
+                </div>
+
+                {/* No Filter Results */}
+                {filteredGallery.length === 0 ? (
+                  <div className="rounded-2xl border border-gray-200 bg-gray-50 px-6 py-16 text-center">
+                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-50 text-xl">
+                      🔎
+                    </div>
+
+                    <h2 className="mt-4 text-xl font-bold text-gray-900">
+                      No Gallery Images Found
+                    </h2>
+
+                    <p className="mt-2 text-sm text-gray-500">
+                      Try selecting a different category.
+                    </p>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSelectedCategory("All")
+                      }
+                      className="mt-5 rounded-lg bg-orange-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-700"
+                    >
+                      Show All Images
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {filteredGallery.map((item) => (
+                      <article
+                        key={item._id}
+                        className="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+                      >
+                        {/* Image */}
+                        <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
+                          <img
+                            src={item.image}
+                            alt={item.title}
+                            loading="lazy"
+                            onError={handleImageError}
+                            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                          />
+
+                          <span className="absolute right-3 top-3 rounded-full bg-white/95 px-3 py-1.5 text-xs font-bold text-orange-700 shadow-sm">
+                            {item.category}
+                          </span>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-5">
+                          <h2 className="text-xl font-bold text-gray-900">
+                            {item.title}
+                          </h2>
+
+                          {item.description && (
+                            <p className="mt-3 line-clamp-3 text-sm leading-6 text-gray-600">
+                              {item.description}
+                            </p>
+                          )}
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
         </div>
       </section>
 
@@ -147,8 +327,8 @@ function Gallery() {
           </h2>
 
           <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-gray-600">
-            Enjoy delicious food, a welcoming atmosphere, and a memorable
-            experience at CaféNest.
+            Enjoy delicious food, a welcoming atmosphere, and
+            a memorable experience at CaféNest.
           </p>
 
           <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
