@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import {
   createMenu,
@@ -26,6 +26,11 @@ function AdminMenu() {
 
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+
+  // Search & Filter State
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [priceSort, setPriceSort] = useState("default");
 
   const fetchMenus = async () => {
     try {
@@ -158,6 +163,72 @@ function AdminMenu() {
     }
   };
 
+  // Get unique categories
+  const categories = useMemo(() => {
+    const uniqueCategories = [
+      ...new Set(
+        menus
+          .map((menu) => menu.category?.trim())
+          .filter(Boolean)
+      ),
+    ];
+
+    return uniqueCategories.sort((a, b) =>
+      a.localeCompare(b)
+    );
+  }, [menus]);
+
+  // Search, category filter and price sorting
+  const filteredMenus = useMemo(() => {
+    const normalizedSearchTerm = searchTerm
+      .trim()
+      .toLowerCase();
+
+    const filtered = menus.filter((menu) => {
+      const matchesSearch =
+        !normalizedSearchTerm ||
+        menu.name
+          ?.toLowerCase()
+          .includes(normalizedSearchTerm);
+
+      const matchesCategory =
+        selectedCategory === "All" ||
+        menu.category === selectedCategory;
+
+      return matchesSearch && matchesCategory;
+    });
+
+    if (priceSort === "lowToHigh") {
+      return [...filtered].sort(
+        (a, b) => Number(a.price) - Number(b.price)
+      );
+    }
+
+    if (priceSort === "highToLow") {
+      return [...filtered].sort(
+        (a, b) => Number(b.price) - Number(a.price)
+      );
+    }
+
+    return filtered;
+  }, [
+    menus,
+    searchTerm,
+    selectedCategory,
+    priceSort,
+  ]);
+
+  const hasActiveFilters =
+    searchTerm.trim() !== "" ||
+    selectedCategory !== "All" ||
+    priceSort !== "default";
+
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setSelectedCategory("All");
+    setPriceSort("default");
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -172,7 +243,8 @@ function AdminMenu() {
           </h1>
 
           <p className="mt-2 text-sm text-gray-600 sm:text-base">
-            Add, edit, and delete restaurant menu items.
+            Add, edit, delete, search, and filter restaurant menu
+            items.
           </p>
         </div>
 
@@ -345,7 +417,7 @@ function AdminMenu() {
 
         {/* Menu List */}
         <div className="mt-8">
-          <div className="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+          <div className="mb-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
               <h2 className="text-2xl font-bold text-gray-900">
                 Existing Menu Items
@@ -353,6 +425,8 @@ function AdminMenu() {
 
               <p className="mt-1 text-sm text-gray-500">
                 Total items: {menus.length}
+                {hasActiveFilters &&
+                  ` • Showing: ${filteredMenus.length}`}
               </p>
             </div>
 
@@ -366,6 +440,137 @@ function AdminMenu() {
             </button>
           </div>
 
+          {/* Search & Filters */}
+          {!isLoading && menus.length > 0 && (
+            <div className="mb-6 rounded-2xl bg-white p-5 shadow-sm sm:p-6">
+              <div className="mb-5">
+                <h3 className="text-lg font-bold text-gray-900">
+                  Search & Filters
+                </h3>
+
+                <p className="mt-1 text-sm text-gray-500">
+                  Find menu items quickly by name, category, or
+                  price.
+                </p>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                {/* Search */}
+                <div className="lg:col-span-2">
+                  <label
+                    htmlFor="menuSearch"
+                    className="mb-2 block text-sm font-medium text-gray-700"
+                  >
+                    Search by Food Name
+                  </label>
+
+                  <div className="relative">
+                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                      🔎
+                    </span>
+
+                    <input
+                      id="menuSearch"
+                      type="text"
+                      value={searchTerm}
+                      onChange={(event) =>
+                        setSearchTerm(event.target.value)
+                      }
+                      placeholder="Search food name..."
+                      className="w-full rounded-lg border border-gray-300 py-3 pl-11 pr-4 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                    />
+                  </div>
+                </div>
+
+                {/* Category */}
+                <div>
+                  <label
+                    htmlFor="categoryFilter"
+                    className="mb-2 block text-sm font-medium text-gray-700"
+                  >
+                    Category
+                  </label>
+
+                  <select
+                    id="categoryFilter"
+                    value={selectedCategory}
+                    onChange={(event) =>
+                      setSelectedCategory(event.target.value)
+                    }
+                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                  >
+                    <option value="All">All Categories</option>
+
+                    {categories.map((category) => (
+                      <option
+                        key={category}
+                        value={category}
+                      >
+                        {category}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Price Sort */}
+                <div>
+                  <label
+                    htmlFor="priceSort"
+                    className="mb-2 block text-sm font-medium text-gray-700"
+                  >
+                    Sort by Price
+                  </label>
+
+                  <select
+                    id="priceSort"
+                    value={priceSort}
+                    onChange={(event) =>
+                      setPriceSort(event.target.value)
+                    }
+                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                  >
+                    <option value="default">
+                      Default Order
+                    </option>
+
+                    <option value="lowToHigh">
+                      Price: Low to High
+                    </option>
+
+                    <option value="highToLow">
+                      Price: High to Low
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Filter Summary */}
+              <div className="mt-5 flex flex-col gap-3 border-t border-gray-100 pt-5 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-gray-600">
+                  Showing{" "}
+                  <span className="font-bold text-gray-900">
+                    {filteredMenus.length}
+                  </span>{" "}
+                  of{" "}
+                  <span className="font-bold text-gray-900">
+                    {menus.length}
+                  </span>{" "}
+                  menu items
+                </p>
+
+                {hasActiveFilters && (
+                  <button
+                    type="button"
+                    onClick={handleClearFilters}
+                    className="w-full rounded-lg border border-orange-200 bg-orange-50 px-4 py-2.5 text-sm font-semibold text-orange-700 transition hover:bg-orange-100 sm:w-auto"
+                  >
+                    Clear Filters
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
           {isLoading ? (
             <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
               <p className="text-sm text-gray-500">
@@ -378,9 +583,31 @@ function AdminMenu() {
                 No menu items found.
               </p>
             </div>
+          ) : filteredMenus.length === 0 ? (
+            <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-50 text-2xl">
+                🔎
+              </div>
+
+              <h3 className="mt-4 text-lg font-bold text-gray-900">
+                No Matching Menu Items
+              </h3>
+
+              <p className="mt-2 text-sm text-gray-500">
+                Try changing your search term or filters.
+              </p>
+
+              <button
+                type="button"
+                onClick={handleClearFilters}
+                className="mt-5 rounded-lg bg-orange-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-700"
+              >
+                Clear Filters
+              </button>
+            </div>
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {menus.map((menu) => (
+              {filteredMenus.map((menu) => (
                 <div
                   key={menu._id}
                   className="overflow-hidden rounded-2xl bg-white shadow-sm"
