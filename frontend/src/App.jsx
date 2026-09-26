@@ -6,6 +6,8 @@ import AdminLayout from "./layouts/AdminLayout";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Menu from "./pages/Menu";
+import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
 import Gallery from "./pages/Gallery";
 import Contact from "./pages/Contact";
 import Location from "./pages/Location";
@@ -15,6 +17,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminMenu from "./pages/admin/AdminMenu";
 import AdminGallery from "./pages/admin/AdminGallery";
 import AdminEnquiries from "./pages/admin/AdminEnquiries";
+import AdminOrders from "./pages/admin/AdminOrders";
 
 import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
 
@@ -27,13 +30,18 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/menu" element={<Menu />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/location" element={<Location />} />
         </Route>
 
         {/* Admin Login */}
-        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route
+          path="/admin/login"
+          element={<AdminLogin />}
+        />
 
         {/* Protected Admin Routes */}
         <Route element={<AdminProtectedRoute />}>
@@ -46,6 +54,11 @@ function App() {
             <Route
               path="/admin/menu"
               element={<AdminMenu />}
+            />
+
+            <Route
+              path="/admin/orders"
+              element={<AdminOrders />}
             />
 
             <Route

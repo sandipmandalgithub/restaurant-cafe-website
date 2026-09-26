@@ -8,6 +8,7 @@ const menuRoutes = require("./routes/menuRoutes");
 const enquiryRoutes = require("./routes/enquiryRoutes");
 const galleryRoutes = require("./routes/galleryRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const orderRoutes = require("./routes/orderRoutes");
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use("/api/menu", menuRoutes);
 app.use("/api/enquiries", enquiryRoutes);
 app.use("/api/gallery", galleryRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/orders", orderRoutes);
 
 // Health check route
 app.get("/", (req, res) => {

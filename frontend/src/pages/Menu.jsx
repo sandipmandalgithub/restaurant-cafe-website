@@ -2,12 +2,28 @@ import { useEffect, useMemo, useState } from "react";
 
 import { getMenus } from "../services/menuService";
 
+const CART_STORAGE_KEY = "cafeNestCart";
+const CART_UPDATED_EVENT = "cafeNestCartUpdated";
+
 function Menu() {
   const [menuItems, setMenuItems] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const [cart, setCart] = useState(() => {
+    try {
+      const savedCart = localStorage.getItem(CART_STORAGE_KEY);
+
+      return savedCart ? JSON.parse(savedCart) : [];
+    } catch (error) {
+      console.error("Failed to load cart:", error);
+      return [];
+    }
+  });
+
+  // Fetch menu items
   useEffect(() => {
     const fetchMenus = async () => {
       try {
@@ -16,10 +32,13 @@ function Menu() {
 
         const data = await getMenus();
 
-        setMenuItems(data);
+        setMenuItems(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Failed to fetch menu items:", error);
-        setError("Unable to load menu items. Please try again.");
+
+        setError(
+          "Unable to load menu items. Please check your connection and try again."
+        );
       } finally {
         setLoading(false);
       }
@@ -28,20 +47,99 @@ function Menu() {
     fetchMenus();
   }, []);
 
+  // Save cart to localStorage and notify Navbar
+  useEffect(() => {
+    try {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+
+      const cartItemCount = cart.reduce(
+        (total, item) => total + Number(item.quantity || 0),
+        0
+      );
+
+      window.dispatchEvent(
+        new CustomEvent(CART_UPDATED_EVENT, {
+          detail: {
+            count: cartItemCount,
+          },
+        })
+      );
+    } catch (error) {
+      console.error("Failed to save cart:", error);
+    }
+  }, [cart]);
+
+  // Create categories
   const categories = useMemo(() => {
-    return ["All", ...new Set(menuItems.map((item) => item.category))];
+    const uniqueCategories = [
+      ...new Set(
+        menuItems
+          .map((item) => item.category?.trim())
+          .filter(Boolean)
+      ),
+    ];
+
+    return ["All", ...uniqueCategories];
   }, [menuItems]);
 
+  // Filter menu items
   const filteredMenu = useMemo(() => {
     if (selectedCategory === "All") {
       return menuItems;
     }
 
     return menuItems.filter(
-      (item) => item.category === selectedCategory
+      (item) => item.category?.trim() === selectedCategory
     );
   }, [menuItems, selectedCategory]);
 
+  // Calculate total cart quantity
+  const cartItemCount = useMemo(() => {
+    return cart.reduce(
+      (total, item) => total + Number(item.quantity || 0),
+      0
+    );
+  }, [cart]);
+
+  // Category change
+  const handleCategoryChange = (category) => {
+    setSelectedCategory(category);
+  };
+
+  // Add item to cart
+  const handleAddToCart = (item) => {
+    setCart((previousCart) => {
+      const existingItem = previousCart.find(
+        (cartItem) => cartItem._id === item._id
+      );
+
+      if (existingItem) {
+        return previousCart.map((cartItem) =>
+          cartItem._id === item._id
+            ? {
+                ...cartItem,
+                quantity: Number(cartItem.quantity || 0) + 1,
+              }
+            : cartItem
+        );
+      }
+
+      return [
+        ...previousCart,
+        {
+          _id: item._id,
+          name: item.name,
+          description: item.description,
+          price: Number(item.price),
+          image: item.image,
+          category: item.category,
+          quantity: 1,
+        },
+      ];
+    });
+  };
+
+  // WhatsApp enquiry
   const handleEnquiry = (itemName) => {
     const message = `Hi CaféNest, I would like to enquire about ${itemName}.`;
 
@@ -49,7 +147,20 @@ function Menu() {
       message
     )}`;
 
-    window.open(whatsappUrl, "_blank");
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+  };
+
+  // Image fallback
+  const handleImageError = (event) => {
+    event.currentTarget.onerror = null;
+
+    event.currentTarget.src =
+      "https://placehold.co/800x600?text=Image+Unavailable";
+  };
+
+  // Format price
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat("en-IN").format(price);
   };
 
   return (
@@ -72,42 +183,85 @@ function Menu() {
         </div>
       </section>
 
+      {/* Cart Summary */}
+      <section className="border-b border-orange-100 bg-orange-50 px-4 py-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold text-gray-900">
+              Your Cart
+            </p>
+
+            <p className="text-xs text-gray-600">
+              {cartItemCount === 0
+                ? "Your cart is empty."
+                : `${cartItemCount} item${
+                    cartItemCount > 1 ? "s" : ""
+                  } added`}
+            </p>
+          </div>
+
+          <div className="rounded-full bg-orange-600 px-4 py-2 text-sm font-bold text-white">
+            Cart: {cartItemCount}
+          </div>
+        </div>
+      </section>
+
       {/* Menu Section */}
       <section className="bg-white px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
+          {/* Section Header */}
+          <div className="mb-10 text-center">
+            <p className="text-sm font-semibold uppercase tracking-widest text-orange-600">
+              Explore
+            </p>
+
+            <h2 className="mt-2 text-3xl font-bold text-gray-900 sm:text-4xl">
+              Our Food Selection
+            </h2>
+
+            <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
+              Choose from our freshly prepared dishes and add your
+              favourite items to the cart.
+            </p>
+          </div>
+
           {/* Category Filter */}
           {!loading && !error && menuItems.length > 0 && (
-            <div className="mb-10 flex flex-wrap justify-center gap-3">
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  type="button"
-                  onClick={() => setSelectedCategory(category)}
-                  className={`rounded-full px-5 py-2.5 text-sm font-medium transition ${
-                    selectedCategory === category
-                      ? "bg-orange-600 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-orange-50 hover:text-orange-600"
-                  }`}
-                >
-                  {category}
-                </button>
-              ))}
+            <div className="mb-10">
+              <div className="flex flex-wrap justify-center gap-3">
+                {categories.map((category) => (
+                  <button
+                    key={category}
+                    type="button"
+                    onClick={() => handleCategoryChange(category)}
+                    className={`rounded-full px-5 py-2.5 text-sm font-semibold transition ${
+                      selectedCategory === category
+                        ? "bg-orange-600 text-white shadow-sm"
+                        : "bg-gray-100 text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                    }`}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
-          {/* Loading */}
+          {/* Loading State */}
           {loading && (
             <div className="py-16 text-center">
-              <p className="text-base text-gray-600">
+              <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-orange-600" />
+
+              <p className="mt-4 text-sm font-medium text-gray-600">
                 Loading menu...
               </p>
             </div>
           )}
 
-          {/* Error */}
+          {/* Error State */}
           {!loading && error && (
-            <div className="rounded-xl bg-red-50 px-6 py-10 text-center">
-              <p className="text-base font-medium text-red-600">
+            <div className="rounded-2xl bg-red-50 px-6 py-10 text-center">
+              <p className="text-base font-semibold text-red-700">
                 {error}
               </p>
 
@@ -123,14 +277,22 @@ function Menu() {
 
           {/* Empty State */}
           {!loading && !error && menuItems.length === 0 && (
-            <div className="py-16 text-center">
-              <p className="text-lg font-medium text-gray-700">
+            <div className="rounded-2xl bg-gray-50 px-6 py-16 text-center">
+              <p className="text-lg font-semibold text-gray-700">
                 No menu items available right now.
               </p>
 
               <p className="mt-2 text-sm text-gray-500">
                 Please check again later.
               </p>
+
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                className="mt-5 rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-100"
+              >
+                Refresh Menu
+              </button>
             </div>
           )}
 
@@ -140,42 +302,60 @@ function Menu() {
               {filteredMenu.map((item) => (
                 <article
                   key={item._id}
-                  className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+                  className="group flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
                 >
-                  <div className="aspect-[4/3] overflow-hidden">
+                  {/* Image */}
+                  <div className="aspect-[4/3] overflow-hidden bg-gray-100">
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="h-full w-full object-cover transition duration-500 hover:scale-105"
+                      onError={handleImageError}
+                      loading="lazy"
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                     />
                   </div>
 
-                  <div className="p-6">
+                  {/* Content */}
+                  <div className="flex flex-1 flex-col p-6">
+                    {/* Name and Price */}
                     <div className="flex items-start justify-between gap-4">
                       <h2 className="text-xl font-bold text-gray-900">
                         {item.name}
                       </h2>
 
                       <span className="whitespace-nowrap text-lg font-bold text-orange-600">
-                        ₹{item.price}
+                        ₹{formatPrice(item.price)}
                       </span>
                     </div>
 
-                    <p className="mt-2 text-sm font-medium text-orange-500">
+                    {/* Category */}
+                    <span className="mt-3 inline-block w-fit rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">
                       {item.category}
-                    </p>
+                    </span>
 
+                    {/* Description */}
                     <p className="mt-4 text-sm leading-6 text-gray-600">
                       {item.description}
                     </p>
 
-                    <button
-                      type="button"
-                      onClick={() => handleEnquiry(item.name)}
-                      className="mt-6 w-full rounded-lg bg-orange-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-700"
-                    >
-                      Enquire Now
-                    </button>
+                    {/* Buttons */}
+                    <div className="mt-auto pt-6">
+                      <button
+                        type="button"
+                        onClick={() => handleAddToCart(item)}
+                        className="block w-full rounded-lg bg-orange-600 px-5 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:ring-offset-2"
+                      >
+                        Add to Cart
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleEnquiry(item.name)}
+                        className="mt-3 block w-full rounded-lg border border-green-600 px-5 py-3 text-center text-sm font-semibold text-green-700 transition hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2"
+                      >
+                        Enquire Now
+                      </button>
+                    </div>
                   </div>
                 </article>
               ))}
@@ -187,9 +367,13 @@ function Menu() {
             !error &&
             menuItems.length > 0 &&
             filteredMenu.length === 0 && (
-              <div className="py-16 text-center">
-                <p className="text-lg font-medium text-gray-700">
+              <div className="rounded-2xl bg-gray-50 py-16 text-center">
+                <p className="text-lg font-semibold text-gray-700">
                   No items found in this category.
+                </p>
+
+                <p className="mt-2 text-sm text-gray-500">
+                  Please select another category.
                 </p>
               </div>
             )}
@@ -199,7 +383,11 @@ function Menu() {
       {/* CTA Section */}
       <section className="bg-orange-50 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+          <p className="text-sm font-semibold uppercase tracking-widest text-orange-600">
+            Get In Touch
+          </p>
+
+          <h2 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
             Want to Know More?
           </h2>
 
@@ -213,14 +401,14 @@ function Menu() {
               href="https://wa.me/919876543210"
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-lg bg-green-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-green-700"
+              className="rounded-lg bg-green-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2"
             >
               WhatsApp Us
             </a>
 
             <a
               href="tel:+919876543210"
-              className="rounded-lg border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-gray-800 transition hover:bg-gray-100"
+              className="rounded-lg border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-gray-800 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
             >
               Call Us
             </a>
