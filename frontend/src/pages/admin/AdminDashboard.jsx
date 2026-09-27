@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+
 import { getDashboardStats } from "../../services/adminDashboardService";
 
 const ORDERS_API_URL = "http://localhost:5000/api/orders";
+const ENQUIRIES_API_URL = "http://localhost:5000/api/enquiries";
 
 const STATUS_OPTIONS = [
   "Pending",
@@ -32,6 +34,15 @@ function AdminDashboard() {
   });
 
   const [recentOrders, setRecentOrders] = useState([]);
+
+  const [enquiryStats, setEnquiryStats] = useState({
+    total: 0,
+    new: 0,
+    contacted: 0,
+    resolved: 0,
+  });
+
+  const [recentEnquiries, setRecentEnquiries] = useState([]);
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -106,20 +117,32 @@ function AdminDashboard() {
 
       const token = localStorage.getItem("adminToken");
 
-      const [dashboardResult, ordersResponse] =
-        await Promise.all([
-          getDashboardStats(),
+      const [
+        dashboardResult,
+        ordersResponse,
+        enquiriesResponse,
+      ] = await Promise.all([
+        getDashboardStats(),
 
-          fetch(ORDERS_API_URL, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }),
-        ]);
+        fetch(ORDERS_API_URL, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }),
+
+        fetch(ENQUIRIES_API_URL, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }),
+      ]);
 
       const ordersResult = await ordersResponse.json();
+      const enquiriesResult = await enquiriesResponse.json();
 
       if (!ordersResponse.ok) {
         throw new Error(
@@ -128,7 +151,15 @@ function AdminDashboard() {
         );
       }
 
+      if (!enquiriesResponse.ok) {
+        throw new Error(
+          enquiriesResult.message ||
+            "Failed to fetch enquiry statistics."
+        );
+      }
+
       const fetchedOrders = ordersResult.data || [];
+      const fetchedEnquiries = enquiriesResult.data || [];
 
       const activeOrders = fetchedOrders.filter(
         (order) => order.status !== "Cancelled"
@@ -166,10 +197,36 @@ function AdminDashboard() {
         )
         .slice(0, 5);
 
+      const calculatedEnquiryStats = {
+        total: fetchedEnquiries.length,
+
+        new: fetchedEnquiries.filter(
+          (enquiry) => enquiry.status === "New"
+        ).length,
+
+        contacted: fetchedEnquiries.filter(
+          (enquiry) => enquiry.status === "Contacted"
+        ).length,
+
+        resolved: fetchedEnquiries.filter(
+          (enquiry) => enquiry.status === "Resolved"
+        ).length,
+      };
+
+      const latestEnquiries = [...fetchedEnquiries]
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt) -
+            new Date(a.createdAt)
+        )
+        .slice(0, 5);
+
       setStats(dashboardResult);
       setOrders(fetchedOrders);
       setOrderStats(calculatedOrderStats);
       setRecentOrders(latestOrders);
+      setEnquiryStats(calculatedEnquiryStats);
+      setRecentEnquiries(latestEnquiries);
     } catch (error) {
       console.error(
         "Fetch dashboard data error:",
@@ -194,20 +251,33 @@ function AdminDashboard() {
 
         const token = localStorage.getItem("adminToken");
 
-        const [dashboardResult, ordersResponse] =
-          await Promise.all([
-            getDashboardStats(),
+        const [
+          dashboardResult,
+          ordersResponse,
+          enquiriesResponse,
+        ] = await Promise.all([
+          getDashboardStats(),
 
-            fetch(ORDERS_API_URL, {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-            }),
-          ]);
+          fetch(ORDERS_API_URL, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }),
+
+          fetch(ENQUIRIES_API_URL, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }),
+        ]);
 
         const ordersResult = await ordersResponse.json();
+        const enquiriesResult =
+          await enquiriesResponse.json();
 
         if (!ordersResponse.ok) {
           throw new Error(
@@ -216,7 +286,16 @@ function AdminDashboard() {
           );
         }
 
+        if (!enquiriesResponse.ok) {
+          throw new Error(
+            enquiriesResult.message ||
+              "Failed to fetch enquiry statistics."
+          );
+        }
+
         const fetchedOrders = ordersResult.data || [];
+        const fetchedEnquiries =
+          enquiriesResult.data || [];
 
         const activeOrders = fetchedOrders.filter(
           (order) => order.status !== "Cancelled"
@@ -254,11 +333,37 @@ function AdminDashboard() {
           )
           .slice(0, 5);
 
+        const calculatedEnquiryStats = {
+          total: fetchedEnquiries.length,
+
+          new: fetchedEnquiries.filter(
+            (enquiry) => enquiry.status === "New"
+          ).length,
+
+          contacted: fetchedEnquiries.filter(
+            (enquiry) => enquiry.status === "Contacted"
+          ).length,
+
+          resolved: fetchedEnquiries.filter(
+            (enquiry) => enquiry.status === "Resolved"
+          ).length,
+        };
+
+        const latestEnquiries = [...fetchedEnquiries]
+          .sort(
+            (a, b) =>
+              new Date(b.createdAt) -
+              new Date(a.createdAt)
+          )
+          .slice(0, 5);
+
         if (isMounted) {
           setStats(dashboardResult);
           setOrders(fetchedOrders);
           setOrderStats(calculatedOrderStats);
           setRecentOrders(latestOrders);
+          setEnquiryStats(calculatedEnquiryStats);
+          setRecentEnquiries(latestEnquiries);
           setIsLoading(false);
         }
       } catch (error) {
@@ -272,6 +377,7 @@ function AdminDashboard() {
             error.message ||
               "Failed to load dashboard data."
           );
+
           setIsLoading(false);
         }
       }
@@ -297,7 +403,9 @@ function AdminDashboard() {
 
       const percentage =
         orders.length > 0
-          ? Math.round((count / orders.length) * 100)
+          ? Math.round(
+              (count / orders.length) * 100
+            )
           : 0;
 
       return {
@@ -429,7 +537,7 @@ function AdminDashboard() {
               </p>
             </Link>
 
-            {/* Enquiries */}
+            {/* Total Enquiries */}
             <Link
               to="/admin/enquiries"
               className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
@@ -449,7 +557,7 @@ function AdminDashboard() {
               </p>
 
               <p className="mt-1 text-2xl font-bold text-gray-900">
-                {stats.totalEnquiries}
+                {enquiryStats.total}
               </p>
             </Link>
 
@@ -472,8 +580,56 @@ function AdminDashboard() {
                 New Enquiries
               </p>
 
-              <p className="mt-1 text-2xl font-bold text-gray-900">
-                {stats.newEnquiries}
+              <p className="mt-1 text-2xl font-bold text-green-600">
+                {enquiryStats.new}
+              </p>
+            </Link>
+
+            {/* Contacted Enquiries */}
+            <Link
+              to="/admin/enquiries"
+              className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-100 text-xl">
+                  📞
+                </div>
+
+                <span className="text-xs font-semibold text-gray-400">
+                  CONTACTED
+                </span>
+              </div>
+
+              <p className="mt-5 text-sm text-gray-500">
+                Contacted Enquiries
+              </p>
+
+              <p className="mt-1 text-2xl font-bold text-blue-600">
+                {enquiryStats.contacted}
+              </p>
+            </Link>
+
+            {/* Resolved Enquiries */}
+            <Link
+              to="/admin/enquiries"
+              className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-green-100 text-xl">
+                  ✅
+                </div>
+
+                <span className="text-xs font-semibold text-gray-400">
+                  RESOLVED
+                </span>
+              </div>
+
+              <p className="mt-5 text-sm text-gray-500">
+                Resolved Enquiries
+              </p>
+
+              <p className="mt-1 text-2xl font-bold text-green-600">
+                {enquiryStats.resolved}
               </p>
             </Link>
           </div>
@@ -751,6 +907,94 @@ function AdminDashboard() {
               </div>
             </div>
           </div>
+        </section>
+
+        {/* Recent Enquiries */}
+        <section className="mt-10">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">
+                Recent Enquiries
+              </h2>
+
+              <p className="mt-1 text-sm text-gray-500">
+                Latest customer enquiries.
+              </p>
+            </div>
+
+            <Link
+              to="/admin/enquiries"
+              className="text-sm font-semibold text-amber-600 hover:text-amber-700"
+            >
+              Manage Enquiries →
+            </Link>
+          </div>
+
+          {recentEnquiries.length === 0 ? (
+            <div className="mt-4 rounded-xl border border-gray-200 bg-white px-6 py-12 text-center shadow-sm">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 text-2xl">
+                📩
+              </div>
+
+              <h3 className="mt-4 font-bold text-gray-900">
+                No Enquiries Yet
+              </h3>
+
+              <p className="mt-1 text-sm text-gray-500">
+                New customer enquiries will appear here.
+              </p>
+            </div>
+          ) : (
+            <div className="mt-4 grid gap-4 lg:grid-cols-2">
+              {recentEnquiries.map((enquiry) => {
+                const enquiryStatusClasses =
+                  enquiry.status === "Contacted"
+                    ? "bg-blue-100 text-blue-700"
+                    : enquiry.status === "Resolved"
+                    ? "bg-green-100 text-green-700"
+                    : "bg-yellow-100 text-yellow-700";
+
+                return (
+                  <div
+                    key={enquiry._id}
+                    className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
+                  >
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <h3 className="break-words font-bold text-gray-900">
+                          {enquiry.name}
+                        </h3>
+
+                        <p className="mt-1 break-all text-sm text-gray-500">
+                          {enquiry.email}
+                        </p>
+                      </div>
+
+                      <span
+                        className={`w-fit shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${enquiryStatusClasses}`}
+                      >
+                        {enquiry.status}
+                      </span>
+                    </div>
+
+                    <p className="mt-4 line-clamp-2 break-words text-sm leading-6 text-gray-600">
+                      {enquiry.message}
+                    </p>
+
+                    <div className="mt-4 flex flex-col gap-2 border-t border-gray-100 pt-4 text-xs text-gray-500 sm:flex-row sm:items-center sm:justify-between">
+                      <span>
+                        Phone: {enquiry.phone || "-"}
+                      </span>
+
+                      <span>
+                        {formatDate(enquiry.createdAt)}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </section>
 
         {/* Recent Orders */}
