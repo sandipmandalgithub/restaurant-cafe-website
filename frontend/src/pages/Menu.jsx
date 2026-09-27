@@ -170,19 +170,19 @@ function Menu() {
   };
 
   return (
-    <div>
+    <div className="overflow-hidden">
       {/* Hero Section */}
-      <section className="bg-gray-900 px-4 py-20 text-white sm:px-6 lg:px-8">
+      <section className="overflow-hidden bg-gray-900 px-4 py-14 text-white sm:px-6 sm:py-16 lg:px-8 lg:py-20">
         <div className="mx-auto max-w-7xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-orange-400">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-orange-400 sm:text-sm sm:tracking-widest">
             Our Menu
           </p>
 
-          <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
+          <h1 className="mx-auto mt-3 max-w-4xl text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl">
             Delicious Food, Made Fresh
           </h1>
 
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-gray-300 sm:text-lg">
+          <p className="mx-auto mt-5 max-w-2xl text-sm leading-6 text-gray-300 sm:text-base sm:leading-7 lg:text-lg">
             Explore our selection of delicious dishes prepared with fresh
             ingredients and served with care.
           </p>
@@ -191,13 +191,13 @@ function Menu() {
 
       {/* Cart Summary */}
       <section className="border-b border-orange-100 bg-orange-50 px-4 py-4 sm:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
-          <div>
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 sm:gap-4">
+          <div className="min-w-0">
             <p className="text-sm font-semibold text-gray-900">
               Your Cart
             </p>
 
-            <p className="text-xs text-gray-600">
+            <p className="mt-0.5 text-xs leading-5 text-gray-600">
               {cartItemCount === 0
                 ? "Your cart is empty."
                 : `${cartItemCount} item${
@@ -206,41 +206,41 @@ function Menu() {
             </p>
           </div>
 
-          <div className="rounded-full bg-orange-600 px-4 py-2 text-sm font-bold text-white">
+          <div className="shrink-0 rounded-full bg-orange-600 px-3.5 py-2 text-xs font-bold text-white sm:px-4 sm:text-sm">
             Cart: {cartItemCount}
           </div>
         </div>
       </section>
 
       {/* Menu Section */}
-      <section className="bg-white px-4 py-16 sm:px-6 lg:px-8">
+      <section className="overflow-hidden bg-white px-4 py-14 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
         <div className="mx-auto max-w-7xl">
           {/* Section Header */}
-          <div className="mb-10 text-center">
-            <p className="text-sm font-semibold uppercase tracking-widest text-orange-600">
+          <div className="mx-auto mb-9 max-w-2xl text-center sm:mb-10">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-orange-600 sm:text-sm sm:tracking-widest">
               Explore
             </p>
 
-            <h2 className="mt-2 text-3xl font-bold text-gray-900 sm:text-4xl">
+            <h2 className="mt-2 text-3xl font-bold leading-tight text-gray-900 sm:text-4xl">
               Our Food Selection
             </h2>
 
-            <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
-              Choose from our freshly prepared dishes and add your
-              favourite items to the cart.
+            <p className="mx-auto mt-3 text-sm leading-6 text-gray-600 sm:text-base">
+              Choose from our freshly prepared dishes and add your favourite
+              items to the cart.
             </p>
           </div>
 
           {/* Category Filter */}
           {!loading && !error && menuItems.length > 0 && (
-            <div className="mb-10">
-              <div className="flex flex-wrap justify-center gap-3">
+            <div className="mb-9 sm:mb-10">
+              <div className="flex gap-2.5 overflow-x-auto px-1 pb-2 sm:flex-wrap sm:justify-center sm:gap-3 sm:overflow-visible sm:px-0 sm:pb-0">
                 {categories.map((category) => (
                   <button
                     key={category}
                     type="button"
                     onClick={() => handleCategoryChange(category)}
-                    className={`rounded-full px-5 py-2.5 text-sm font-semibold transition ${
+                    className={`min-h-10 shrink-0 rounded-full px-4 py-2.5 text-xs font-semibold transition sm:px-5 sm:text-sm ${
                       selectedCategory === category
                         ? "bg-orange-600 text-white shadow-sm"
                         : "bg-gray-100 text-gray-700 hover:bg-orange-50 hover:text-orange-600"
@@ -255,7 +255,7 @@ function Menu() {
 
           {/* Loading State */}
           {loading && (
-            <div className="py-16 text-center">
+            <div className="py-14 text-center sm:py-16">
               <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-orange-600" />
 
               <p className="mt-4 text-sm font-medium text-gray-600">
@@ -266,15 +266,15 @@ function Menu() {
 
           {/* Error State */}
           {!loading && error && (
-            <div className="rounded-2xl bg-red-50 px-6 py-10 text-center">
-              <p className="text-base font-semibold text-red-700">
+            <div className="rounded-2xl bg-red-50 px-4 py-10 text-center sm:px-6">
+              <p className="text-sm font-semibold leading-6 text-red-700 sm:text-base">
                 {error}
               </p>
 
               <button
                 type="button"
                 onClick={() => window.location.reload()}
-                className="mt-5 rounded-lg bg-orange-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-700"
+                className="mt-5 min-h-10 rounded-lg bg-orange-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:ring-offset-2"
               >
                 Try Again
               </button>
@@ -283,8 +283,8 @@ function Menu() {
 
           {/* Empty State */}
           {!loading && !error && menuItems.length === 0 && (
-            <div className="rounded-2xl bg-gray-50 px-6 py-16 text-center">
-              <p className="text-lg font-semibold text-gray-700">
+            <div className="rounded-2xl bg-gray-50 px-4 py-14 text-center sm:px-6 sm:py-16">
+              <p className="text-base font-semibold text-gray-700 sm:text-lg">
                 No menu items available right now.
               </p>
 
@@ -295,7 +295,7 @@ function Menu() {
               <button
                 type="button"
                 onClick={() => window.location.reload()}
-                className="mt-5 rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-100"
+                className="mt-5 min-h-10 rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
               >
                 Refresh Menu
               </button>
@@ -304,14 +304,14 @@ function Menu() {
 
           {/* Menu Cards */}
           {!loading && !error && filteredMenu.length > 0 && (
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:gap-7">
               {filteredMenu.map((item) => {
                 const isAvailable = item.isAvailable !== false;
 
                 return (
                   <article
                     key={item._id}
-                    className={`group flex h-full flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition duration-300 ${
+                    className={`group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition duration-300 ${
                       isAvailable
                         ? "border-gray-200 hover:-translate-y-1 hover:shadow-lg"
                         : "border-red-100"
@@ -332,9 +332,9 @@ function Menu() {
                       />
 
                       {/* Availability Badge */}
-                      <div className="absolute right-3 top-3">
+                      <div className="absolute right-2.5 top-2.5 sm:right-3 sm:top-3">
                         <span
-                          className={`rounded-full px-3 py-1.5 text-xs font-bold shadow-sm ${
+                          className={`rounded-full px-2.5 py-1.5 text-[11px] font-bold shadow-sm sm:px-3 sm:text-xs ${
                             isAvailable
                               ? "bg-green-100 text-green-700"
                               : "bg-red-100 text-red-700"
@@ -348,8 +348,8 @@ function Menu() {
 
                       {/* Out of Stock Overlay */}
                       {!isAvailable && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="rounded-lg bg-black/65 px-5 py-2.5 text-sm font-bold tracking-wide text-white shadow-lg">
+                        <div className="absolute inset-0 flex items-center justify-center px-4">
+                          <span className="rounded-lg bg-black/65 px-4 py-2.5 text-center text-xs font-bold tracking-wide text-white shadow-lg sm:px-5 sm:text-sm">
                             OUT OF STOCK
                           </span>
                         </div>
@@ -357,11 +357,11 @@ function Menu() {
                     </div>
 
                     {/* Content */}
-                    <div className="flex flex-1 flex-col p-6">
+                    <div className="flex flex-1 flex-col p-5 sm:p-6">
                       {/* Name and Price */}
-                      <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-start gap-3">
                         <h2
-                          className={`text-xl font-bold ${
+                          className={`min-w-0 flex-1 break-words text-lg font-bold leading-6 sm:text-xl ${
                             isAvailable
                               ? "text-gray-900"
                               : "text-gray-600"
@@ -371,7 +371,7 @@ function Menu() {
                         </h2>
 
                         <span
-                          className={`whitespace-nowrap text-lg font-bold ${
+                          className={`shrink-0 whitespace-nowrap text-base font-bold sm:text-lg ${
                             isAvailable
                               ? "text-orange-600"
                               : "text-gray-500"
@@ -382,12 +382,12 @@ function Menu() {
                       </div>
 
                       {/* Category */}
-                      <span className="mt-3 inline-block w-fit rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">
+                      <span className="mt-3 inline-block w-fit max-w-full break-words rounded-full bg-orange-50 px-3 py-1 text-[11px] font-semibold text-orange-700 sm:text-xs">
                         {item.category}
                       </span>
 
                       {/* Description */}
-                      <p className="mt-4 text-sm leading-6 text-gray-600">
+                      <p className="mt-4 break-words text-sm leading-6 text-gray-600">
                         {item.description}
                       </p>
 
@@ -397,7 +397,7 @@ function Menu() {
                           <button
                             type="button"
                             onClick={() => handleAddToCart(item)}
-                            className="block w-full rounded-lg bg-orange-600 px-5 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:ring-offset-2"
+                            className="block min-h-11 w-full rounded-lg bg-orange-600 px-5 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:ring-offset-2"
                           >
                             Add to Cart
                           </button>
@@ -405,7 +405,7 @@ function Menu() {
                           <button
                             type="button"
                             disabled
-                            className="block w-full cursor-not-allowed rounded-lg bg-gray-200 px-5 py-3 text-center text-sm font-semibold text-gray-500"
+                            className="block min-h-11 w-full cursor-not-allowed rounded-lg bg-gray-200 px-5 py-3 text-center text-sm font-semibold text-gray-500"
                           >
                             Out of Stock
                           </button>
@@ -414,7 +414,7 @@ function Menu() {
                         <button
                           type="button"
                           onClick={() => handleEnquiry(item.name)}
-                          className="mt-3 block w-full rounded-lg border border-green-600 px-5 py-3 text-center text-sm font-semibold text-green-700 transition hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2"
+                          className="mt-3 block min-h-11 w-full rounded-lg border border-green-600 px-5 py-3 text-center text-sm font-semibold text-green-700 transition hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2"
                         >
                           Enquire Now
                         </button>
@@ -431,8 +431,8 @@ function Menu() {
             !error &&
             menuItems.length > 0 &&
             filteredMenu.length === 0 && (
-              <div className="rounded-2xl bg-gray-50 py-16 text-center">
-                <p className="text-lg font-semibold text-gray-700">
+              <div className="rounded-2xl bg-gray-50 px-4 py-14 text-center sm:py-16">
+                <p className="text-base font-semibold text-gray-700 sm:text-lg">
                   No items found in this category.
                 </p>
 
@@ -445,34 +445,34 @@ function Menu() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-orange-50 px-4 py-16 sm:px-6 lg:px-8">
+      <section className="overflow-hidden bg-orange-50 px-4 py-14 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
         <div className="mx-auto max-w-4xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-orange-600">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-orange-600 sm:text-sm sm:tracking-widest">
             Get In Touch
           </p>
 
-          <h2 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+          <h2 className="mt-2 text-3xl font-bold leading-tight tracking-tight text-gray-900 sm:text-4xl">
             Want to Know More?
           </h2>
 
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-gray-600">
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base sm:leading-7">
             Contact us for menu details, availability, special requests, or
             table enquiries.
           </p>
 
-          <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
+          <div className="mx-auto mt-7 flex w-full max-w-md flex-col justify-center gap-3 sm:mt-8 sm:max-w-none sm:flex-row">
             <a
               href="https://wa.me/919876543210"
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-lg bg-green-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2"
+              className="inline-flex min-h-11 items-center justify-center rounded-lg bg-green-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2"
             >
               WhatsApp Us
             </a>
 
             <a
               href="tel:+919876543210"
-              className="rounded-lg border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-gray-800 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
+              className="inline-flex min-h-11 items-center justify-center rounded-lg border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-gray-800 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
             >
               Call Us
             </a>
