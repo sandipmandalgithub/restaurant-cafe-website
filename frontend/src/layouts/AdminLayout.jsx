@@ -40,6 +40,11 @@ function AdminLayout() {
       path: "/admin/enquiries",
       icon: "📩",
     },
+    {
+      label: "Business Settings",
+      path: "/admin/business-settings",
+      icon: "⚙️",
+    },
   ];
 
   return (

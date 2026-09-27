@@ -20,6 +20,7 @@ import AdminMenu from "./pages/admin/AdminMenu";
 import AdminGallery from "./pages/admin/AdminGallery";
 import AdminEnquiries from "./pages/admin/AdminEnquiries";
 import AdminOrders from "./pages/admin/AdminOrders";
+import AdminBusinessSettings from "./pages/admin/AdminBusinessSettings";
 
 import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
 
@@ -73,6 +74,11 @@ function App() {
             <Route
               path="/admin/enquiries"
               element={<AdminEnquiries />}
+            />
+
+            <Route
+              path="/admin/business-settings"
+              element={<AdminBusinessSettings />}
             />
           </Route>
         </Route>

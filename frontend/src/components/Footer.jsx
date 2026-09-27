@@ -1,6 +1,21 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+const API_URL = "http://localhost:5000/api/business-settings";
+
 function Footer() {
+  const [settings, setSettings] = useState({
+    businessName: "CaféNest",
+    phone: "+919876543210",
+    email: "hello@cafenest.com",
+    address: "Kolkata, West Bengal, India",
+    openingTime: "10:00 AM",
+    closingTime: "10:00 PM",
+    whatsappNumber: "919876543210",
+  });
+
+  const [loading, setLoading] = useState(true);
+
   const quickLinks = [
     { name: "Home", path: "/" },
     { name: "About", path: "/about" },
@@ -9,6 +24,43 @@ function Footer() {
     { name: "Contact", path: "/contact" },
     { name: "Location", path: "/location" },
   ];
+
+  useEffect(() => {
+    const loadBusinessSettings = async () => {
+      try {
+        const response = await fetch(API_URL);
+        const result = await response.json();
+
+        if (response.ok && result.success && result.data) {
+          setSettings((prev) => ({
+            ...prev,
+            ...result.data,
+          }));
+        }
+      } catch (error) {
+        console.error("Failed to load business settings:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadBusinessSettings();
+  }, []);
+
+  const cleanPhoneNumber = (phone = "") => {
+    return phone.replace(/\D/g, "");
+  };
+
+  const phoneNumber = cleanPhoneNumber(settings.phone);
+
+  const whatsappNumber = cleanPhoneNumber(
+    settings.whatsappNumber || settings.phone
+  );
+
+  const formattedPhone =
+    settings.phone || "+91 98765 43210";
+
+  const businessName = settings.businessName || "CaféNest";
 
   return (
     <footer className="bg-gray-950 text-white">
@@ -21,7 +73,12 @@ function Footer() {
               to="/"
               className="inline-block text-2xl font-bold tracking-tight transition hover:opacity-80"
             >
-              Café<span className="text-orange-500">Nest</span>
+              {businessName.split(" ")[0] || "Café"}
+              {businessName.split(" ").length > 1 && (
+                <span className="text-orange-500">
+                  {" " + businessName.split(" ").slice(1).join(" ")}
+                </span>
+              )}
             </Link>
 
             <p className="mt-4 max-w-md text-sm leading-7 text-gray-400">
@@ -33,7 +90,7 @@ function Footer() {
             {/* CTA Buttons */}
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <a
-                href="tel:+919876543210"
+                href={`tel:${phoneNumber}`}
                 className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-700 px-4 py-2.5 text-sm font-semibold text-gray-200 transition hover:border-orange-500 hover:text-orange-400"
               >
                 <span aria-hidden="true">📞</span>
@@ -41,7 +98,11 @@ function Footer() {
               </a>
 
               <a
-                href="https://wa.me/919876543210"
+                href={
+                  whatsappNumber
+                    ? `https://wa.me/${whatsappNumber}`
+                    : "#"
+                }
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700"
@@ -98,7 +159,9 @@ function Footer() {
                 </span>
 
                 <p className="leading-6 text-gray-400">
-                  Kolkata, West Bengal, India
+                  {loading
+                    ? "Loading..."
+                    : settings.address || "Kolkata, West Bengal, India"}
                 </p>
               </div>
 
@@ -112,10 +175,10 @@ function Footer() {
                 </span>
 
                 <a
-                  href="tel:+919876543210"
+                  href={`tel:${phoneNumber}`}
                   className="text-gray-400 transition hover:text-orange-400"
                 >
-                  +91 98765 43210
+                  {formattedPhone}
                 </a>
               </div>
 
@@ -129,10 +192,10 @@ function Footer() {
                 </span>
 
                 <a
-                  href="mailto:hello@cafenest.com"
+                  href={`mailto:${settings.email || "hello@cafenest.com"}`}
                   className="break-all text-gray-400 transition hover:text-orange-400"
                 >
-                  hello@cafenest.com
+                  {settings.email || "hello@cafenest.com"}
                 </a>
               </div>
 
@@ -147,7 +210,10 @@ function Footer() {
 
                 <div className="text-gray-400">
                   <p>Monday - Sunday</p>
-                  <p className="mt-1">10:00 AM - 10:00 PM</p>
+                  <p className="mt-1">
+                    {settings.openingTime || "10:00 AM"} -{" "}
+                    {settings.closingTime || "10:00 PM"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -158,7 +224,7 @@ function Footer() {
         <div className="mt-12 border-t border-gray-800 pt-6">
           <div className="flex flex-col items-center justify-between gap-3 text-center sm:flex-row sm:text-left">
             <p className="text-sm text-gray-500">
-              © {new Date().getFullYear()} CaféNest. All rights reserved.
+              © {new Date().getFullYear()} {businessName}. All rights reserved.
             </p>
 
             <p className="text-xs text-gray-600">
