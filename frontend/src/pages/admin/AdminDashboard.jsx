@@ -61,9 +61,7 @@ function AdminDashboard() {
   const [error, setError] = useState("");
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat("en-IN").format(
-      Number(price || 0)
-    );
+    return new Intl.NumberFormat("en-IN").format(Number(price || 0));
   };
 
   const formatDate = (date) => {
@@ -200,13 +198,11 @@ function AdminDashboard() {
       const orderStatisticsResult =
         await orderStatisticsResponse.json();
 
-      const enquiriesResult =
-        await enquiriesResponse.json();
+      const enquiriesResult = await enquiriesResponse.json();
 
       if (!ordersResponse.ok) {
         throw new Error(
-          ordersResult.message ||
-            "Failed to fetch orders."
+          ordersResult.message || "Failed to fetch orders."
         );
       }
 
@@ -224,9 +220,7 @@ function AdminDashboard() {
         );
       }
 
-      const fetchedOrders = Array.isArray(
-        ordersResult.data
-      )
+      const fetchedOrders = Array.isArray(ordersResult.data)
         ? ordersResult.data
         : [];
 
@@ -236,8 +230,7 @@ function AdminDashboard() {
         ? enquiriesResult.data
         : [];
 
-      const statisticsData =
-        orderStatisticsResult?.data || {};
+      const statisticsData = orderStatisticsResult?.data || {};
 
       const statisticsSummary =
         statisticsData?.summary || {};
@@ -257,8 +250,7 @@ function AdminDashboard() {
       const latestOrders = [...fetchedOrders]
         .sort(
           (a, b) =>
-            new Date(b.createdAt) -
-            new Date(a.createdAt)
+            new Date(b.createdAt) - new Date(a.createdAt)
         )
         .slice(0, 5);
 
@@ -281,8 +273,7 @@ function AdminDashboard() {
       const latestEnquiries = [...fetchedEnquiries]
         .sort(
           (a, b) =>
-            new Date(b.createdAt) -
-            new Date(a.createdAt)
+            new Date(b.createdAt) - new Date(a.createdAt)
         )
         .slice(0, 5);
 
@@ -295,11 +286,9 @@ function AdminDashboard() {
           dashboardResult?.totalGallery || 0
         ),
 
-        totalEnquiries:
-          calculatedEnquiryStats.total,
+        totalEnquiries: calculatedEnquiryStats.total,
 
-        newEnquiries:
-          calculatedEnquiryStats.new,
+        newEnquiries: calculatedEnquiryStats.new,
       });
 
       setOrders(fetchedOrders);
@@ -354,30 +343,16 @@ function AdminDashboard() {
         ),
       });
 
-      setBestSellingItems(
-        fetchedBestSellingItems
-      );
-
-      setRevenueByDate(
-        fetchedRevenueByDate
-      );
-
+      setBestSellingItems(fetchedBestSellingItems);
+      setRevenueByDate(fetchedRevenueByDate);
       setRecentOrders(latestOrders);
-
-      setEnquiryStats(
-        calculatedEnquiryStats
-      );
-
+      setEnquiryStats(calculatedEnquiryStats);
       setRecentEnquiries(latestEnquiries);
     } catch (error) {
-      console.error(
-        "Fetch dashboard data error:",
-        error
-      );
+      console.error("Fetch dashboard data error:", error);
 
       setError(
-        error.message ||
-          "Failed to load dashboard data."
+        error.message || "Failed to load dashboard data."
       );
     } finally {
       setIsLoading(false);
@@ -416,9 +391,7 @@ function AdminDashboard() {
 
       const percentage =
         orders.length > 0
-          ? Math.round(
-              (count / orders.length) * 100
-            )
+          ? Math.round((count / orders.length) * 100)
           : 0;
 
       return {
@@ -433,12 +406,11 @@ function AdminDashboard() {
     orderStats.cancelledOrders || 0
   );
 
-  const nonCancelledOrders =
-    Math.max(
-      Number(orderStats.totalOrders || 0) -
-        cancelledOrders,
-      0
-    );
+  const nonCancelledOrders = Math.max(
+    Number(orderStats.totalOrders || 0) -
+      cancelledOrders,
+    0
+  );
 
   const completionRate =
     nonCancelledOrders > 0
@@ -476,20 +448,20 @@ function AdminDashboard() {
   }, [bestSellingItems]);
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
+    <div className="min-h-screen overflow-hidden bg-gray-50 px-3 py-5 sm:px-5 sm:py-6 lg:px-8 lg:py-8">
+      <div className="mx-auto w-full max-w-7xl min-w-0">
         {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-wider text-amber-600">
+        <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <p className="text-xs font-bold uppercase tracking-wider text-amber-600 sm:text-sm">
               CaféNest Admin
             </p>
 
-            <h1 className="mt-1 text-2xl font-bold text-gray-900 sm:text-3xl">
+            <h1 className="mt-1 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
               Dashboard
             </h1>
 
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-2 max-w-2xl break-words text-sm leading-6 text-gray-600">
               Manage your cafe website, menu and customer
               orders.
             </p>
@@ -499,7 +471,7 @@ function AdminDashboard() {
             type="button"
             onClick={handleRefresh}
             disabled={isLoading}
-            className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-800 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+            className="min-h-11 w-full shrink-0 rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-800 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-4 focus:ring-amber-100 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
           >
             {isLoading
               ? "Refreshing..."
@@ -509,8 +481,8 @@ function AdminDashboard() {
 
         {/* Error */}
         {error && (
-          <div className="mt-6 flex flex-col gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm font-medium text-red-700">
+          <div className="mt-6 flex min-w-0 flex-col gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="min-w-0 break-words text-sm font-medium leading-5 text-red-700">
               {error}
             </p>
 
@@ -518,7 +490,7 @@ function AdminDashboard() {
               type="button"
               onClick={handleRefresh}
               disabled={isLoading}
-              className="w-fit rounded-lg bg-red-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="min-h-10 w-full shrink-0 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-100 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
             >
               Try Again
             </button>
@@ -531,7 +503,7 @@ function AdminDashboard() {
             <div>
               <div className="h-5 w-40 animate-pulse rounded bg-gray-200" />
 
-              <div className="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
+              <div className="mt-4 grid grid-cols-1 gap-4 min-[375px]:grid-cols-2 lg:grid-cols-4">
                 {[1, 2, 3, 4].map((item) => (
                   <div
                     key={item}
@@ -544,7 +516,7 @@ function AdminDashboard() {
             <div>
               <div className="h-5 w-40 animate-pulse rounded bg-gray-200" />
 
-              <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
+              <div className="mt-4 grid grid-cols-1 gap-4 min-[375px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
                 {[1, 2, 3, 4, 5].map((item) => (
                   <div
                     key={item}
@@ -557,13 +529,13 @@ function AdminDashboard() {
         ) : (
           <>
             {/* Quick Actions */}
-            <section className="mt-8">
+            <section className="mt-8 sm:mt-10">
               <div>
-                <h2 className="text-lg font-bold text-gray-900">
+                <h2 className="text-lg font-bold text-gray-900 sm:text-xl">
                   Quick Actions
                 </h2>
 
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 break-words text-sm leading-6 text-gray-500">
                   Quickly manage important parts of your
                   cafe website.
                 </p>
@@ -572,12 +544,10 @@ function AdminDashboard() {
               <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <Link
                   to="/admin/menu"
-                  className="group rounded-xl border border-orange-200 bg-orange-50 p-5 transition hover:-translate-y-0.5 hover:border-orange-300 hover:shadow-md"
+                  className="group min-w-0 rounded-2xl border border-orange-200 bg-orange-50 p-5 transition hover:-translate-y-0.5 hover:border-orange-300 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-orange-100"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl">
-                      🍽️
-                    </span>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-2xl">🍽️</span>
 
                     <span className="text-xl transition-transform group-hover:translate-x-1">
                       →
@@ -588,19 +558,17 @@ function AdminDashboard() {
                     Manage Menu
                   </h3>
 
-                  <p className="mt-1 text-sm text-gray-600">
+                  <p className="mt-1 break-words text-sm leading-5 text-gray-600">
                     Add, edit or manage food items.
                   </p>
                 </Link>
 
                 <Link
                   to="/admin/orders"
-                  className="group rounded-xl border border-blue-200 bg-blue-50 p-5 transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md"
+                  className="group min-w-0 rounded-2xl border border-blue-200 bg-blue-50 p-5 transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-blue-100"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl">
-                      📦
-                    </span>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-2xl">📦</span>
 
                     <span className="text-xl transition-transform group-hover:translate-x-1">
                       →
@@ -611,19 +579,17 @@ function AdminDashboard() {
                     Manage Orders
                   </h3>
 
-                  <p className="mt-1 text-sm text-gray-600">
+                  <p className="mt-1 break-words text-sm leading-5 text-gray-600">
                     Review and update customer orders.
                   </p>
                 </Link>
 
                 <Link
                   to="/admin/enquiries"
-                  className="group rounded-xl border border-green-200 bg-green-50 p-5 transition hover:-translate-y-0.5 hover:border-green-300 hover:shadow-md"
+                  className="group min-w-0 rounded-2xl border border-green-200 bg-green-50 p-5 transition hover:-translate-y-0.5 hover:border-green-300 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-green-100"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl">
-                      📩
-                    </span>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-2xl">📩</span>
 
                     <span className="text-xl transition-transform group-hover:translate-x-1">
                       →
@@ -634,19 +600,17 @@ function AdminDashboard() {
                     View Enquiries
                   </h3>
 
-                  <p className="mt-1 text-sm text-gray-600">
+                  <p className="mt-1 break-words text-sm leading-5 text-gray-600">
                     Check customer enquiries and messages.
                   </p>
                 </Link>
 
                 <Link
                   to="/admin/gallery"
-                  className="group rounded-xl border border-purple-200 bg-purple-50 p-5 transition hover:-translate-y-0.5 hover:border-purple-300 hover:shadow-md"
+                  className="group min-w-0 rounded-2xl border border-purple-200 bg-purple-50 p-5 transition hover:-translate-y-0.5 hover:border-purple-300 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-purple-100"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl">
-                      🖼️
-                    </span>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-2xl">🖼️</span>
 
                     <span className="text-xl transition-transform group-hover:translate-x-1">
                       →
@@ -657,7 +621,7 @@ function AdminDashboard() {
                     Manage Gallery
                   </h3>
 
-                  <p className="mt-1 text-sm text-gray-600">
+                  <p className="mt-1 break-words text-sm leading-5 text-gray-600">
                     Update restaurant gallery images.
                   </p>
                 </Link>
@@ -666,21 +630,21 @@ function AdminDashboard() {
 
             {/* Website Statistics */}
             <section className="mt-10">
-              <h2 className="text-lg font-bold text-gray-900">
+              <h2 className="text-lg font-bold text-gray-900 sm:text-xl">
                 Website Overview
               </h2>
 
-              <div className="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
+              <div className="mt-4 grid grid-cols-1 gap-4 min-[375px]:grid-cols-2 lg:grid-cols-4">
                 <Link
                   to="/admin/menu"
-                  className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                  className="min-w-0 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-gray-100"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-orange-100 text-xl">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-xl">
                       🍽️
                     </div>
 
-                    <span className="text-xs font-semibold text-gray-400">
+                    <span className="text-[10px] font-bold tracking-wide text-gray-400 sm:text-xs">
                       MENU
                     </span>
                   </div>
@@ -696,14 +660,14 @@ function AdminDashboard() {
 
                 <Link
                   to="/admin/gallery"
-                  className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                  className="min-w-0 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-gray-100"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-purple-100 text-xl">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-purple-100 text-xl">
                       🖼️
                     </div>
 
-                    <span className="text-xs font-semibold text-gray-400">
+                    <span className="text-[10px] font-bold tracking-wide text-gray-400 sm:text-xs">
                       GALLERY
                     </span>
                   </div>
@@ -719,14 +683,14 @@ function AdminDashboard() {
 
                 <Link
                   to="/admin/enquiries"
-                  className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                  className="min-w-0 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-gray-100"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-100 text-xl">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-xl">
                       📩
                     </div>
 
-                    <span className="text-xs font-semibold text-gray-400">
+                    <span className="text-[10px] font-bold tracking-wide text-gray-400 sm:text-xs">
                       ENQUIRIES
                     </span>
                   </div>
@@ -742,14 +706,14 @@ function AdminDashboard() {
 
                 <Link
                   to="/admin/enquiries"
-                  className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                  className="min-w-0 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-gray-100"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-green-100 text-xl">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-green-100 text-xl">
                       📨
                     </div>
 
-                    <span className="text-xs font-semibold text-gray-400">
+                    <span className="text-[10px] font-bold tracking-wide text-gray-400 sm:text-xs">
                       NEW
                     </span>
                   </div>
@@ -767,31 +731,33 @@ function AdminDashboard() {
 
             {/* Order Statistics */}
             <section className="mt-10">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-gray-900">
+              <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div className="min-w-0">
+                  <h2 className="text-lg font-bold text-gray-900 sm:text-xl">
                     Order Overview
                   </h2>
 
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 break-words text-sm leading-6 text-gray-500">
                     Live statistics from customer orders.
                   </p>
                 </div>
 
                 <Link
                   to="/admin/orders"
-                  className="text-sm font-semibold text-amber-600 hover:text-amber-700"
+                  className="inline-flex min-h-10 w-fit items-center font-semibold text-amber-600 focus:outline-none focus:ring-4 focus:ring-amber-100"
                 >
-                  View All Orders →
+                  <span className="text-sm">
+                    View All Orders →
+                  </span>
                 </Link>
               </div>
 
-              <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
+              <div className="mt-4 grid grid-cols-1 gap-4 min-[375px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
                 <Link
                   to="/admin/orders"
-                  className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                  className="min-w-0 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-gray-100"
                 >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-100 text-xl">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-xl">
                     📦
                   </div>
 
@@ -806,9 +772,9 @@ function AdminDashboard() {
 
                 <Link
                   to="/admin/orders"
-                  className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                  className="min-w-0 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-gray-100"
                 >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-yellow-100 text-xl">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-yellow-100 text-xl">
                     ⏳
                   </div>
 
@@ -823,9 +789,9 @@ function AdminDashboard() {
 
                 <Link
                   to="/admin/orders"
-                  className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                  className="min-w-0 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-gray-100"
                 >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-orange-100 text-xl">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-100 text-xl">
                     👨‍🍳
                   </div>
 
@@ -840,9 +806,9 @@ function AdminDashboard() {
 
                 <Link
                   to="/admin/orders"
-                  className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                  className="min-w-0 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-gray-100"
                 >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-green-100 text-xl">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-100 text-xl">
                     ✅
                   </div>
 
@@ -855,8 +821,8 @@ function AdminDashboard() {
                   </p>
                 </Link>
 
-                <div className="col-span-2 rounded-xl border border-gray-200 bg-white p-5 shadow-sm md:col-span-1">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-emerald-100 text-xl">
+                <div className="min-w-0 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm min-[375px]:col-span-2 md:col-span-1">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-xl">
                     💰
                   </div>
 
@@ -864,7 +830,7 @@ function AdminDashboard() {
                     Total Revenue
                   </p>
 
-                  <p className="mt-1 text-2xl font-bold text-emerald-600">
+                  <p className="mt-1 break-words text-2xl font-bold text-emerald-600">
                     ₹{formatPrice(orderStats.totalRevenue)}
                   </p>
                 </div>
@@ -874,58 +840,53 @@ function AdminDashboard() {
             {/* Revenue & Best Selling Analytics */}
             <section className="mt-10">
               <div>
-                <h2 className="text-lg font-bold text-gray-900">
+                <h2 className="text-lg font-bold text-gray-900 sm:text-xl">
                   Revenue & Best-Selling Analytics
                 </h2>
 
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 break-words text-sm leading-6 text-gray-500">
                   Revenue trends and the most ordered menu
                   items.
                 </p>
               </div>
 
-              <div className="mt-4 grid gap-6 xl:grid-cols-3">
+              <div className="mt-4 grid min-w-0 gap-6 xl:grid-cols-3">
                 {/* Revenue Overview */}
-                <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6 xl:col-span-2">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
+                <div className="min-w-0 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6 xl:col-span-2">
+                  <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
                       <h3 className="font-bold text-gray-900">
                         Revenue Overview
                       </h3>
 
-                      <p className="mt-1 text-xs text-gray-500">
+                      <p className="mt-1 break-words text-xs leading-5 text-gray-500">
                         Revenue from non-cancelled orders.
                       </p>
                     </div>
 
-                    <div className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                      ₹
-                      {formatPrice(
-                        orderStats.totalRevenue
-                      )}
+                    <div className="w-fit shrink-0 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700">
+                      ₹{formatPrice(orderStats.totalRevenue)}
                     </div>
                   </div>
 
                   {revenueByDate.length === 0 ? (
-                    <div className="mt-6 flex min-h-[280px] items-center justify-center rounded-xl border border-dashed border-gray-200 bg-gray-50 px-6 text-center">
-                      <div>
-                        <div className="text-4xl">
-                          📈
-                        </div>
+                    <div className="mt-6 flex min-h-[250px] items-center justify-center rounded-xl border border-dashed border-gray-200 bg-gray-50 px-5 text-center sm:min-h-[280px]">
+                      <div className="max-w-sm">
+                        <div className="text-4xl">📈</div>
 
                         <p className="mt-3 font-semibold text-gray-700">
                           No revenue data yet
                         </p>
 
-                        <p className="mt-1 text-sm text-gray-500">
+                        <p className="mt-1 text-sm leading-5 text-gray-500">
                           Revenue data will appear here
                           after orders are placed.
                         </p>
                       </div>
                     </div>
                   ) : (
-                    <div className="mt-6">
-                      <div className="flex h-[280px] items-end gap-2 overflow-x-auto pb-2 sm:gap-3">
+                    <div className="mt-6 min-w-0 overflow-x-auto pb-2">
+                      <div className="flex h-[280px] min-w-max items-end gap-3 px-1 sm:gap-4">
                         {revenueByDate.map((item) => {
                           const revenue = Number(
                             item.revenue || 0
@@ -934,8 +895,7 @@ function AdminDashboard() {
                           const height =
                             maxRevenue > 0
                               ? Math.max(
-                                  (revenue /
-                                    maxRevenue) *
+                                  (revenue / maxRevenue) *
                                     100,
                                   4
                                 )
@@ -944,14 +904,11 @@ function AdminDashboard() {
                           return (
                             <div
                               key={item.date}
-                              className="flex h-full min-w-[58px] flex-1 flex-col justify-end"
+                              className="flex h-full w-14 shrink-0 flex-col justify-end sm:w-16"
                             >
                               <div className="mb-2 text-center">
-                                <p className="text-[10px] font-semibold text-gray-600 sm:text-xs">
-                                  ₹
-                                  {formatPrice(
-                                    revenue
-                                  )}
+                                <p className="truncate text-[10px] font-semibold text-gray-600 sm:text-xs">
+                                  ₹{formatPrice(revenue)}
                                 </p>
                               </div>
 
@@ -970,15 +927,12 @@ function AdminDashboard() {
                               </div>
 
                               <p className="mt-2 truncate text-center text-[10px] font-medium text-gray-500 sm:text-xs">
-                                {formatShortDate(
-                                  item.date
-                                )}
+                                {formatShortDate(item.date)}
                               </p>
 
                               <p className="mt-1 text-center text-[10px] text-gray-400">
                                 {item.orders}{" "}
-                                {Number(item.orders) ===
-                                1
+                                {Number(item.orders) === 1
                                   ? "order"
                                   : "orders"}
                               </p>
@@ -991,28 +945,26 @@ function AdminDashboard() {
                 </div>
 
                 {/* Best Selling */}
-                <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+                <div className="min-w-0 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
                   <div>
                     <h3 className="font-bold text-gray-900">
                       Best-Selling Items
                     </h3>
 
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 break-words text-xs leading-5 text-gray-500">
                       Top menu items by quantity sold.
                     </p>
                   </div>
 
                   {bestSellingItems.length === 0 ? (
                     <div className="mt-6 rounded-xl border border-dashed border-gray-200 bg-gray-50 px-5 py-12 text-center">
-                      <div className="text-4xl">
-                        🏆
-                      </div>
+                      <div className="text-4xl">🏆</div>
 
                       <p className="mt-3 font-semibold text-gray-700">
                         No sales data yet
                       </p>
 
-                      <p className="mt-1 text-sm text-gray-500">
+                      <p className="mt-1 text-sm leading-5 text-gray-500">
                         Best-selling items will appear
                         here.
                       </p>
@@ -1042,14 +994,14 @@ function AdminDashboard() {
                                 `${item.name}-${index}`
                               }
                             >
-                              <div className="flex items-center gap-3">
+                              <div className="flex min-w-0 items-center gap-3">
                                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-sm font-bold text-amber-700">
                                   {index + 1}
                                 </div>
 
                                 <div className="min-w-0 flex-1">
-                                  <div className="flex items-start justify-between gap-3">
-                                    <p className="truncate text-sm font-semibold text-gray-800">
+                                  <div className="flex min-w-0 items-start justify-between gap-3">
+                                    <p className="min-w-0 truncate text-sm font-semibold text-gray-800">
                                       {item.name}
                                     </p>
 
@@ -1067,7 +1019,7 @@ function AdminDashboard() {
                                     />
                                   </div>
 
-                                  <div className="mt-1 flex items-center justify-between">
+                                  <div className="mt-1 flex items-center justify-between gap-2">
                                     <span className="text-[10px] text-gray-400">
                                       {quantity}{" "}
                                       {quantity === 1
@@ -1076,7 +1028,7 @@ function AdminDashboard() {
                                       sold
                                     </span>
 
-                                    <span className="text-[10px] font-semibold text-gray-500">
+                                    <span className="shrink-0 text-[10px] font-semibold text-gray-500">
                                       ₹
                                       {formatPrice(
                                         item.revenue
@@ -1097,21 +1049,21 @@ function AdminDashboard() {
             {/* Order Analytics */}
             <section className="mt-10">
               <div>
-                <h2 className="text-lg font-bold text-gray-900">
+                <h2 className="text-lg font-bold text-gray-900 sm:text-xl">
                   Order Analytics
                 </h2>
 
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 break-words text-sm leading-6 text-gray-500">
                   Current distribution of customer orders by
                   status.
                 </p>
               </div>
 
-              <div className="mt-4 grid gap-6 lg:grid-cols-3">
+              <div className="mt-4 grid min-w-0 gap-6 lg:grid-cols-3">
                 {/* Status Distribution */}
-                <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6 lg:col-span-2">
-                  <div className="flex items-center justify-between">
-                    <div>
+                <div className="min-w-0 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6 lg:col-span-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
                       <h3 className="font-bold text-gray-900">
                         Order Status
                       </h3>
@@ -1121,7 +1073,7 @@ function AdminDashboard() {
                       </p>
                     </div>
 
-                    <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">
+                    <span className="shrink-0 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600">
                       Live
                     </span>
                   </div>
@@ -1133,18 +1085,18 @@ function AdminDashboard() {
 
                       return (
                         <div key={item.status}>
-                          <div className="mb-2 flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-2">
-                              <span>
+                          <div className="mb-2 flex items-center justify-between gap-3">
+                            <div className="flex min-w-0 items-center gap-2">
+                              <span className="shrink-0">
                                 {statusStyle.icon}
                               </span>
 
-                              <span className="text-sm font-semibold text-gray-800">
+                              <span className="truncate text-sm font-semibold text-gray-800">
                                 {item.status}
                               </span>
                             </div>
 
-                            <div className="flex items-center gap-2">
+                            <div className="flex shrink-0 items-center gap-2">
                               <span className="text-sm font-bold text-gray-900">
                                 {item.count}
                               </span>
@@ -1170,19 +1122,19 @@ function AdminDashboard() {
                 </div>
 
                 {/* Performance Summary */}
-                <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+                <div className="min-w-0 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
                   <h3 className="font-bold text-gray-900">
                     Performance Summary
                   </h3>
 
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 break-words text-xs leading-5 text-gray-500">
                     Overview of current order performance.
                   </p>
 
                   <div className="mt-6 space-y-5">
                     {/* Completion Rate */}
                     <div>
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-3">
                         <span className="text-sm text-gray-600">
                           Completion Rate
                         </span>
@@ -1212,7 +1164,7 @@ function AdminDashboard() {
                         {nonCancelledOrders}
                       </p>
 
-                      <p className="mt-1 text-xs text-amber-700">
+                      <p className="mt-1 text-xs leading-5 text-amber-700">
                         Orders excluding cancelled orders
                       </p>
                     </div>
@@ -1227,7 +1179,7 @@ function AdminDashboard() {
                         {cancelledOrders}
                       </p>
 
-                      <p className="mt-1 text-xs text-red-700">
+                      <p className="mt-1 text-xs leading-5 text-red-700">
                         Total cancelled orders
                       </p>
                     </div>
@@ -1238,14 +1190,14 @@ function AdminDashboard() {
                         Average Order Value
                       </p>
 
-                      <p className="mt-1 text-2xl font-bold text-emerald-900">
+                      <p className="mt-1 break-words text-2xl font-bold text-emerald-900">
                         ₹
                         {formatPrice(
                           orderStats.averageOrderValue
                         )}
                       </p>
 
-                      <p className="mt-1 text-xs text-emerald-700">
+                      <p className="mt-1 text-xs leading-5 text-emerald-700">
                         Based on non-cancelled orders
                       </p>
                     </div>
@@ -1279,31 +1231,33 @@ function AdminDashboard() {
 
             {/* Enquiry Statistics */}
             <section className="mt-10">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-gray-900">
+              <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div className="min-w-0">
+                  <h2 className="text-lg font-bold text-gray-900 sm:text-xl">
                     Enquiry Overview
                   </h2>
 
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 break-words text-sm leading-6 text-gray-500">
                     Current customer enquiry status.
                   </p>
                 </div>
 
                 <Link
                   to="/admin/enquiries"
-                  className="text-sm font-semibold text-amber-600 hover:text-amber-700"
+                  className="inline-flex min-h-10 w-fit items-center font-semibold text-amber-600 focus:outline-none focus:ring-4 focus:ring-amber-100"
                 >
-                  Manage Enquiries →
+                  <span className="text-sm">
+                    Manage Enquiries →
+                  </span>
                 </Link>
               </div>
 
-              <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
+              <div className="mt-4 grid grid-cols-1 gap-4 min-[375px]:grid-cols-2 md:grid-cols-4">
                 <Link
                   to="/admin/enquiries"
-                  className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                  className="min-w-0 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-gray-100"
                 >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-100 text-xl">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-xl">
                     📩
                   </div>
 
@@ -1318,9 +1272,9 @@ function AdminDashboard() {
 
                 <Link
                   to="/admin/enquiries"
-                  className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                  className="min-w-0 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-gray-100"
                 >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-yellow-100 text-xl">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-yellow-100 text-xl">
                     📨
                   </div>
 
@@ -1335,9 +1289,9 @@ function AdminDashboard() {
 
                 <Link
                   to="/admin/enquiries"
-                  className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                  className="min-w-0 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-gray-100"
                 >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-100 text-xl">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-xl">
                     📞
                   </div>
 
@@ -1352,9 +1306,9 @@ function AdminDashboard() {
 
                 <Link
                   to="/admin/enquiries"
-                  className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                  className="min-w-0 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-gray-100"
                 >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-green-100 text-xl">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-100 text-xl">
                     ✅
                   </div>
 
@@ -1371,27 +1325,29 @@ function AdminDashboard() {
 
             {/* Recent Enquiries */}
             <section className="mt-10">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-gray-900">
+              <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <h2 className="text-lg font-bold text-gray-900 sm:text-xl">
                     Recent Enquiries
                   </h2>
 
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 break-words text-sm leading-6 text-gray-500">
                     Latest customer enquiries.
                   </p>
                 </div>
 
                 <Link
                   to="/admin/enquiries"
-                  className="text-sm font-semibold text-amber-600 hover:text-amber-700"
+                  className="inline-flex min-h-10 w-fit items-center font-semibold text-amber-600 focus:outline-none focus:ring-4 focus:ring-amber-100"
                 >
-                  Manage Enquiries →
+                  <span className="text-sm">
+                    Manage Enquiries →
+                  </span>
                 </Link>
               </div>
 
               {recentEnquiries.length === 0 ? (
-                <div className="mt-4 rounded-xl border border-gray-200 bg-white px-6 py-12 text-center shadow-sm">
+                <div className="mt-4 rounded-2xl border border-gray-200 bg-white px-5 py-12 text-center shadow-sm">
                   <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 text-2xl">
                     📩
                   </div>
@@ -1400,12 +1356,12 @@ function AdminDashboard() {
                     No Enquiries Yet
                   </h3>
 
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm leading-5 text-gray-500">
                     New customer enquiries will appear here.
                   </p>
                 </div>
               ) : (
-                <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                <div className="mt-4 grid min-w-0 gap-4 lg:grid-cols-2">
                   {recentEnquiries.map((enquiry) => {
                     const enquiryStatusClasses =
                       enquiry.status === "Contacted"
@@ -1417,9 +1373,9 @@ function AdminDashboard() {
                     return (
                       <div
                         key={enquiry._id}
-                        className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
+                        className="min-w-0 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6"
                       >
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                           <div className="min-w-0">
                             <h3 className="break-words font-bold text-gray-900">
                               {enquiry.name}
@@ -1431,7 +1387,7 @@ function AdminDashboard() {
                           </div>
 
                           <span
-                            className={`w-fit shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${enquiryStatusClasses}`}
+                            className={`w-fit shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold ${enquiryStatusClasses}`}
                           >
                             {enquiry.status}
                           </span>
@@ -1441,12 +1397,12 @@ function AdminDashboard() {
                           {enquiry.message}
                         </p>
 
-                        <div className="mt-4 flex flex-col gap-2 border-t border-gray-100 pt-4 text-xs text-gray-500 sm:flex-row sm:items-center sm:justify-between">
-                          <span>
+                        <div className="mt-4 flex min-w-0 flex-col gap-2 border-t border-gray-100 pt-4 text-xs text-gray-500 sm:flex-row sm:items-center sm:justify-between">
+                          <span className="break-all">
                             Phone: {enquiry.phone || "-"}
                           </span>
 
-                          <span>
+                          <span className="shrink-0">
                             {formatDate(enquiry.createdAt)}
                           </span>
                         </div>
@@ -1458,28 +1414,30 @@ function AdminDashboard() {
             </section>
 
             {/* Recent Orders */}
-            <section className="mt-10">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-gray-900">
+            <section className="mt-10 pb-4">
+              <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <h2 className="text-lg font-bold text-gray-900 sm:text-xl">
                     Recent Orders
                   </h2>
 
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 break-words text-sm leading-6 text-gray-500">
                     Latest customer orders.
                   </p>
                 </div>
 
                 <Link
                   to="/admin/orders"
-                  className="text-sm font-semibold text-amber-600 hover:text-amber-700"
+                  className="inline-flex min-h-10 w-fit items-center font-semibold text-amber-600 focus:outline-none focus:ring-4 focus:ring-amber-100"
                 >
-                  Manage Orders →
+                  <span className="text-sm">
+                    Manage Orders →
+                  </span>
                 </Link>
               </div>
 
               {recentOrders.length === 0 ? (
-                <div className="mt-4 rounded-xl border border-gray-200 bg-white px-6 py-12 text-center shadow-sm">
+                <div className="mt-4 rounded-2xl border border-gray-200 bg-white px-5 py-12 text-center shadow-sm">
                   <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 text-2xl">
                     📦
                   </div>
@@ -1488,33 +1446,33 @@ function AdminDashboard() {
                     No Orders Yet
                   </h3>
 
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm leading-5 text-gray-500">
                     New customer orders will appear here.
                   </p>
                 </div>
               ) : (
-                <div className="mt-4 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                <div className="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
                   <div className="overflow-x-auto">
                     <table className="w-full min-w-[700px] text-left">
                       <thead className="border-b border-gray-200 bg-gray-50">
                         <tr className="text-xs uppercase tracking-wide text-gray-500">
-                          <th className="px-5 py-4 font-semibold">
+                          <th className="px-4 py-4 font-semibold sm:px-5">
                             Order
                           </th>
 
-                          <th className="px-5 py-4 font-semibold">
+                          <th className="px-4 py-4 font-semibold sm:px-5">
                             Customer
                           </th>
 
-                          <th className="px-5 py-4 font-semibold">
+                          <th className="px-4 py-4 font-semibold sm:px-5">
                             Type
                           </th>
 
-                          <th className="px-5 py-4 font-semibold">
+                          <th className="px-4 py-4 font-semibold sm:px-5">
                             Status
                           </th>
 
-                          <th className="px-5 py-4 text-right font-semibold">
+                          <th className="px-4 py-4 text-right font-semibold sm:px-5">
                             Total
                           </th>
                         </tr>
@@ -1523,16 +1481,14 @@ function AdminDashboard() {
                       <tbody>
                         {recentOrders.map((order) => {
                           const statusStyle =
-                            getStatusClasses(
-                              order.status
-                            );
+                            getStatusClasses(order.status);
 
                           return (
                             <tr
                               key={order._id}
                               className="border-b border-gray-100 last:border-b-0"
                             >
-                              <td className="px-5 py-4">
+                              <td className="px-4 py-4 sm:px-5">
                                 <p className="font-semibold text-gray-900">
                                   #
                                   {String(order._id || "")
@@ -1541,13 +1497,11 @@ function AdminDashboard() {
                                 </p>
 
                                 <p className="mt-1 text-xs text-gray-500">
-                                  {formatDate(
-                                    order.createdAt
-                                  )}
+                                  {formatDate(order.createdAt)}
                                 </p>
                               </td>
 
-                              <td className="px-5 py-4">
+                              <td className="px-4 py-4 sm:px-5">
                                 <p className="font-medium text-gray-900">
                                   {order.customer?.name ||
                                     "-"}
@@ -1559,20 +1513,19 @@ function AdminDashboard() {
                                 </p>
                               </td>
 
-                              <td className="px-5 py-4 text-sm text-gray-600">
+                              <td className="px-4 py-4 text-sm text-gray-600 sm:px-5">
                                 {order.orderType || "-"}
                               </td>
 
-                              <td className="px-5 py-4">
+                              <td className="px-4 py-4 sm:px-5">
                                 <span
-                                  className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusStyle.badge}`}
+                                  className={`inline-flex whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold ${statusStyle.badge}`}
                                 >
-                                  {order.status ||
-                                    "Pending"}
+                                  {order.status || "Pending"}
                                 </span>
                               </td>
 
-                              <td className="px-5 py-4 text-right font-semibold text-gray-900">
+                              <td className="px-4 py-4 text-right font-semibold text-gray-900 sm:px-5">
                                 ₹
                                 {formatPrice(
                                   order.totalAmount
@@ -1595,4 +1548,3 @@ function AdminDashboard() {
 }
 
 export default AdminDashboard;
-
