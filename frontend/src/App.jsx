@@ -9,6 +9,7 @@ import Menu from "./pages/Menu";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import OrderTracking from "./pages/OrderTracking";
+import Reviews from "./pages/Reviews";
 import Gallery from "./pages/Gallery";
 import Contact from "./pages/Contact";
 import Location from "./pages/Location";
@@ -26,37 +27,30 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Customer Website */}
+        {/* ================================
+            Customer Website
+        ================================= */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />} />
-
           <Route path="/about" element={<About />} />
-
           <Route path="/menu" element={<Menu />} />
-
           <Route path="/cart" element={<Cart />} />
-
           <Route path="/checkout" element={<Checkout />} />
-
-          <Route
-            path="/order-tracking"
-            element={<OrderTracking />}
-          />
-
+          <Route path="/order-tracking" element={<OrderTracking />} />
+          <Route path="/reviews" element={<Reviews />} />
           <Route path="/gallery" element={<Gallery />} />
-
           <Route path="/contact" element={<Contact />} />
-
           <Route path="/location" element={<Location />} />
         </Route>
 
-        {/* Admin Login */}
-        <Route
-          path="/admin/login"
-          element={<AdminLogin />}
-        />
+        {/* ================================
+            Admin Login
+        ================================= */}
+        <Route path="/admin/login" element={<AdminLogin />} />
 
-        {/* Protected Admin Routes */}
+        {/* ================================
+            Protected Admin Routes
+        ================================= */}
         <Route element={<AdminProtectedRoute />}>
           <Route element={<AdminLayout />}>
             <Route
@@ -64,10 +58,7 @@ function App() {
               element={<AdminDashboard />}
             />
 
-            <Route
-              path="/admin/menu"
-              element={<AdminMenu />}
-            />
+            <Route path="/admin/menu" element={<AdminMenu />} />
 
             <Route
               path="/admin/orders"

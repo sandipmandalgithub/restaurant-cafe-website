@@ -1,3 +1,4 @@
+
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
@@ -9,6 +10,7 @@ const enquiryRoutes = require("./routes/enquiryRoutes");
 const galleryRoutes = require("./routes/galleryRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const orderRoutes = require("./routes/orderRoutes");
+const reviewRoutes = require("./routes/reviewRoutes");
 
 const app = express();
 
@@ -27,6 +29,7 @@ app.use("/api/enquiries", enquiryRoutes);
 app.use("/api/gallery", galleryRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 // Health check route
 app.get("/", (req, res) => {
