@@ -8,6 +8,7 @@ import About from "./pages/About";
 import Menu from "./pages/Menu";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
+import OrderTracking from "./pages/OrderTracking";
 import Gallery from "./pages/Gallery";
 import Contact from "./pages/Contact";
 import Location from "./pages/Location";
@@ -28,12 +29,24 @@ function App() {
         {/* Customer Website */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />} />
+
           <Route path="/about" element={<About />} />
+
           <Route path="/menu" element={<Menu />} />
+
           <Route path="/cart" element={<Cart />} />
+
           <Route path="/checkout" element={<Checkout />} />
+
+          <Route
+            path="/order-tracking"
+            element={<OrderTracking />}
+          />
+
           <Route path="/gallery" element={<Gallery />} />
+
           <Route path="/contact" element={<Contact />} />
+
           <Route path="/location" element={<Location />} />
         </Route>
 

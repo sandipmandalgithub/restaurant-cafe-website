@@ -2,7 +2,9 @@ const mongoose = require("mongoose");
 
 const Order = require("../models/Order");
 
+// ======================================================
 // Create Order - Public
+// ======================================================
 const createOrder = async (req, res) => {
   try {
     const {
@@ -161,7 +163,9 @@ const createOrder = async (req, res) => {
   }
 };
 
+// ======================================================
 // Get All Orders - Admin Only
+// ======================================================
 const getOrders = async (req, res) => {
   try {
     const orders = await Order.find()
@@ -182,7 +186,9 @@ const getOrders = async (req, res) => {
   }
 };
 
+// ======================================================
 // Get Single Order - Admin Only
+// ======================================================
 const getOrderById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -217,7 +223,71 @@ const getOrderById = async (req, res) => {
   }
 };
 
+// ======================================================
+// Track Order - Customer Public
+// ======================================================
+const trackOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { mobile } = req.query;
+
+    // Validate order ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid order ID.",
+      });
+    }
+
+    // Validate mobile number
+    if (!mobile || !mobile.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Mobile number is required.",
+      });
+    }
+
+    const normalizedMobile = mobile.trim();
+
+    if (!/^[6-9]\d{9}$/.test(normalizedMobile)) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter a valid 10-digit mobile number.",
+      });
+    }
+
+    // Find order using both Order ID and customer mobile
+    const order = await Order.findOne({
+      _id: id,
+      "customer.mobile": normalizedMobile,
+    });
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Order not found. Please check your Order ID and mobile number.",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Order found successfully.",
+      data: order,
+    });
+  } catch (error) {
+    console.error("Track order error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to track order.",
+    });
+  }
+};
+
+// ======================================================
 // Update Order Status - Admin Only
+// ======================================================
 const updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -279,7 +349,9 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
+// ======================================================
 // Delete Order - Admin Only
+// ======================================================
 const deleteOrder = async (req, res) => {
   try {
     const { id } = req.params;
@@ -315,10 +387,14 @@ const deleteOrder = async (req, res) => {
   }
 };
 
+// ======================================================
+// Exports
+// ======================================================
 module.exports = {
   createOrder,
   getOrders,
   getOrderById,
+  trackOrder,
   updateOrderStatus,
   deleteOrder,
 };

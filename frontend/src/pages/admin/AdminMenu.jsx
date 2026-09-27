@@ -41,7 +41,8 @@ function AdminMenu() {
       setErrorMessage("");
 
       const data = await getMenus();
-      setMenus(data);
+
+      setMenus(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Failed to fetch menus:", error);
 
@@ -64,12 +65,70 @@ function AdminMenu() {
       ...previousData,
       [name]: type === "checkbox" ? checked : value,
     }));
+
+    // Remove old error while user is correcting the form.
+    if (errorMessage) {
+      setErrorMessage("");
+    }
+
+    if (successMessage) {
+      setSuccessMessage("");
+    }
   };
 
   const resetForm = () => {
     setFormData(initialFormData);
     setEditingId(null);
     setErrorMessage("");
+    setSuccessMessage("");
+  };
+
+  const validateForm = () => {
+    const name = formData.name.trim();
+    const description = formData.description.trim();
+    const category = formData.category.trim();
+    const image = formData.image.trim();
+    const price = Number(formData.price);
+
+    if (!name) {
+      return "Food name is required.";
+    }
+
+    if (name.length < 2) {
+      return "Food name must contain at least 2 characters.";
+    }
+
+    if (!category) {
+      return "Category is required.";
+    }
+
+    if (!description) {
+      return "Description is required.";
+    }
+
+    if (description.length < 10) {
+      return "Description must contain at least 10 characters.";
+    }
+
+    if (!formData.price || Number.isNaN(price)) {
+      return "Please enter a valid price.";
+    }
+
+    if (price < 0) {
+      return "Price cannot be negative.";
+    }
+
+    if (!image) {
+      return "Image URL is required.";
+    }
+
+    try {
+      new URL(image);
+    } catch {
+      return "Please enter a valid image URL.";
+    }
+
+    return "";
   };
 
   const handleSubmit = async (event) => {
@@ -77,6 +136,13 @@ function AdminMenu() {
 
     setErrorMessage("");
     setSuccessMessage("");
+
+    const validationError = validateForm();
+
+    if (validationError) {
+      setErrorMessage(validationError);
+      return;
+    }
 
     try {
       setIsSubmitting(true);
@@ -187,9 +253,7 @@ function AdminMenu() {
 
       setMenus((previousMenus) =>
         previousMenus.map((item) =>
-          item._id === menu._id
-            ? updatedMenu
-            : item
+          item._id === menu._id ? updatedMenu : item
         )
       );
 
@@ -213,7 +277,6 @@ function AdminMenu() {
     }
   };
 
-  // Get unique categories
   const categories = useMemo(() => {
     const uniqueCategories = [
       ...new Set(
@@ -228,18 +291,17 @@ function AdminMenu() {
     );
   }, [menus]);
 
-  // Search, category filter and price sorting
   const filteredMenus = useMemo(() => {
     const normalizedSearchTerm = searchTerm
       .trim()
       .toLowerCase();
 
     const filtered = menus.filter((menu) => {
+      const menuName = menu.name?.toLowerCase() || "";
+
       const matchesSearch =
         !normalizedSearchTerm ||
-        menu.name
-          ?.toLowerCase()
-          .includes(normalizedSearchTerm);
+        menuName.includes(normalizedSearchTerm);
 
       const matchesCategory =
         selectedCategory === "All" ||
@@ -279,6 +341,13 @@ function AdminMenu() {
     setPriceSort("default");
   };
 
+  const handleImageError = (event) => {
+    event.currentTarget.onerror = null;
+
+    event.currentTarget.src =
+      "https://placehold.co/800x500?text=Food+Image";
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -300,13 +369,19 @@ function AdminMenu() {
 
         {/* Messages */}
         {errorMessage && (
-          <div className="mb-6 rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+          <div
+            role="alert"
+            className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+          >
             {errorMessage}
           </div>
         )}
 
         {successMessage && (
-          <div className="mb-6 rounded-lg bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+          <div
+            role="status"
+            className="mb-6 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700"
+          >
             {successMessage}
           </div>
         )}
@@ -357,6 +432,7 @@ function AdminMenu() {
                 value={formData.name}
                 onChange={handleChange}
                 required
+                maxLength={100}
                 placeholder="e.g. Chicken Biryani"
                 className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
               />
@@ -378,6 +454,7 @@ function AdminMenu() {
                 value={formData.category}
                 onChange={handleChange}
                 required
+                maxLength={50}
                 placeholder="e.g. Main Course"
                 className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
               />
@@ -442,10 +519,15 @@ function AdminMenu() {
                 value={formData.description}
                 onChange={handleChange}
                 required
+                maxLength={500}
                 rows="4"
                 placeholder="Describe the food item..."
                 className="w-full resize-none rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
               />
+
+              <p className="mt-1 text-right text-xs text-gray-400">
+                {formData.description.length}/500
+              </p>
             </div>
 
             {/* Availability */}
@@ -728,6 +810,7 @@ function AdminMenu() {
                       <img
                         src={menu.image}
                         alt={menu.name}
+                        onError={handleImageError}
                         className={`h-48 w-full object-cover ${
                           !isAvailable
                             ? "opacity-60 grayscale"

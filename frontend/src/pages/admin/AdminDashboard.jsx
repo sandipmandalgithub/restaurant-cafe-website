@@ -58,10 +58,16 @@ function AdminDashboard() {
       return "-";
     }
 
+    const parsedDate = new Date(date);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      return "-";
+    }
+
     return new Intl.DateTimeFormat("en-IN", {
       dateStyle: "medium",
       timeStyle: "short",
-    }).format(new Date(date));
+    }).format(parsedDate);
   };
 
   const getStatusClasses = (status) => {
@@ -113,6 +119,7 @@ function AdminDashboard() {
 
   const loadDashboard = async () => {
     try {
+      setIsLoading(true);
       setError("");
 
       const token = localStorage.getItem("adminToken");
@@ -128,7 +135,11 @@ function AdminDashboard() {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            ...(token
+              ? {
+                  Authorization: `Bearer ${token}`,
+                }
+              : {}),
           },
         }),
 
@@ -136,13 +147,18 @@ function AdminDashboard() {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            ...(token
+              ? {
+                  Authorization: `Bearer ${token}`,
+                }
+              : {}),
           },
         }),
       ]);
 
       const ordersResult = await ordersResponse.json();
-      const enquiriesResult = await enquiriesResponse.json();
+      const enquiriesResult =
+        await enquiriesResponse.json();
 
       if (!ordersResponse.ok) {
         throw new Error(
@@ -158,8 +174,17 @@ function AdminDashboard() {
         );
       }
 
-      const fetchedOrders = ordersResult.data || [];
-      const fetchedEnquiries = enquiriesResult.data || [];
+      const fetchedOrders = Array.isArray(
+        ordersResult.data
+      )
+        ? ordersResult.data
+        : [];
+
+      const fetchedEnquiries = Array.isArray(
+        enquiriesResult.data
+      )
+        ? enquiriesResult.data
+        : [];
 
       const activeOrders = fetchedOrders.filter(
         (order) => order.status !== "Cancelled"
@@ -221,7 +246,19 @@ function AdminDashboard() {
         )
         .slice(0, 5);
 
-      setStats(dashboardResult);
+      setStats({
+        totalMenus: Number(
+          dashboardResult?.totalMenus || 0
+        ),
+        totalGallery: Number(
+          dashboardResult?.totalGallery || 0
+        ),
+        totalEnquiries:
+          calculatedEnquiryStats.total,
+        newEnquiries:
+          calculatedEnquiryStats.new,
+      });
+
       setOrders(fetchedOrders);
       setOrderStats(calculatedOrderStats);
       setRecentOrders(latestOrders);
@@ -246,141 +283,11 @@ function AdminDashboard() {
     let isMounted = true;
 
     const initializeDashboard = async () => {
-      try {
-        setError("");
-
-        const token = localStorage.getItem("adminToken");
-
-        const [
-          dashboardResult,
-          ordersResponse,
-          enquiriesResponse,
-        ] = await Promise.all([
-          getDashboardStats(),
-
-          fetch(ORDERS_API_URL, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }),
-
-          fetch(ENQUIRIES_API_URL, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }),
-        ]);
-
-        const ordersResult = await ordersResponse.json();
-        const enquiriesResult =
-          await enquiriesResponse.json();
-
-        if (!ordersResponse.ok) {
-          throw new Error(
-            ordersResult.message ||
-              "Failed to fetch order statistics."
-          );
-        }
-
-        if (!enquiriesResponse.ok) {
-          throw new Error(
-            enquiriesResult.message ||
-              "Failed to fetch enquiry statistics."
-          );
-        }
-
-        const fetchedOrders = ordersResult.data || [];
-        const fetchedEnquiries =
-          enquiriesResult.data || [];
-
-        const activeOrders = fetchedOrders.filter(
-          (order) => order.status !== "Cancelled"
-        );
-
-        const totalRevenue = activeOrders.reduce(
-          (total, order) =>
-            total + Number(order.totalAmount || 0),
-          0
-        );
-
-        const calculatedOrderStats = {
-          totalOrders: fetchedOrders.length,
-
-          pendingOrders: fetchedOrders.filter(
-            (order) => order.status === "Pending"
-          ).length,
-
-          preparingOrders: fetchedOrders.filter(
-            (order) => order.status === "Preparing"
-          ).length,
-
-          completedOrders: fetchedOrders.filter(
-            (order) => order.status === "Completed"
-          ).length,
-
-          totalRevenue,
-        };
-
-        const latestOrders = [...fetchedOrders]
-          .sort(
-            (a, b) =>
-              new Date(b.createdAt) -
-              new Date(a.createdAt)
-          )
-          .slice(0, 5);
-
-        const calculatedEnquiryStats = {
-          total: fetchedEnquiries.length,
-
-          new: fetchedEnquiries.filter(
-            (enquiry) => enquiry.status === "New"
-          ).length,
-
-          contacted: fetchedEnquiries.filter(
-            (enquiry) => enquiry.status === "Contacted"
-          ).length,
-
-          resolved: fetchedEnquiries.filter(
-            (enquiry) => enquiry.status === "Resolved"
-          ).length,
-        };
-
-        const latestEnquiries = [...fetchedEnquiries]
-          .sort(
-            (a, b) =>
-              new Date(b.createdAt) -
-              new Date(a.createdAt)
-          )
-          .slice(0, 5);
-
-        if (isMounted) {
-          setStats(dashboardResult);
-          setOrders(fetchedOrders);
-          setOrderStats(calculatedOrderStats);
-          setRecentOrders(latestOrders);
-          setEnquiryStats(calculatedEnquiryStats);
-          setRecentEnquiries(latestEnquiries);
-          setIsLoading(false);
-        }
-      } catch (error) {
-        console.error(
-          "Fetch dashboard data error:",
-          error
-        );
-
-        if (isMounted) {
-          setError(
-            error.message ||
-              "Failed to load dashboard data."
-          );
-
-          setIsLoading(false);
-        }
+      if (!isMounted) {
+        return;
       }
+
+      await loadDashboard();
     };
 
     initializeDashboard();
@@ -391,7 +298,6 @@ function AdminDashboard() {
   }, []);
 
   const handleRefresh = async () => {
-    setIsLoading(true);
     await loadDashboard();
   };
 
@@ -475,657 +381,844 @@ function AdminDashboard() {
             <button
               type="button"
               onClick={handleRefresh}
-              className="w-fit rounded-lg bg-red-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-red-700"
+              disabled={isLoading}
+              className="w-fit rounded-lg bg-red-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Try Again
             </button>
           </div>
         )}
 
-        {/* Website Statistics */}
-        <section className="mt-8">
-          <h2 className="text-lg font-bold text-gray-900">
-            Website Overview
-          </h2>
-
-          <div className="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
-            {/* Menu */}
-            <Link
-              to="/admin/menu"
-              className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-orange-100 text-xl">
-                  🍽️
-                </div>
-
-                <span className="text-xs font-semibold text-gray-400">
-                  MENU
-                </span>
-              </div>
-
-              <p className="mt-5 text-sm text-gray-500">
-                Total Menu Items
-              </p>
-
-              <p className="mt-1 text-2xl font-bold text-gray-900">
-                {stats.totalMenus}
-              </p>
-            </Link>
-
-            {/* Gallery */}
-            <Link
-              to="/admin/gallery"
-              className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-purple-100 text-xl">
-                  🖼️
-                </div>
-
-                <span className="text-xs font-semibold text-gray-400">
-                  GALLERY
-                </span>
-              </div>
-
-              <p className="mt-5 text-sm text-gray-500">
-                Gallery Items
-              </p>
-
-              <p className="mt-1 text-2xl font-bold text-gray-900">
-                {stats.totalGallery}
-              </p>
-            </Link>
-
-            {/* Total Enquiries */}
-            <Link
-              to="/admin/enquiries"
-              className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-100 text-xl">
-                  📩
-                </div>
-
-                <span className="text-xs font-semibold text-gray-400">
-                  ENQUIRIES
-                </span>
-              </div>
-
-              <p className="mt-5 text-sm text-gray-500">
-                Total Enquiries
-              </p>
-
-              <p className="mt-1 text-2xl font-bold text-gray-900">
-                {enquiryStats.total}
-              </p>
-            </Link>
-
-            {/* New Enquiries */}
-            <Link
-              to="/admin/enquiries"
-              className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-green-100 text-xl">
-                  📨
-                </div>
-
-                <span className="text-xs font-semibold text-gray-400">
-                  NEW
-                </span>
-              </div>
-
-              <p className="mt-5 text-sm text-gray-500">
-                New Enquiries
-              </p>
-
-              <p className="mt-1 text-2xl font-bold text-green-600">
-                {enquiryStats.new}
-              </p>
-            </Link>
-
-            {/* Contacted Enquiries */}
-            <Link
-              to="/admin/enquiries"
-              className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-100 text-xl">
-                  📞
-                </div>
-
-                <span className="text-xs font-semibold text-gray-400">
-                  CONTACTED
-                </span>
-              </div>
-
-              <p className="mt-5 text-sm text-gray-500">
-                Contacted Enquiries
-              </p>
-
-              <p className="mt-1 text-2xl font-bold text-blue-600">
-                {enquiryStats.contacted}
-              </p>
-            </Link>
-
-            {/* Resolved Enquiries */}
-            <Link
-              to="/admin/enquiries"
-              className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-green-100 text-xl">
-                  ✅
-                </div>
-
-                <span className="text-xs font-semibold text-gray-400">
-                  RESOLVED
-                </span>
-              </div>
-
-              <p className="mt-5 text-sm text-gray-500">
-                Resolved Enquiries
-              </p>
-
-              <p className="mt-1 text-2xl font-bold text-green-600">
-                {enquiryStats.resolved}
-              </p>
-            </Link>
-          </div>
-        </section>
-
-        {/* Order Statistics */}
-        <section className="mt-10">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        {/* Loading Skeleton */}
+        {isLoading && orders.length === 0 ? (
+          <div className="mt-8 space-y-8">
             <div>
-              <h2 className="text-lg font-bold text-gray-900">
-                Order Overview
-              </h2>
+              <div className="h-5 w-40 animate-pulse rounded bg-gray-200" />
 
-              <p className="mt-1 text-sm text-gray-500">
-                Live statistics from customer orders.
-              </p>
+              <div className="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
+                {[1, 2, 3, 4].map((item) => (
+                  <div
+                    key={item}
+                    className="h-36 animate-pulse rounded-xl bg-white shadow-sm"
+                  />
+                ))}
+              </div>
             </div>
 
-            <Link
-              to="/admin/orders"
-              className="text-sm font-semibold text-amber-600 hover:text-amber-700"
-            >
-              View All Orders →
-            </Link>
-          </div>
+            <div>
+              <div className="h-5 w-40 animate-pulse rounded bg-gray-200" />
 
-          <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
-            {/* Total Orders */}
-            <Link
-              to="/admin/orders"
-              className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-            >
-              <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-100 text-xl">
-                📦
+              <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
+                {[1, 2, 3, 4, 5].map((item) => (
+                  <div
+                    key={item}
+                    className="h-36 animate-pulse rounded-xl bg-white shadow-sm"
+                  />
+                ))}
               </div>
-
-              <p className="mt-5 text-sm text-gray-500">
-                Total Orders
-              </p>
-
-              <p className="mt-1 text-2xl font-bold text-gray-900">
-                {orderStats.totalOrders}
-              </p>
-            </Link>
-
-            {/* Pending */}
-            <Link
-              to="/admin/orders"
-              className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-            >
-              <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-yellow-100 text-xl">
-                ⏳
-              </div>
-
-              <p className="mt-5 text-sm text-gray-500">
-                Pending Orders
-              </p>
-
-              <p className="mt-1 text-2xl font-bold text-yellow-600">
-                {orderStats.pendingOrders}
-              </p>
-            </Link>
-
-            {/* Preparing */}
-            <Link
-              to="/admin/orders"
-              className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-            >
-              <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-orange-100 text-xl">
-                👨‍🍳
-              </div>
-
-              <p className="mt-5 text-sm text-gray-500">
-                Preparing
-              </p>
-
-              <p className="mt-1 text-2xl font-bold text-orange-600">
-                {orderStats.preparingOrders}
-              </p>
-            </Link>
-
-            {/* Completed */}
-            <Link
-              to="/admin/orders"
-              className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-            >
-              <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-green-100 text-xl">
-                ✅
-              </div>
-
-              <p className="mt-5 text-sm text-gray-500">
-                Completed
-              </p>
-
-              <p className="mt-1 text-2xl font-bold text-green-600">
-                {orderStats.completedOrders}
-              </p>
-            </Link>
-
-            {/* Revenue */}
-            <div className="col-span-2 rounded-xl border border-gray-200 bg-white p-5 shadow-sm md:col-span-1">
-              <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-emerald-100 text-xl">
-                💰
-              </div>
-
-              <p className="mt-5 text-sm text-gray-500">
-                Total Revenue
-              </p>
-
-              <p className="mt-1 text-2xl font-bold text-emerald-600">
-                ₹{formatPrice(orderStats.totalRevenue)}
-              </p>
             </div>
           </div>
-        </section>
+        ) : (
+          <>
+            {/* Quick Actions */}
+            <section className="mt-8">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">
+                  Quick Actions
+                </h2>
 
-        {/* Order Analytics */}
-        <section className="mt-10">
-          <div>
-            <h2 className="text-lg font-bold text-gray-900">
-              Order Analytics
-            </h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  Quickly manage important parts of your
+                  cafe website.
+                </p>
+              </div>
 
-            <p className="mt-1 text-sm text-gray-500">
-              Current distribution of customer orders by
-              status.
-            </p>
-          </div>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <Link
+                  to="/admin/menu"
+                  className="group rounded-xl border border-orange-200 bg-orange-50 p-5 transition hover:-translate-y-0.5 hover:border-orange-300 hover:shadow-md"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl">
+                      🍽️
+                    </span>
 
-          <div className="mt-4 grid gap-6 lg:grid-cols-3">
-            {/* Status Distribution */}
-            <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6 lg:col-span-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-bold text-gray-900">
-                    Order Status
+                    <span className="text-xl transition-transform group-hover:translate-x-1">
+                      →
+                    </span>
+                  </div>
+
+                  <h3 className="mt-4 font-bold text-gray-900">
+                    Manage Menu
                   </h3>
 
-                  <p className="mt-1 text-xs text-gray-500">
-                    {orders.length} total orders
+                  <p className="mt-1 text-sm text-gray-600">
+                    Add, edit or manage food items.
+                  </p>
+                </Link>
+
+                <Link
+                  to="/admin/orders"
+                  className="group rounded-xl border border-blue-200 bg-blue-50 p-5 transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl">
+                      📦
+                    </span>
+
+                    <span className="text-xl transition-transform group-hover:translate-x-1">
+                      →
+                    </span>
+                  </div>
+
+                  <h3 className="mt-4 font-bold text-gray-900">
+                    Manage Orders
+                  </h3>
+
+                  <p className="mt-1 text-sm text-gray-600">
+                    Review and update customer orders.
+                  </p>
+                </Link>
+
+                <Link
+                  to="/admin/enquiries"
+                  className="group rounded-xl border border-green-200 bg-green-50 p-5 transition hover:-translate-y-0.5 hover:border-green-300 hover:shadow-md"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl">
+                      📩
+                    </span>
+
+                    <span className="text-xl transition-transform group-hover:translate-x-1">
+                      →
+                    </span>
+                  </div>
+
+                  <h3 className="mt-4 font-bold text-gray-900">
+                    View Enquiries
+                  </h3>
+
+                  <p className="mt-1 text-sm text-gray-600">
+                    Check customer enquiries and messages.
+                  </p>
+                </Link>
+
+                <Link
+                  to="/admin/gallery"
+                  className="group rounded-xl border border-purple-200 bg-purple-50 p-5 transition hover:-translate-y-0.5 hover:border-purple-300 hover:shadow-md"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl">
+                      🖼️
+                    </span>
+
+                    <span className="text-xl transition-transform group-hover:translate-x-1">
+                      →
+                    </span>
+                  </div>
+
+                  <h3 className="mt-4 font-bold text-gray-900">
+                    Manage Gallery
+                  </h3>
+
+                  <p className="mt-1 text-sm text-gray-600">
+                    Update restaurant gallery images.
+                  </p>
+                </Link>
+              </div>
+            </section>
+
+            {/* Website Statistics */}
+            <section className="mt-10">
+              <h2 className="text-lg font-bold text-gray-900">
+                Website Overview
+              </h2>
+
+              <div className="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
+                {/* Menu */}
+                <Link
+                  to="/admin/menu"
+                  className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-orange-100 text-xl">
+                      🍽️
+                    </div>
+
+                    <span className="text-xs font-semibold text-gray-400">
+                      MENU
+                    </span>
+                  </div>
+
+                  <p className="mt-5 text-sm text-gray-500">
+                    Total Menu Items
+                  </p>
+
+                  <p className="mt-1 text-2xl font-bold text-gray-900">
+                    {stats.totalMenus}
+                  </p>
+                </Link>
+
+                {/* Gallery */}
+                <Link
+                  to="/admin/gallery"
+                  className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-purple-100 text-xl">
+                      🖼️
+                    </div>
+
+                    <span className="text-xs font-semibold text-gray-400">
+                      GALLERY
+                    </span>
+                  </div>
+
+                  <p className="mt-5 text-sm text-gray-500">
+                    Gallery Items
+                  </p>
+
+                  <p className="mt-1 text-2xl font-bold text-gray-900">
+                    {stats.totalGallery}
+                  </p>
+                </Link>
+
+                {/* Total Enquiries */}
+                <Link
+                  to="/admin/enquiries"
+                  className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-100 text-xl">
+                      📩
+                    </div>
+
+                    <span className="text-xs font-semibold text-gray-400">
+                      ENQUIRIES
+                    </span>
+                  </div>
+
+                  <p className="mt-5 text-sm text-gray-500">
+                    Total Enquiries
+                  </p>
+
+                  <p className="mt-1 text-2xl font-bold text-gray-900">
+                    {enquiryStats.total}
+                  </p>
+                </Link>
+
+                {/* New Enquiries */}
+                <Link
+                  to="/admin/enquiries"
+                  className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-green-100 text-xl">
+                      📨
+                    </div>
+
+                    <span className="text-xs font-semibold text-gray-400">
+                      NEW
+                    </span>
+                  </div>
+
+                  <p className="mt-5 text-sm text-gray-500">
+                    New Enquiries
+                  </p>
+
+                  <p className="mt-1 text-2xl font-bold text-green-600">
+                    {enquiryStats.new}
+                  </p>
+                </Link>
+              </div>
+            </section>
+
+            {/* Order Statistics */}
+            <section className="mt-10">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">
+                    Order Overview
+                  </h2>
+
+                  <p className="mt-1 text-sm text-gray-500">
+                    Live statistics from customer orders.
                   </p>
                 </div>
 
-                <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">
-                  Live
-                </span>
+                <Link
+                  to="/admin/orders"
+                  className="text-sm font-semibold text-amber-600 hover:text-amber-700"
+                >
+                  View All Orders →
+                </Link>
               </div>
 
-              <div className="mt-6 space-y-5">
-                {statusAnalytics.map((item) => {
-                  const statusStyle =
-                    getStatusClasses(item.status);
+              <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
+                {/* Total Orders */}
+                <Link
+                  to="/admin/orders"
+                  className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-100 text-xl">
+                    📦
+                  </div>
 
-                  return (
-                    <div key={item.status}>
-                      <div className="mb-2 flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-2">
-                          <span>
-                            {statusStyle.icon}
-                          </span>
+                  <p className="mt-5 text-sm text-gray-500">
+                    Total Orders
+                  </p>
 
-                          <span className="text-sm font-semibold text-gray-800">
-                            {item.status}
-                          </span>
+                  <p className="mt-1 text-2xl font-bold text-gray-900">
+                    {orderStats.totalOrders}
+                  </p>
+                </Link>
+
+                {/* Pending */}
+                <Link
+                  to="/admin/orders"
+                  className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-yellow-100 text-xl">
+                    ⏳
+                  </div>
+
+                  <p className="mt-5 text-sm text-gray-500">
+                    Pending Orders
+                  </p>
+
+                  <p className="mt-1 text-2xl font-bold text-yellow-600">
+                    {orderStats.pendingOrders}
+                  </p>
+                </Link>
+
+                {/* Preparing */}
+                <Link
+                  to="/admin/orders"
+                  className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-orange-100 text-xl">
+                    👨‍🍳
+                  </div>
+
+                  <p className="mt-5 text-sm text-gray-500">
+                    Preparing
+                  </p>
+
+                  <p className="mt-1 text-2xl font-bold text-orange-600">
+                    {orderStats.preparingOrders}
+                  </p>
+                </Link>
+
+                {/* Completed */}
+                <Link
+                  to="/admin/orders"
+                  className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-green-100 text-xl">
+                    ✅
+                  </div>
+
+                  <p className="mt-5 text-sm text-gray-500">
+                    Completed
+                  </p>
+
+                  <p className="mt-1 text-2xl font-bold text-green-600">
+                    {orderStats.completedOrders}
+                  </p>
+                </Link>
+
+                {/* Revenue */}
+                <div className="col-span-2 rounded-xl border border-gray-200 bg-white p-5 shadow-sm md:col-span-1">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-emerald-100 text-xl">
+                    💰
+                  </div>
+
+                  <p className="mt-5 text-sm text-gray-500">
+                    Total Revenue
+                  </p>
+
+                  <p className="mt-1 text-2xl font-bold text-emerald-600">
+                    ₹{formatPrice(orderStats.totalRevenue)}
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            {/* Order Analytics */}
+            <section className="mt-10">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">
+                  Order Analytics
+                </h2>
+
+                <p className="mt-1 text-sm text-gray-500">
+                  Current distribution of customer orders by
+                  status.
+                </p>
+              </div>
+
+              <div className="mt-4 grid gap-6 lg:grid-cols-3">
+                {/* Status Distribution */}
+                <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6 lg:col-span-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-bold text-gray-900">
+                        Order Status
+                      </h3>
+
+                      <p className="mt-1 text-xs text-gray-500">
+                        {orders.length} total orders
+                      </p>
+                    </div>
+
+                    <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">
+                      Live
+                    </span>
+                  </div>
+
+                  <div className="mt-6 space-y-5">
+                    {statusAnalytics.map((item) => {
+                      const statusStyle =
+                        getStatusClasses(item.status);
+
+                      return (
+                        <div key={item.status}>
+                          <div className="mb-2 flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-2">
+                              <span>
+                                {statusStyle.icon}
+                              </span>
+
+                              <span className="text-sm font-semibold text-gray-800">
+                                {item.status}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-bold text-gray-900">
+                                {item.count}
+                              </span>
+
+                              <span className="text-xs text-gray-500">
+                                ({item.percentage}%)
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="h-2.5 overflow-hidden rounded-full bg-gray-100">
+                            <div
+                              className={`h-full rounded-full transition-all duration-500 ${statusStyle.bar}`}
+                              style={{
+                                width: `${item.percentage}%`,
+                              }}
+                            />
+                          </div>
                         </div>
+                      );
+                    })}
+                  </div>
+                </div>
 
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-bold text-gray-900">
-                            {item.count}
-                          </span>
+                {/* Performance Summary */}
+                <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+                  <h3 className="font-bold text-gray-900">
+                    Performance Summary
+                  </h3>
 
-                          <span className="text-xs text-gray-500">
-                            ({item.percentage}%)
-                          </span>
-                        </div>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Overview of current order performance.
+                  </p>
+
+                  <div className="mt-6 space-y-5">
+                    {/* Completion Rate */}
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">
+                          Completion Rate
+                        </span>
+
+                        <span className="font-bold text-green-600">
+                          {completionRate}%
+                        </span>
                       </div>
 
-                      <div className="h-2.5 overflow-hidden rounded-full bg-gray-100">
+                      <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-gray-100">
                         <div
-                          className={`h-full rounded-full transition-all duration-500 ${statusStyle.bar}`}
+                          className="h-full rounded-full bg-green-500 transition-all duration-500"
                           style={{
-                            width: `${item.percentage}%`,
+                            width: `${completionRate}%`,
                           }}
                         />
                       </div>
                     </div>
-                  );
-                })}
+
+                    {/* Active Orders */}
+                    <div className="rounded-xl bg-amber-50 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">
+                        Active Orders
+                      </p>
+
+                      <p className="mt-1 text-2xl font-bold text-amber-900">
+                        {nonCancelledOrders}
+                      </p>
+
+                      <p className="mt-1 text-xs text-amber-700">
+                        Orders excluding cancelled orders
+                      </p>
+                    </div>
+
+                    {/* Cancelled */}
+                    <div className="rounded-xl bg-red-50 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-red-700">
+                        Cancelled Orders
+                      </p>
+
+                      <p className="mt-1 text-2xl font-bold text-red-900">
+                        {cancelledOrders}
+                      </p>
+
+                      <p className="mt-1 text-xs text-red-700">
+                        Total cancelled orders
+                      </p>
+                    </div>
+
+                    {/* Average Order */}
+                    <div className="rounded-xl bg-emerald-50 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
+                        Average Order Value
+                      </p>
+
+                      <p className="mt-1 text-2xl font-bold text-emerald-900">
+                        ₹
+                        {formatPrice(
+                          nonCancelledOrders > 0
+                            ? orderStats.totalRevenue /
+                                nonCancelledOrders
+                            : 0
+                        )}
+                      </p>
+
+                      <p className="mt-1 text-xs text-emerald-700">
+                        Based on active orders
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
+            </section>
 
-            {/* Performance Summary */}
-            <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
-              <h3 className="font-bold text-gray-900">
-                Performance Summary
-              </h3>
-
-              <p className="mt-1 text-xs text-gray-500">
-                Overview of current order performance.
-              </p>
-
-              <div className="mt-6 space-y-5">
-                {/* Completion Rate */}
+            {/* Enquiry Statistics */}
+            <section className="mt-10">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">
-                      Completion Rate
-                    </span>
+                  <h2 className="text-lg font-bold text-gray-900">
+                    Enquiry Overview
+                  </h2>
 
-                    <span className="font-bold text-green-600">
-                      {completionRate}%
-                    </span>
-                  </div>
-
-                  <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-gray-100">
-                    <div
-                      className="h-full rounded-full bg-green-500 transition-all duration-500"
-                      style={{
-                        width: `${completionRate}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* Active Orders */}
-                <div className="rounded-xl bg-amber-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">
-                    Active Orders
-                  </p>
-
-                  <p className="mt-1 text-2xl font-bold text-amber-900">
-                    {nonCancelledOrders}
-                  </p>
-
-                  <p className="mt-1 text-xs text-amber-700">
-                    Orders excluding cancelled orders
+                  <p className="mt-1 text-sm text-gray-500">
+                    Current customer enquiry status.
                   </p>
                 </div>
 
-                {/* Cancelled */}
-                <div className="rounded-xl bg-red-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-red-700">
-                    Cancelled Orders
-                  </p>
-
-                  <p className="mt-1 text-2xl font-bold text-red-900">
-                    {cancelledOrders}
-                  </p>
-
-                  <p className="mt-1 text-xs text-red-700">
-                    Total cancelled orders
-                  </p>
-                </div>
-
-                {/* Average Order */}
-                <div className="rounded-xl bg-emerald-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
-                    Average Order Value
-                  </p>
-
-                  <p className="mt-1 text-2xl font-bold text-emerald-900">
-                    ₹
-                    {formatPrice(
-                      nonCancelledOrders > 0
-                        ? orderStats.totalRevenue /
-                            nonCancelledOrders
-                        : 0
-                    )}
-                  </p>
-
-                  <p className="mt-1 text-xs text-emerald-700">
-                    Based on active orders
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Recent Enquiries */}
-        <section className="mt-10">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-lg font-bold text-gray-900">
-                Recent Enquiries
-              </h2>
-
-              <p className="mt-1 text-sm text-gray-500">
-                Latest customer enquiries.
-              </p>
-            </div>
-
-            <Link
-              to="/admin/enquiries"
-              className="text-sm font-semibold text-amber-600 hover:text-amber-700"
-            >
-              Manage Enquiries →
-            </Link>
-          </div>
-
-          {recentEnquiries.length === 0 ? (
-            <div className="mt-4 rounded-xl border border-gray-200 bg-white px-6 py-12 text-center shadow-sm">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 text-2xl">
-                📩
+                <Link
+                  to="/admin/enquiries"
+                  className="text-sm font-semibold text-amber-600 hover:text-amber-700"
+                >
+                  Manage Enquiries →
+                </Link>
               </div>
 
-              <h3 className="mt-4 font-bold text-gray-900">
-                No Enquiries Yet
-              </h3>
+              <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
+                <Link
+                  to="/admin/enquiries"
+                  className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-100 text-xl">
+                    📩
+                  </div>
 
-              <p className="mt-1 text-sm text-gray-500">
-                New customer enquiries will appear here.
-              </p>
-            </div>
-          ) : (
-            <div className="mt-4 grid gap-4 lg:grid-cols-2">
-              {recentEnquiries.map((enquiry) => {
-                const enquiryStatusClasses =
-                  enquiry.status === "Contacted"
-                    ? "bg-blue-100 text-blue-700"
-                    : enquiry.status === "Resolved"
-                    ? "bg-green-100 text-green-700"
-                    : "bg-yellow-100 text-yellow-700";
+                  <p className="mt-5 text-sm text-gray-500">
+                    Total
+                  </p>
 
-                return (
-                  <div
-                    key={enquiry._id}
-                    className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
-                  >
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                      <div className="min-w-0">
-                        <h3 className="break-words font-bold text-gray-900">
-                          {enquiry.name}
-                        </h3>
+                  <p className="mt-1 text-2xl font-bold text-gray-900">
+                    {enquiryStats.total}
+                  </p>
+                </Link>
 
-                        <p className="mt-1 break-all text-sm text-gray-500">
-                          {enquiry.email}
-                        </p>
-                      </div>
+                <Link
+                  to="/admin/enquiries"
+                  className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-yellow-100 text-xl">
+                    📨
+                  </div>
 
-                      <span
-                        className={`w-fit shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${enquiryStatusClasses}`}
+                  <p className="mt-5 text-sm text-gray-500">
+                    New
+                  </p>
+
+                  <p className="mt-1 text-2xl font-bold text-yellow-600">
+                    {enquiryStats.new}
+                  </p>
+                </Link>
+
+                <Link
+                  to="/admin/enquiries"
+                  className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-100 text-xl">
+                    📞
+                  </div>
+
+                  <p className="mt-5 text-sm text-gray-500">
+                    Contacted
+                  </p>
+
+                  <p className="mt-1 text-2xl font-bold text-blue-600">
+                    {enquiryStats.contacted}
+                  </p>
+                </Link>
+
+                <Link
+                  to="/admin/enquiries"
+                  className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-green-100 text-xl">
+                    ✅
+                  </div>
+
+                  <p className="mt-5 text-sm text-gray-500">
+                    Resolved
+                  </p>
+
+                  <p className="mt-1 text-2xl font-bold text-green-600">
+                    {enquiryStats.resolved}
+                  </p>
+                </Link>
+              </div>
+            </section>
+
+            {/* Recent Enquiries */}
+            <section className="mt-10">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">
+                    Recent Enquiries
+                  </h2>
+
+                  <p className="mt-1 text-sm text-gray-500">
+                    Latest customer enquiries.
+                  </p>
+                </div>
+
+                <Link
+                  to="/admin/enquiries"
+                  className="text-sm font-semibold text-amber-600 hover:text-amber-700"
+                >
+                  Manage Enquiries →
+                </Link>
+              </div>
+
+              {recentEnquiries.length === 0 ? (
+                <div className="mt-4 rounded-xl border border-gray-200 bg-white px-6 py-12 text-center shadow-sm">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 text-2xl">
+                    📩
+                  </div>
+
+                  <h3 className="mt-4 font-bold text-gray-900">
+                    No Enquiries Yet
+                  </h3>
+
+                  <p className="mt-1 text-sm text-gray-500">
+                    New customer enquiries will appear here.
+                  </p>
+                </div>
+              ) : (
+                <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                  {recentEnquiries.map((enquiry) => {
+                    const enquiryStatusClasses =
+                      enquiry.status === "Contacted"
+                        ? "bg-blue-100 text-blue-700"
+                        : enquiry.status === "Resolved"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-yellow-100 text-yellow-700";
+
+                    return (
+                      <div
+                        key={enquiry._id}
+                        className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
                       >
-                        {enquiry.status}
-                      </span>
-                    </div>
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="min-w-0">
+                            <h3 className="break-words font-bold text-gray-900">
+                              {enquiry.name}
+                            </h3>
 
-                    <p className="mt-4 line-clamp-2 break-words text-sm leading-6 text-gray-600">
-                      {enquiry.message}
-                    </p>
+                            <p className="mt-1 break-all text-sm text-gray-500">
+                              {enquiry.email}
+                            </p>
+                          </div>
 
-                    <div className="mt-4 flex flex-col gap-2 border-t border-gray-100 pt-4 text-xs text-gray-500 sm:flex-row sm:items-center sm:justify-between">
-                      <span>
-                        Phone: {enquiry.phone || "-"}
-                      </span>
+                          <span
+                            className={`w-fit shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${enquiryStatusClasses}`}
+                          >
+                            {enquiry.status}
+                          </span>
+                        </div>
 
-                      <span>
-                        {formatDate(enquiry.createdAt)}
-                      </span>
-                    </div>
+                        <p className="mt-4 line-clamp-2 break-words text-sm leading-6 text-gray-600">
+                          {enquiry.message}
+                        </p>
+
+                        <div className="mt-4 flex flex-col gap-2 border-t border-gray-100 pt-4 text-xs text-gray-500 sm:flex-row sm:items-center sm:justify-between">
+                          <span>
+                            Phone: {enquiry.phone || "-"}
+                          </span>
+
+                          <span>
+                            {formatDate(enquiry.createdAt)}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+
+            {/* Recent Orders */}
+            <section className="mt-10">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">
+                    Recent Orders
+                  </h2>
+
+                  <p className="mt-1 text-sm text-gray-500">
+                    Latest customer orders.
+                  </p>
+                </div>
+
+                <Link
+                  to="/admin/orders"
+                  className="text-sm font-semibold text-amber-600 hover:text-amber-700"
+                >
+                  Manage Orders →
+                </Link>
+              </div>
+
+              {recentOrders.length === 0 ? (
+                <div className="mt-4 rounded-xl border border-gray-200 bg-white px-6 py-12 text-center shadow-sm">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 text-2xl">
+                    📦
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </section>
 
-        {/* Recent Orders */}
-        <section className="mt-10">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-lg font-bold text-gray-900">
-                Recent Orders
-              </h2>
+                  <h3 className="mt-4 font-bold text-gray-900">
+                    No Orders Yet
+                  </h3>
 
-              <p className="mt-1 text-sm text-gray-500">
-                Latest customer orders.
-              </p>
-            </div>
+                  <p className="mt-1 text-sm text-gray-500">
+                    New customer orders will appear here.
+                  </p>
+                </div>
+              ) : (
+                <div className="mt-4 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[700px] text-left">
+                      <thead className="border-b border-gray-200 bg-gray-50">
+                        <tr className="text-xs uppercase tracking-wide text-gray-500">
+                          <th className="px-5 py-4 font-semibold">
+                            Order
+                          </th>
 
-            <Link
-              to="/admin/orders"
-              className="text-sm font-semibold text-amber-600 hover:text-amber-700"
-            >
-              Manage Orders →
-            </Link>
-          </div>
+                          <th className="px-5 py-4 font-semibold">
+                            Customer
+                          </th>
 
-          {recentOrders.length === 0 ? (
-            <div className="mt-4 rounded-xl border border-gray-200 bg-white px-6 py-12 text-center shadow-sm">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 text-2xl">
-                📦
-              </div>
+                          <th className="px-5 py-4 font-semibold">
+                            Type
+                          </th>
 
-              <h3 className="mt-4 font-bold text-gray-900">
-                No Orders Yet
-              </h3>
+                          <th className="px-5 py-4 font-semibold">
+                            Status
+                          </th>
 
-              <p className="mt-1 text-sm text-gray-500">
-                New customer orders will appear here.
-              </p>
-            </div>
-          ) : (
-            <div className="mt-4 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[700px] text-left">
-                  <thead className="border-b border-gray-200 bg-gray-50">
-                    <tr className="text-xs uppercase tracking-wide text-gray-500">
-                      <th className="px-5 py-4 font-semibold">
-                        Order
-                      </th>
-
-                      <th className="px-5 py-4 font-semibold">
-                        Customer
-                      </th>
-
-                      <th className="px-5 py-4 font-semibold">
-                        Type
-                      </th>
-
-                      <th className="px-5 py-4 font-semibold">
-                        Status
-                      </th>
-
-                      <th className="px-5 py-4 text-right font-semibold">
-                        Total
-                      </th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {recentOrders.map((order) => {
-                      const statusStyle =
-                        getStatusClasses(
-                          order.status
-                        );
-
-                      return (
-                        <tr
-                          key={order._id}
-                          className="border-b border-gray-100 last:border-b-0"
-                        >
-                          <td className="px-5 py-4">
-                            <p className="font-semibold text-gray-900">
-                              #
-                              {order._id
-                                .slice(-6)
-                                .toUpperCase()}
-                            </p>
-
-                            <p className="mt-1 text-xs text-gray-500">
-                              {formatDate(
-                                order.createdAt
-                              )}
-                            </p>
-                          </td>
-
-                          <td className="px-5 py-4">
-                            <p className="font-medium text-gray-900">
-                              {order.customer?.name ||
-                                "-"}
-                            </p>
-
-                            <p className="mt-1 text-xs text-gray-500">
-                              {order.customer?.mobile ||
-                                "-"}
-                            </p>
-                          </td>
-
-                          <td className="px-5 py-4 text-sm text-gray-600">
-                            {order.orderType}
-                          </td>
-
-                          <td className="px-5 py-4">
-                            <span
-                              className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusStyle.badge}`}
-                            >
-                              {order.status}
-                            </span>
-                          </td>
-
-                          <td className="px-5 py-4 text-right font-semibold text-gray-900">
-                            ₹
-                            {formatPrice(
-                              order.totalAmount
-                            )}
-                          </td>
+                          <th className="px-5 py-4 text-right font-semibold">
+                            Total
+                          </th>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </section>
+                      </thead>
+
+                      <tbody>
+                        {recentOrders.map((order) => {
+                          const statusStyle =
+                            getStatusClasses(
+                              order.status
+                            );
+
+                          return (
+                            <tr
+                              key={order._id}
+                              className="border-b border-gray-100 last:border-b-0"
+                            >
+                              <td className="px-5 py-4">
+                                <p className="font-semibold text-gray-900">
+                                  #
+                                  {String(order._id || "")
+                                    .slice(-6)
+                                    .toUpperCase()}
+                                </p>
+
+                                <p className="mt-1 text-xs text-gray-500">
+                                  {formatDate(
+                                    order.createdAt
+                                  )}
+                                </p>
+                              </td>
+
+                              <td className="px-5 py-4">
+                                <p className="font-medium text-gray-900">
+                                  {order.customer?.name ||
+                                    "-"}
+                                </p>
+
+                                <p className="mt-1 text-xs text-gray-500">
+                                  {order.customer?.mobile ||
+                                    "-"}
+                                </p>
+                              </td>
+
+                              <td className="px-5 py-4 text-sm text-gray-600">
+                                {order.orderType || "-"}
+                              </td>
+
+                              <td className="px-5 py-4">
+                                <span
+                                  className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusStyle.badge}`}
+                                >
+                                  {order.status ||
+                                    "Pending"}
+                                </span>
+                              </td>
+
+                              <td className="px-5 py-4 text-right font-semibold text-gray-900">
+                                ₹
+                                {formatPrice(
+                                  order.totalAmount
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </section>
+          </>
+        )}
       </div>
     </div>
   );

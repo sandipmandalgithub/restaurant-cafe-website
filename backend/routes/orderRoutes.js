@@ -4,6 +4,7 @@ const {
   createOrder,
   getOrders,
   getOrderById,
+  trackOrder,
   updateOrderStatus,
   deleteOrder,
 } = require("../controllers/orderController");
@@ -12,17 +13,21 @@ const protect = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-// ==============================
+// ======================================================
 // Customer - Public
-// ==============================
+// ======================================================
 
 // Place new order
 router.post("/", createOrder);
 
+// Track customer order
+// Example:
+// GET /api/orders/track/ORDER_ID?mobile=9876543210
+router.get("/track/:id", trackOrder);
 
-// ==============================
+// ======================================================
 // Admin - Protected
-// ==============================
+// ======================================================
 
 // Get all orders
 router.get("/", protect, getOrders);

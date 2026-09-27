@@ -76,7 +76,7 @@ function Cart() {
     };
 
     checkMenuAvailability();
-  }, []);
+  }, [cart.length]);
 
   // Save cart to localStorage and notify Navbar
   useEffect(() => {
