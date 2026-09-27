@@ -49,29 +49,40 @@ function AdminLogin() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4 py-12">
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lg sm:p-8">
+    <div className="flex min-h-screen items-center justify-center overflow-hidden bg-gray-100 px-4 py-8 sm:px-6 sm:py-12">
+      <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-5 shadow-lg sm:p-8">
+        {/* Header */}
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 text-2xl shadow-sm sm:h-16 sm:w-16 sm:text-3xl">
+            ☕
+          </div>
+
+          <h1 className="mt-4 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
             Café<span className="text-orange-600">Nest</span>
           </h1>
 
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-2 text-sm text-gray-500 sm:text-base">
             Admin Panel Login
           </p>
         </div>
 
+        {/* Error Message */}
         {errorMessage && (
-          <div className="mt-6 rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+          <div
+            role="alert"
+            className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-5 font-medium text-red-700"
+          >
             {errorMessage}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+        {/* Login Form */}
+        <form onSubmit={handleSubmit} className="mt-7 space-y-5 sm:mt-8">
+          {/* Email */}
           <div>
             <label
               htmlFor="email"
-              className="mb-2 block text-sm font-medium text-gray-700"
+              className="mb-2 block text-sm font-semibold text-gray-700"
             >
               Email
             </label>
@@ -85,14 +96,15 @@ function AdminLogin() {
               required
               autoComplete="email"
               placeholder="Enter admin email"
-              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+              className="min-h-12 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
             />
           </div>
 
+          {/* Password */}
           <div>
             <label
               htmlFor="password"
-              className="mb-2 block text-sm font-medium text-gray-700"
+              className="mb-2 block text-sm font-semibold text-gray-700"
             >
               Password
             </label>
@@ -106,18 +118,24 @@ function AdminLogin() {
               required
               autoComplete="current-password"
               placeholder="Enter admin password"
-              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+              className="min-h-12 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
             />
           </div>
 
+          {/* Submit */}
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-lg bg-orange-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="min-h-12 w-full rounded-xl bg-orange-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-700 focus:outline-none focus:ring-4 focus:ring-orange-200 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSubmitting ? "Signing in..." : "Sign In"}
           </button>
         </form>
+
+        {/* Footer */}
+        <p className="mt-6 text-center text-xs leading-5 text-gray-400 sm:text-sm">
+          CaféNest Admin Panel
+        </p>
       </div>
     </div>
   );
