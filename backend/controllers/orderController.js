@@ -388,6 +388,193 @@ const deleteOrder = async (req, res) => {
 };
 
 // ======================================================
+// Get Order Statistics - Admin Only
+// ======================================================
+const getOrderStatistics = async (req, res) => {
+  try {
+    // Get all orders
+    const orders = await Order.find().lean();
+
+    // Basic order statistics
+    const totalOrders = orders.length;
+
+    const completedOrders = orders.filter(
+      (order) => order.status === "Completed"
+    ).length;
+
+    const cancelledOrders = orders.filter(
+      (order) => order.status === "Cancelled"
+    ).length;
+
+    const pendingOrders = orders.filter(
+      (order) => order.status === "Pending"
+    ).length;
+
+    const confirmedOrders = orders.filter(
+      (order) => order.status === "Confirmed"
+    ).length;
+
+    const preparingOrders = orders.filter(
+      (order) => order.status === "Preparing"
+    ).length;
+
+    const readyOrders = orders.filter(
+      (order) => order.status === "Ready"
+    ).length;
+
+    // Revenue
+    // Cancelled orders are excluded from revenue.
+    const validOrders = orders.filter(
+      (order) => order.status !== "Cancelled"
+    );
+
+    const totalRevenue = validOrders.reduce(
+      (total, order) => total + Number(order.totalAmount || 0),
+      0
+    );
+
+    // Completed revenue
+    const completedRevenue = orders
+      .filter((order) => order.status === "Completed")
+      .reduce(
+        (total, order) => total + Number(order.totalAmount || 0),
+        0
+      );
+
+    // Average order value
+    const averageOrderValue =
+      validOrders.length > 0
+        ? totalRevenue / validOrders.length
+        : 0;
+
+    // Delivery vs Pickup
+    const deliveryOrders = orders.filter(
+      (order) => order.orderType === "Delivery"
+    ).length;
+
+    const pickupOrders = orders.filter(
+      (order) => order.orderType === "Pickup"
+    ).length;
+
+    // ==================================================
+    // Best Selling Items
+    // ==================================================
+
+    const itemSalesMap = {};
+
+    validOrders.forEach((order) => {
+      if (!Array.isArray(order.items)) {
+        return;
+      }
+
+      order.items.forEach((item) => {
+        const itemId = String(item.menuItemId);
+
+        if (!itemSalesMap[itemId]) {
+          itemSalesMap[itemId] = {
+            menuItemId: item.menuItemId,
+            name: item.name,
+            quantity: 0,
+            revenue: 0,
+          };
+        }
+
+        itemSalesMap[itemId].quantity += Number(
+          item.quantity || 0
+        );
+
+        itemSalesMap[itemId].revenue += Number(
+          item.subtotal || 0
+        );
+      });
+    });
+
+    const bestSellingItems = Object.values(itemSalesMap)
+      .sort((a, b) => {
+        if (b.quantity !== a.quantity) {
+          return b.quantity - a.quantity;
+        }
+
+        return b.revenue - a.revenue;
+      })
+      .slice(0, 10);
+
+    // ==================================================
+    // Revenue by Date
+    // ==================================================
+
+    const revenueByDateMap = {};
+
+    validOrders.forEach((order) => {
+      if (!order.createdAt) {
+        return;
+      }
+
+      const date = new Date(order.createdAt)
+        .toISOString()
+        .split("T")[0];
+
+      if (!revenueByDateMap[date]) {
+        revenueByDateMap[date] = {
+          date,
+          revenue: 0,
+          orders: 0,
+        };
+      }
+
+      revenueByDateMap[date].revenue += Number(
+        order.totalAmount || 0
+      );
+
+      revenueByDateMap[date].orders += 1;
+    });
+
+    const revenueByDate = Object.values(revenueByDateMap)
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    // ==================================================
+    // Final Response
+    // ==================================================
+
+    res.status(200).json({
+      success: true,
+
+      data: {
+        summary: {
+          totalOrders,
+          completedOrders,
+          cancelledOrders,
+          pendingOrders,
+          confirmedOrders,
+          preparingOrders,
+          readyOrders,
+          totalRevenue: Number(totalRevenue.toFixed(2)),
+          completedRevenue: Number(
+            completedRevenue.toFixed(2)
+          ),
+          averageOrderValue: Number(
+            averageOrderValue.toFixed(2)
+          ),
+          deliveryOrders,
+          pickupOrders,
+        },
+
+        bestSellingItems,
+
+        revenueByDate,
+      },
+    });
+  } catch (error) {
+    console.error("Get order statistics error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch order statistics.",
+    });
+  }
+};
+
+// ======================================================
 // Exports
 // ======================================================
 module.exports = {
@@ -397,4 +584,5 @@ module.exports = {
   trackOrder,
   updateOrderStatus,
   deleteOrder,
+  getOrderStatistics,
 };

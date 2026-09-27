@@ -4,7 +4,10 @@ import { Link } from "react-router-dom";
 import { getDashboardStats } from "../../services/adminDashboardService";
 
 const ORDERS_API_URL = "http://localhost:5000/api/orders";
-const ENQUIRIES_API_URL = "http://localhost:5000/api/enquiries";
+const ORDER_STATISTICS_API_URL =
+  "http://localhost:5000/api/orders/statistics";
+const ENQUIRIES_API_URL =
+  "http://localhost:5000/api/enquiries";
 
 const STATUS_OPTIONS = [
   "Pending",
@@ -28,10 +31,20 @@ function AdminDashboard() {
   const [orderStats, setOrderStats] = useState({
     totalOrders: 0,
     pendingOrders: 0,
+    confirmedOrders: 0,
     preparingOrders: 0,
+    readyOrders: 0,
     completedOrders: 0,
+    cancelledOrders: 0,
     totalRevenue: 0,
+    completedRevenue: 0,
+    averageOrderValue: 0,
+    deliveryOrders: 0,
+    pickupOrders: 0,
   });
+
+  const [bestSellingItems, setBestSellingItems] = useState([]);
+  const [revenueByDate, setRevenueByDate] = useState([]);
 
   const [recentOrders, setRecentOrders] = useState([]);
 
@@ -67,6 +80,23 @@ function AdminDashboard() {
     return new Intl.DateTimeFormat("en-IN", {
       dateStyle: "medium",
       timeStyle: "short",
+    }).format(parsedDate);
+  };
+
+  const formatShortDate = (date) => {
+    if (!date) {
+      return "-";
+    }
+
+    const parsedDate = new Date(`${date}T00:00:00`);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      return date;
+    }
+
+    return new Intl.DateTimeFormat("en-IN", {
+      day: "numeric",
+      month: "short",
     }).format(parsedDate);
   };
 
@@ -118,51 +148,71 @@ function AdminDashboard() {
   };
 
   const loadDashboard = async () => {
+    /*
+     * Important:
+     * Wait for the current call stack to finish before updating state.
+     * This prevents React's "Calling setState synchronously within an effect"
+     * warning when this function is triggered from useEffect.
+     */
+    await Promise.resolve();
+
     try {
       setIsLoading(true);
       setError("");
 
       const token = localStorage.getItem("adminToken");
 
+      const authHeaders = {
+        "Content-Type": "application/json",
+        ...(token
+          ? {
+              Authorization: `Bearer ${token}`,
+            }
+          : {}),
+      };
+
       const [
         dashboardResult,
         ordersResponse,
+        orderStatisticsResponse,
         enquiriesResponse,
       ] = await Promise.all([
         getDashboardStats(),
 
         fetch(ORDERS_API_URL, {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token
-              ? {
-                  Authorization: `Bearer ${token}`,
-                }
-              : {}),
-          },
+          headers: authHeaders,
+        }),
+
+        fetch(ORDER_STATISTICS_API_URL, {
+          method: "GET",
+          headers: authHeaders,
         }),
 
         fetch(ENQUIRIES_API_URL, {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token
-              ? {
-                  Authorization: `Bearer ${token}`,
-                }
-              : {}),
-          },
+          headers: authHeaders,
         }),
       ]);
 
       const ordersResult = await ordersResponse.json();
+
+      const orderStatisticsResult =
+        await orderStatisticsResponse.json();
+
       const enquiriesResult =
         await enquiriesResponse.json();
 
       if (!ordersResponse.ok) {
         throw new Error(
           ordersResult.message ||
+            "Failed to fetch orders."
+        );
+      }
+
+      if (!orderStatisticsResponse.ok) {
+        throw new Error(
+          orderStatisticsResult.message ||
             "Failed to fetch order statistics."
         );
       }
@@ -186,33 +236,23 @@ function AdminDashboard() {
         ? enquiriesResult.data
         : [];
 
-      const activeOrders = fetchedOrders.filter(
-        (order) => order.status !== "Cancelled"
-      );
+      const statisticsData =
+        orderStatisticsResult?.data || {};
 
-      const totalRevenue = activeOrders.reduce(
-        (total, order) =>
-          total + Number(order.totalAmount || 0),
-        0
-      );
+      const statisticsSummary =
+        statisticsData?.summary || {};
 
-      const calculatedOrderStats = {
-        totalOrders: fetchedOrders.length,
+      const fetchedBestSellingItems = Array.isArray(
+        statisticsData?.bestSellingItems
+      )
+        ? statisticsData.bestSellingItems
+        : [];
 
-        pendingOrders: fetchedOrders.filter(
-          (order) => order.status === "Pending"
-        ).length,
-
-        preparingOrders: fetchedOrders.filter(
-          (order) => order.status === "Preparing"
-        ).length,
-
-        completedOrders: fetchedOrders.filter(
-          (order) => order.status === "Completed"
-        ).length,
-
-        totalRevenue,
-      };
+      const fetchedRevenueByDate = Array.isArray(
+        statisticsData?.revenueByDate
+      )
+        ? statisticsData.revenueByDate
+        : [];
 
       const latestOrders = [...fetchedOrders]
         .sort(
@@ -250,19 +290,84 @@ function AdminDashboard() {
         totalMenus: Number(
           dashboardResult?.totalMenus || 0
         ),
+
         totalGallery: Number(
           dashboardResult?.totalGallery || 0
         ),
+
         totalEnquiries:
           calculatedEnquiryStats.total,
+
         newEnquiries:
           calculatedEnquiryStats.new,
       });
 
       setOrders(fetchedOrders);
-      setOrderStats(calculatedOrderStats);
+
+      setOrderStats({
+        totalOrders: Number(
+          statisticsSummary.totalOrders || 0
+        ),
+
+        pendingOrders: Number(
+          statisticsSummary.pendingOrders || 0
+        ),
+
+        confirmedOrders: Number(
+          statisticsSummary.confirmedOrders || 0
+        ),
+
+        preparingOrders: Number(
+          statisticsSummary.preparingOrders || 0
+        ),
+
+        readyOrders: Number(
+          statisticsSummary.readyOrders || 0
+        ),
+
+        completedOrders: Number(
+          statisticsSummary.completedOrders || 0
+        ),
+
+        cancelledOrders: Number(
+          statisticsSummary.cancelledOrders || 0
+        ),
+
+        totalRevenue: Number(
+          statisticsSummary.totalRevenue || 0
+        ),
+
+        completedRevenue: Number(
+          statisticsSummary.completedRevenue || 0
+        ),
+
+        averageOrderValue: Number(
+          statisticsSummary.averageOrderValue || 0
+        ),
+
+        deliveryOrders: Number(
+          statisticsSummary.deliveryOrders || 0
+        ),
+
+        pickupOrders: Number(
+          statisticsSummary.pickupOrders || 0
+        ),
+      });
+
+      setBestSellingItems(
+        fetchedBestSellingItems
+      );
+
+      setRevenueByDate(
+        fetchedRevenueByDate
+      );
+
       setRecentOrders(latestOrders);
-      setEnquiryStats(calculatedEnquiryStats);
+
+      setEnquiryStats(
+        calculatedEnquiryStats
+      );
+
       setRecentEnquiries(latestEnquiries);
     } catch (error) {
       console.error(
@@ -283,6 +388,8 @@ function AdminDashboard() {
     let isMounted = true;
 
     const initializeDashboard = async () => {
+      await Promise.resolve();
+
       if (!isMounted) {
         return;
       }
@@ -322,13 +429,16 @@ function AdminDashboard() {
     });
   }, [orders]);
 
-  const cancelledOrders = orders.filter(
-    (order) => order.status === "Cancelled"
-  ).length;
+  const cancelledOrders = Number(
+    orderStats.cancelledOrders || 0
+  );
 
-  const nonCancelledOrders = orders.filter(
-    (order) => order.status !== "Cancelled"
-  ).length;
+  const nonCancelledOrders =
+    Math.max(
+      Number(orderStats.totalOrders || 0) -
+        cancelledOrders,
+      0
+    );
 
   const completionRate =
     nonCancelledOrders > 0
@@ -338,6 +448,32 @@ function AdminDashboard() {
             100
         )
       : 0;
+
+  const maxRevenue = useMemo(() => {
+    if (revenueByDate.length === 0) {
+      return 0;
+    }
+
+    return Math.max(
+      ...revenueByDate.map((item) =>
+        Number(item.revenue || 0)
+      ),
+      0
+    );
+  }, [revenueByDate]);
+
+  const maxItemQuantity = useMemo(() => {
+    if (bestSellingItems.length === 0) {
+      return 0;
+    }
+
+    return Math.max(
+      ...bestSellingItems.map((item) =>
+        Number(item.quantity || 0)
+      ),
+      0
+    );
+  }, [bestSellingItems]);
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-6 sm:px-6 lg:px-8">
@@ -535,7 +671,6 @@ function AdminDashboard() {
               </h2>
 
               <div className="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
-                {/* Menu */}
                 <Link
                   to="/admin/menu"
                   className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
@@ -559,7 +694,6 @@ function AdminDashboard() {
                   </p>
                 </Link>
 
-                {/* Gallery */}
                 <Link
                   to="/admin/gallery"
                   className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
@@ -583,7 +717,6 @@ function AdminDashboard() {
                   </p>
                 </Link>
 
-                {/* Total Enquiries */}
                 <Link
                   to="/admin/enquiries"
                   className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
@@ -607,7 +740,6 @@ function AdminDashboard() {
                   </p>
                 </Link>
 
-                {/* New Enquiries */}
                 <Link
                   to="/admin/enquiries"
                   className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
@@ -655,7 +787,6 @@ function AdminDashboard() {
               </div>
 
               <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
-                {/* Total Orders */}
                 <Link
                   to="/admin/orders"
                   className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
@@ -673,7 +804,6 @@ function AdminDashboard() {
                   </p>
                 </Link>
 
-                {/* Pending */}
                 <Link
                   to="/admin/orders"
                   className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
@@ -691,7 +821,6 @@ function AdminDashboard() {
                   </p>
                 </Link>
 
-                {/* Preparing */}
                 <Link
                   to="/admin/orders"
                   className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
@@ -709,7 +838,6 @@ function AdminDashboard() {
                   </p>
                 </Link>
 
-                {/* Completed */}
                 <Link
                   to="/admin/orders"
                   className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
@@ -727,7 +855,6 @@ function AdminDashboard() {
                   </p>
                 </Link>
 
-                {/* Revenue */}
                 <div className="col-span-2 rounded-xl border border-gray-200 bg-white p-5 shadow-sm md:col-span-1">
                   <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-emerald-100 text-xl">
                     💰
@@ -740,6 +867,229 @@ function AdminDashboard() {
                   <p className="mt-1 text-2xl font-bold text-emerald-600">
                     ₹{formatPrice(orderStats.totalRevenue)}
                   </p>
+                </div>
+              </div>
+            </section>
+
+            {/* Revenue & Best Selling Analytics */}
+            <section className="mt-10">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">
+                  Revenue & Best-Selling Analytics
+                </h2>
+
+                <p className="mt-1 text-sm text-gray-500">
+                  Revenue trends and the most ordered menu
+                  items.
+                </p>
+              </div>
+
+              <div className="mt-4 grid gap-6 xl:grid-cols-3">
+                {/* Revenue Overview */}
+                <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6 xl:col-span-2">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h3 className="font-bold text-gray-900">
+                        Revenue Overview
+                      </h3>
+
+                      <p className="mt-1 text-xs text-gray-500">
+                        Revenue from non-cancelled orders.
+                      </p>
+                    </div>
+
+                    <div className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                      ₹
+                      {formatPrice(
+                        orderStats.totalRevenue
+                      )}
+                    </div>
+                  </div>
+
+                  {revenueByDate.length === 0 ? (
+                    <div className="mt-6 flex min-h-[280px] items-center justify-center rounded-xl border border-dashed border-gray-200 bg-gray-50 px-6 text-center">
+                      <div>
+                        <div className="text-4xl">
+                          📈
+                        </div>
+
+                        <p className="mt-3 font-semibold text-gray-700">
+                          No revenue data yet
+                        </p>
+
+                        <p className="mt-1 text-sm text-gray-500">
+                          Revenue data will appear here
+                          after orders are placed.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-6">
+                      <div className="flex h-[280px] items-end gap-2 overflow-x-auto pb-2 sm:gap-3">
+                        {revenueByDate.map((item) => {
+                          const revenue = Number(
+                            item.revenue || 0
+                          );
+
+                          const height =
+                            maxRevenue > 0
+                              ? Math.max(
+                                  (revenue /
+                                    maxRevenue) *
+                                    100,
+                                  4
+                                )
+                              : 4;
+
+                          return (
+                            <div
+                              key={item.date}
+                              className="flex h-full min-w-[58px] flex-1 flex-col justify-end"
+                            >
+                              <div className="mb-2 text-center">
+                                <p className="text-[10px] font-semibold text-gray-600 sm:text-xs">
+                                  ₹
+                                  {formatPrice(
+                                    revenue
+                                  )}
+                                </p>
+                              </div>
+
+                              <div className="flex h-[190px] items-end justify-center">
+                                <div
+                                  className="w-8 rounded-t-lg bg-emerald-500 transition-all duration-500 hover:bg-emerald-600 sm:w-10"
+                                  style={{
+                                    height: `${height}%`,
+                                  }}
+                                  title={`${formatShortDate(
+                                    item.date
+                                  )}: ₹${formatPrice(
+                                    revenue
+                                  )}`}
+                                />
+                              </div>
+
+                              <p className="mt-2 truncate text-center text-[10px] font-medium text-gray-500 sm:text-xs">
+                                {formatShortDate(
+                                  item.date
+                                )}
+                              </p>
+
+                              <p className="mt-1 text-center text-[10px] text-gray-400">
+                                {item.orders}{" "}
+                                {Number(item.orders) ===
+                                1
+                                  ? "order"
+                                  : "orders"}
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Best Selling */}
+                <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+                  <div>
+                    <h3 className="font-bold text-gray-900">
+                      Best-Selling Items
+                    </h3>
+
+                    <p className="mt-1 text-xs text-gray-500">
+                      Top menu items by quantity sold.
+                    </p>
+                  </div>
+
+                  {bestSellingItems.length === 0 ? (
+                    <div className="mt-6 rounded-xl border border-dashed border-gray-200 bg-gray-50 px-5 py-12 text-center">
+                      <div className="text-4xl">
+                        🏆
+                      </div>
+
+                      <p className="mt-3 font-semibold text-gray-700">
+                        No sales data yet
+                      </p>
+
+                      <p className="mt-1 text-sm text-gray-500">
+                        Best-selling items will appear
+                        here.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="mt-5 space-y-4">
+                      {bestSellingItems
+                        .slice(0, 5)
+                        .map((item, index) => {
+                          const quantity = Number(
+                            item.quantity || 0
+                          );
+
+                          const percentage =
+                            maxItemQuantity > 0
+                              ? Math.round(
+                                  (quantity /
+                                    maxItemQuantity) *
+                                    100
+                                )
+                              : 0;
+
+                          return (
+                            <div
+                              key={
+                                item.menuItemId ||
+                                `${item.name}-${index}`
+                              }
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-sm font-bold text-amber-700">
+                                  {index + 1}
+                                </div>
+
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-start justify-between gap-3">
+                                    <p className="truncate text-sm font-semibold text-gray-800">
+                                      {item.name}
+                                    </p>
+
+                                    <p className="shrink-0 text-sm font-bold text-gray-900">
+                                      {quantity}
+                                    </p>
+                                  </div>
+
+                                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-gray-100">
+                                    <div
+                                      className="h-full rounded-full bg-amber-500 transition-all duration-500"
+                                      style={{
+                                        width: `${percentage}%`,
+                                      }}
+                                    />
+                                  </div>
+
+                                  <div className="mt-1 flex items-center justify-between">
+                                    <span className="text-[10px] text-gray-400">
+                                      {quantity}{" "}
+                                      {quantity === 1
+                                        ? "unit"
+                                        : "units"}{" "}
+                                      sold
+                                    </span>
+
+                                    <span className="text-[10px] font-semibold text-gray-500">
+                                      ₹
+                                      {formatPrice(
+                                        item.revenue
+                                      )}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  )}
                 </div>
               </div>
             </section>
@@ -891,16 +1241,36 @@ function AdminDashboard() {
                       <p className="mt-1 text-2xl font-bold text-emerald-900">
                         ₹
                         {formatPrice(
-                          nonCancelledOrders > 0
-                            ? orderStats.totalRevenue /
-                                nonCancelledOrders
-                            : 0
+                          orderStats.averageOrderValue
                         )}
                       </p>
 
                       <p className="mt-1 text-xs text-emerald-700">
-                        Based on active orders
+                        Based on non-cancelled orders
                       </p>
+                    </div>
+
+                    {/* Delivery / Pickup */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="rounded-xl bg-blue-50 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">
+                          Delivery
+                        </p>
+
+                        <p className="mt-1 text-xl font-bold text-blue-900">
+                          {orderStats.deliveryOrders}
+                        </p>
+                      </div>
+
+                      <div className="rounded-xl bg-purple-50 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-purple-700">
+                          Pickup
+                        </p>
+
+                        <p className="mt-1 text-xl font-bold text-purple-900">
+                          {orderStats.pickupOrders}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1225,3 +1595,4 @@ function AdminDashboard() {
 }
 
 export default AdminDashboard;
+

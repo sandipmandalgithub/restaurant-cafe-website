@@ -7,6 +7,7 @@ const {
   trackOrder,
   updateOrderStatus,
   deleteOrder,
+  getOrderStatistics,
 } = require("../controllers/orderController");
 
 const protect = require("../middleware/authMiddleware");
@@ -28,6 +29,9 @@ router.get("/track/:id", trackOrder);
 // ======================================================
 // Admin - Protected
 // ======================================================
+
+// Get order statistics
+router.get("/statistics", protect, getOrderStatistics);
 
 // Get all orders
 router.get("/", protect, getOrders);
