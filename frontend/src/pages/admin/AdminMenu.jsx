@@ -46,9 +46,7 @@ function AdminMenu() {
     } catch (error) {
       console.error("Failed to fetch menus:", error);
 
-      setErrorMessage(
-        error.message || "Unable to load menu items."
-      );
+      setErrorMessage(error.message || "Unable to load menu items.");
     } finally {
       setIsLoading(false);
     }
@@ -66,7 +64,6 @@ function AdminMenu() {
       [name]: type === "checkbox" ? checked : value,
     }));
 
-    // Remove old error while user is correcting the form.
     if (errorMessage) {
       setErrorMessage("");
     }
@@ -173,9 +170,7 @@ function AdminMenu() {
     } catch (error) {
       console.error("Menu operation failed:", error);
 
-      setErrorMessage(
-        error.message || "Unable to save menu item."
-      );
+      setErrorMessage(error.message || "Unable to save menu item.");
     } finally {
       setIsSubmitting(false);
     }
@@ -228,9 +223,7 @@ function AdminMenu() {
     } catch (error) {
       console.error("Failed to delete menu item:", error);
 
-      setErrorMessage(
-        error.message || "Unable to delete menu item."
-      );
+      setErrorMessage(error.message || "Unable to delete menu item.");
     }
   };
 
@@ -263,14 +256,10 @@ function AdminMenu() {
           : `${menu.name} is now out of stock.`
       );
     } catch (error) {
-      console.error(
-        "Failed to update menu availability:",
-        error
-      );
+      console.error("Failed to update menu availability:", error);
 
       setErrorMessage(
-        error.message ||
-          "Unable to update menu availability."
+        error.message || "Unable to update menu availability."
       );
     } finally {
       setUpdatingAvailabilityId(null);
@@ -286,15 +275,11 @@ function AdminMenu() {
       ),
     ];
 
-    return uniqueCategories.sort((a, b) =>
-      a.localeCompare(b)
-    );
+    return uniqueCategories.sort((a, b) => a.localeCompare(b));
   }, [menus]);
 
   const filteredMenus = useMemo(() => {
-    const normalizedSearchTerm = searchTerm
-      .trim()
-      .toLowerCase();
+    const normalizedSearchTerm = searchTerm.trim().toLowerCase();
 
     const filtered = menus.filter((menu) => {
       const menuName = menu.name?.toLowerCase() || "";
@@ -323,12 +308,7 @@ function AdminMenu() {
     }
 
     return filtered;
-  }, [
-    menus,
-    searchTerm,
-    selectedCategory,
-    priceSort,
-  ]);
+  }, [menus, searchTerm, selectedCategory, priceSort]);
 
   const hasActiveFilters =
     searchTerm.trim() !== "" ||
@@ -343,27 +323,25 @@ function AdminMenu() {
 
   const handleImageError = (event) => {
     event.currentTarget.onerror = null;
-
     event.currentTarget.src =
       "https://placehold.co/800x500?text=Food+Image";
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="min-h-screen overflow-x-hidden bg-gray-100">
+      <main className="mx-auto w-full max-w-7xl px-3 py-5 sm:px-5 sm:py-7 lg:px-8 lg:py-8">
         {/* Page Header */}
-        <div className="mb-8">
-          <p className="text-sm font-semibold uppercase tracking-widest text-orange-600">
+        <div className="mb-6 sm:mb-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-orange-600 sm:text-sm">
             Admin Panel
           </p>
 
-          <h1 className="mt-2 text-3xl font-bold text-gray-900">
+          <h1 className="mt-2 text-2xl font-bold leading-tight text-gray-900 sm:text-3xl">
             Menu Management
           </h1>
 
-          <p className="mt-2 text-sm text-gray-600 sm:text-base">
-            Add, edit, delete, search, filter, and manage menu
-            availability.
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
+            Add, edit, delete, search, filter, and manage menu availability.
           </p>
         </div>
 
@@ -371,7 +349,7 @@ function AdminMenu() {
         {errorMessage && (
           <div
             role="alert"
-            className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+            className="mb-5 break-words rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium leading-5 text-red-700 sm:mb-6"
           >
             {errorMessage}
           </div>
@@ -380,21 +358,21 @@ function AdminMenu() {
         {successMessage && (
           <div
             role="status"
-            className="mb-6 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700"
+            className="mb-5 break-words rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium leading-5 text-green-700 sm:mb-6"
           >
             {successMessage}
           </div>
         )}
 
         {/* Form */}
-        <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
-          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">
+        <section className="rounded-2xl bg-white p-4 shadow-sm sm:p-6 lg:p-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">
                 {editingId ? "Edit Menu Item" : "Add Menu Item"}
               </h2>
 
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm leading-5 text-gray-500">
                 {editingId
                   ? "Update the selected menu item."
                   : "Create a new menu item for your restaurant."}
@@ -405,7 +383,7 @@ function AdminMenu() {
               <button
                 type="button"
                 onClick={resetForm}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+                className="min-h-11 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-200 sm:w-auto"
               >
                 Cancel Edit
               </button>
@@ -417,7 +395,7 @@ function AdminMenu() {
             className="mt-6 grid gap-5 md:grid-cols-2"
           >
             {/* Name */}
-            <div>
+            <div className="min-w-0">
               <label
                 htmlFor="name"
                 className="mb-2 block text-sm font-medium text-gray-700"
@@ -434,12 +412,12 @@ function AdminMenu() {
                 required
                 maxLength={100}
                 placeholder="e.g. Chicken Biryani"
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                className="min-h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
               />
             </div>
 
             {/* Category */}
-            <div>
+            <div className="min-w-0">
               <label
                 htmlFor="category"
                 className="mb-2 block text-sm font-medium text-gray-700"
@@ -456,12 +434,12 @@ function AdminMenu() {
                 required
                 maxLength={50}
                 placeholder="e.g. Main Course"
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                className="min-h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
               />
             </div>
 
             {/* Price */}
-            <div>
+            <div className="min-w-0">
               <label
                 htmlFor="price"
                 className="mb-2 block text-sm font-medium text-gray-700"
@@ -479,12 +457,12 @@ function AdminMenu() {
                 onChange={handleChange}
                 required
                 placeholder="e.g. 250"
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                className="min-h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
               />
             </div>
 
             {/* Image */}
-            <div>
+            <div className="min-w-0">
               <label
                 htmlFor="image"
                 className="mb-2 block text-sm font-medium text-gray-700"
@@ -500,12 +478,12 @@ function AdminMenu() {
                 onChange={handleChange}
                 required
                 placeholder="https://example.com/food.jpg"
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                className="min-h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
               />
             </div>
 
             {/* Description */}
-            <div className="md:col-span-2">
+            <div className="min-w-0 md:col-span-2">
               <label
                 htmlFor="description"
                 className="mb-2 block text-sm font-medium text-gray-700"
@@ -522,7 +500,7 @@ function AdminMenu() {
                 maxLength={500}
                 rows="4"
                 placeholder="Describe the food item..."
-                className="w-full resize-none rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                className="w-full resize-none rounded-lg border border-gray-300 px-4 py-3 text-sm leading-6 outline-none transition placeholder:text-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
               />
 
               <p className="mt-1 text-right text-xs text-gray-400">
@@ -531,19 +509,19 @@ function AdminMenu() {
             </div>
 
             {/* Availability */}
-            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 md:col-span-2">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
+            <div className="min-w-0 rounded-xl border border-gray-200 bg-gray-50 p-4 md:col-span-2 sm:p-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
                   <p className="text-sm font-semibold text-gray-900">
                     Menu Availability
                   </p>
 
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 text-xs leading-5 text-gray-500">
                     Control whether customers can order this item.
                   </p>
                 </div>
 
-                <label className="inline-flex cursor-pointer items-center gap-3">
+                <label className="inline-flex min-h-11 cursor-pointer items-center gap-3 self-start sm:self-auto">
                   <input
                     type="checkbox"
                     name="isAvailable"
@@ -553,7 +531,7 @@ function AdminMenu() {
                   />
 
                   <span
-                    className={`relative h-6 w-11 rounded-full transition ${
+                    className={`relative h-6 w-11 shrink-0 rounded-full transition ${
                       formData.isAvailable
                         ? "bg-green-500"
                         : "bg-gray-300"
@@ -561,9 +539,7 @@ function AdminMenu() {
                   >
                     <span
                       className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow-sm transition ${
-                        formData.isAvailable
-                          ? "left-6"
-                          : "left-1"
+                        formData.isAvailable ? "left-6" : "left-1"
                       }`}
                     />
                   </span>
@@ -575,9 +551,7 @@ function AdminMenu() {
                         : "text-red-600"
                     }`}
                   >
-                    {formData.isAvailable
-                      ? "Available"
-                      : "Out of Stock"}
+                    {formData.isAvailable ? "Available" : "Out of Stock"}
                   </span>
                 </label>
               </div>
@@ -588,7 +562,7 @@ function AdminMenu() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full rounded-lg bg-orange-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                className="min-h-11 w-full rounded-lg bg-orange-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-200 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
               >
                 {isSubmitting
                   ? "Saving..."
@@ -598,20 +572,19 @@ function AdminMenu() {
               </button>
             </div>
           </form>
-        </div>
+        </section>
 
         {/* Menu List */}
-        <div className="mt-8">
-          <div className="mb-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">
+        <section className="mt-7 sm:mt-8">
+          <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="min-w-0">
+              <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">
                 Existing Menu Items
               </h2>
 
               <p className="mt-1 text-sm text-gray-500">
                 Total items: {menus.length}
-                {hasActiveFilters &&
-                  ` • Showing: ${filteredMenus.length}`}
+                {hasActiveFilters && ` • Showing: ${filteredMenus.length}`}
               </p>
             </div>
 
@@ -619,7 +592,7 @@ function AdminMenu() {
               type="button"
               onClick={handleLoadMenus}
               disabled={isLoading}
-              className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+              className="min-h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-200 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
             >
               {isLoading ? "Loading..." : "Refresh"}
             </button>
@@ -627,21 +600,20 @@ function AdminMenu() {
 
           {/* Search & Filters */}
           {!isLoading && menus.length > 0 && (
-            <div className="mb-6 rounded-2xl bg-white p-5 shadow-sm sm:p-6">
+            <div className="mb-6 rounded-2xl bg-white p-4 shadow-sm sm:p-6">
               <div className="mb-5">
                 <h3 className="text-lg font-bold text-gray-900">
                   Search & Filters
                 </h3>
 
-                <p className="mt-1 text-sm text-gray-500">
-                  Find menu items quickly by name, category, or
-                  price.
+                <p className="mt-1 text-sm leading-5 text-gray-500">
+                  Find menu items quickly by name, category, or price.
                 </p>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {/* Search */}
-                <div className="lg:col-span-2">
+                <div className="min-w-0 lg:col-span-2">
                   <label
                     htmlFor="menuSearch"
                     className="mb-2 block text-sm font-medium text-gray-700"
@@ -662,13 +634,13 @@ function AdminMenu() {
                         setSearchTerm(event.target.value)
                       }
                       placeholder="Search food name..."
-                      className="w-full rounded-lg border border-gray-300 py-3 pl-11 pr-4 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                      className="min-h-11 w-full rounded-lg border border-gray-300 py-3 pl-11 pr-4 text-sm outline-none transition placeholder:text-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
                     />
                   </div>
                 </div>
 
                 {/* Category */}
-                <div>
+                <div className="min-w-0">
                   <label
                     htmlFor="categoryFilter"
                     className="mb-2 block text-sm font-medium text-gray-700"
@@ -682,15 +654,12 @@ function AdminMenu() {
                     onChange={(event) =>
                       setSelectedCategory(event.target.value)
                     }
-                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                    className="min-h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
                   >
                     <option value="All">All Categories</option>
 
                     {categories.map((category) => (
-                      <option
-                        key={category}
-                        value={category}
-                      >
+                      <option key={category} value={category}>
                         {category}
                       </option>
                     ))}
@@ -698,7 +667,7 @@ function AdminMenu() {
                 </div>
 
                 {/* Price Sort */}
-                <div>
+                <div className="min-w-0">
                   <label
                     htmlFor="priceSort"
                     className="mb-2 block text-sm font-medium text-gray-700"
@@ -712,19 +681,11 @@ function AdminMenu() {
                     onChange={(event) =>
                       setPriceSort(event.target.value)
                     }
-                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                    className="min-h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
                   >
-                    <option value="default">
-                      Default Order
-                    </option>
-
-                    <option value="lowToHigh">
-                      Price: Low to High
-                    </option>
-
-                    <option value="highToLow">
-                      Price: High to Low
-                    </option>
+                    <option value="default">Default Order</option>
+                    <option value="lowToHigh">Price: Low to High</option>
+                    <option value="highToLow">Price: High to Low</option>
                   </select>
                 </div>
               </div>
@@ -747,7 +708,7 @@ function AdminMenu() {
                   <button
                     type="button"
                     onClick={handleClearFilters}
-                    className="w-full rounded-lg border border-orange-200 bg-orange-50 px-4 py-2.5 text-sm font-semibold text-orange-700 transition hover:bg-orange-100 sm:w-auto"
+                    className="min-h-11 w-full rounded-lg border border-orange-200 bg-orange-50 px-4 py-2.5 text-sm font-semibold text-orange-700 transition hover:bg-orange-100 focus:outline-none focus:ring-2 focus:ring-orange-200 sm:w-auto"
                   >
                     Clear Filters
                   </button>
@@ -756,20 +717,22 @@ function AdminMenu() {
             </div>
           )}
 
+          {/* Loading */}
           {isLoading ? (
             <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
-              <p className="text-sm text-gray-500">
+              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-orange-100 border-t-orange-600" />
+              <p className="mt-4 text-sm text-gray-500">
                 Loading menu items...
               </p>
             </div>
           ) : menus.length === 0 ? (
-            <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
+            <div className="rounded-2xl bg-white p-8 text-center shadow-sm sm:p-10">
               <p className="text-sm text-gray-500">
                 No menu items found.
               </p>
             </div>
           ) : filteredMenus.length === 0 ? (
-            <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
+            <div className="rounded-2xl bg-white p-8 text-center shadow-sm sm:p-10">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-50 text-2xl">
                 🔎
               </div>
@@ -778,40 +741,40 @@ function AdminMenu() {
                 No Matching Menu Items
               </h3>
 
-              <p className="mt-2 text-sm text-gray-500">
+              <p className="mt-2 text-sm leading-5 text-gray-500">
                 Try changing your search term or filters.
               </p>
 
               <button
                 type="button"
                 onClick={handleClearFilters}
-                className="mt-5 rounded-lg bg-orange-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-700"
+                className="mt-5 min-h-11 rounded-lg bg-orange-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-200"
               >
                 Clear Filters
               </button>
             </div>
           ) : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {filteredMenus.map((menu) => {
                 const isAvailable = menu.isAvailable !== false;
                 const isUpdating =
                   updatingAvailabilityId === menu._id;
 
                 return (
-                  <div
+                  <article
                     key={menu._id}
-                    className={`overflow-hidden rounded-2xl bg-white shadow-sm ${
-                      !isAvailable
-                        ? "ring-2 ring-red-100"
-                        : ""
+                    className={`min-w-0 overflow-hidden rounded-2xl bg-white shadow-sm ${
+                      !isAvailable ? "ring-2 ring-red-100" : ""
                     }`}
                   >
-                    <div className="relative">
+                    {/* Image */}
+                    <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-100">
                       <img
                         src={menu.image}
                         alt={menu.name}
                         onError={handleImageError}
-                        className={`h-48 w-full object-cover ${
+                        loading="lazy"
+                        className={`h-full w-full object-cover transition ${
                           !isAvailable
                             ? "opacity-60 grayscale"
                             : ""
@@ -834,29 +797,32 @@ function AdminMenu() {
 
                       {!isAvailable && (
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="rounded-lg bg-black/60 px-4 py-2 text-sm font-bold text-white">
+                          <span className="rounded-lg bg-black/60 px-4 py-2 text-center text-xs font-bold tracking-wide text-white sm:text-sm">
                             OUT OF STOCK
                           </span>
                         </div>
                       )}
                     </div>
 
-                    <div className="p-5">
+                    {/* Content */}
+                    <div className="flex h-full min-w-0 flex-col p-4 sm:p-5">
                       <div className="flex items-start justify-between gap-3">
-                        <h3 className="text-lg font-bold text-gray-900">
+                        <h3 className="min-w-0 break-words text-lg font-bold leading-6 text-gray-900">
                           {menu.name}
                         </h3>
 
-                        <span className="whitespace-nowrap text-lg font-bold text-orange-600">
+                        <span className="shrink-0 whitespace-nowrap text-base font-bold text-orange-600 sm:text-lg">
                           ₹{menu.price}
                         </span>
                       </div>
 
-                      <p className="mt-2 inline-block rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-700">
-                        {menu.category}
+                      <p className="mt-2 inline-flex w-fit max-w-full rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-700">
+                        <span className="break-words">
+                          {menu.category}
+                        </span>
                       </p>
 
-                      <p className="mt-4 text-sm leading-6 text-gray-600">
+                      <p className="mt-4 min-w-0 break-words text-sm leading-6 text-gray-600">
                         {menu.description}
                       </p>
 
@@ -867,7 +833,7 @@ function AdminMenu() {
                           handleAvailabilityToggle(menu)
                         }
                         disabled={isUpdating}
-                        className={`mt-5 flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                        className={`mt-5 min-h-11 flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-orange-200 disabled:cursor-not-allowed disabled:opacity-60 ${
                           isAvailable
                             ? "border border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
                             : "border border-green-200 bg-green-50 text-green-700 hover:bg-green-100"
@@ -877,43 +843,42 @@ function AdminMenu() {
                           "Updating..."
                         ) : isAvailable ? (
                           <>
-                            <span>✕</span>
+                            <span aria-hidden="true">✕</span>
                             Mark as Out of Stock
                           </>
                         ) : (
                           <>
-                            <span>✓</span>
+                            <span aria-hidden="true">✓</span>
                             Mark as Available
                           </>
                         )}
                       </button>
 
-                      <div className="mt-3 flex gap-3">
+                      {/* Edit / Delete */}
+                      <div className="mt-3 grid grid-cols-2 gap-3">
                         <button
                           type="button"
                           onClick={() => handleEdit(menu)}
-                          className="flex-1 rounded-lg border border-blue-600 px-4 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-50"
+                          className="min-h-11 rounded-lg border border-blue-600 px-3 py-2.5 text-sm font-semibold text-blue-600 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-100"
                         >
                           Edit
                         </button>
 
                         <button
                           type="button"
-                          onClick={() =>
-                            handleDelete(menu._id)
-                          }
-                          className="flex-1 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+                          onClick={() => handleDelete(menu._id)}
+                          className="min-h-11 rounded-lg bg-red-600 px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-200"
                         >
                           Delete
                         </button>
                       </div>
                     </div>
-                  </div>
+                  </article>
                 );
               })}
             </div>
           )}
-        </div>
+        </section>
       </main>
     </div>
   );
