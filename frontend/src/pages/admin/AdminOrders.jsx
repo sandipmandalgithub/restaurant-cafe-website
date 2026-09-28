@@ -28,9 +28,7 @@ function AdminOrders() {
   };
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat("en-IN").format(
-      Number(price || 0)
-    );
+    return new Intl.NumberFormat("en-IN").format(Number(price || 0));
   };
 
   const formatDate = (date) => {
@@ -38,32 +36,61 @@ function AdminOrders() {
       return "-";
     }
 
+    const parsedDate = new Date(date);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      return "-";
+    }
+
     return new Intl.DateTimeFormat("en-IN", {
       dateStyle: "medium",
       timeStyle: "short",
-    }).format(new Date(date));
+    }).format(parsedDate);
   };
 
   const getStatusClasses = (status) => {
     switch (status) {
       case "Confirmed":
-        return "bg-blue-100 text-blue-700";
+        return "border border-blue-200 bg-blue-50 text-blue-700";
 
       case "Preparing":
-        return "bg-orange-100 text-orange-700";
+        return "border border-orange-200 bg-orange-50 text-orange-700";
 
       case "Ready":
-        return "bg-purple-100 text-purple-700";
+        return "border border-purple-200 bg-purple-50 text-purple-700";
 
       case "Completed":
-        return "bg-green-100 text-green-700";
+        return "border border-green-200 bg-green-50 text-green-700";
 
       case "Cancelled":
-        return "bg-red-100 text-red-700";
+        return "border border-red-200 bg-red-50 text-red-700";
 
       case "Pending":
       default:
-        return "bg-yellow-100 text-yellow-700";
+        return "border border-yellow-200 bg-yellow-50 text-yellow-700";
+    }
+  };
+
+  const getStatusDotClasses = (status) => {
+    switch (status) {
+      case "Confirmed":
+        return "bg-blue-500";
+
+      case "Preparing":
+        return "bg-orange-500";
+
+      case "Ready":
+        return "bg-purple-500";
+
+      case "Completed":
+        return "bg-green-500";
+
+      case "Cancelled":
+        return "bg-red-500";
+
+      case "Pending":
+      default:
+        return "bg-yellow-500";
     }
   };
 
@@ -256,113 +283,155 @@ function AdminOrders() {
     };
   }, [orders]);
 
+  const stats = [
+    {
+      label: "Total Orders",
+      value: orderStats.total,
+      icon: "📦",
+      iconBg: "bg-gray-100",
+      valueColor: "text-gray-900",
+    },
+    {
+      label: "Pending",
+      value: orderStats.pending,
+      icon: "⏳",
+      iconBg: "bg-yellow-50",
+      valueColor: "text-yellow-600",
+    },
+    {
+      label: "Preparing",
+      value: orderStats.preparing,
+      icon: "🍳",
+      iconBg: "bg-orange-50",
+      valueColor: "text-orange-600",
+    },
+    {
+      label: "Completed",
+      value: orderStats.completed,
+      icon: "✓",
+      iconBg: "bg-green-50",
+      valueColor: "text-green-600",
+    },
+  ];
+
   return (
     <div className="min-h-screen overflow-x-hidden bg-gray-50">
-      <main className="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-        {/* Header */}
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-600 sm:text-sm sm:tracking-wider">
-              Admin Panel
-            </p>
+      <main className="mx-auto w-full max-w-7xl px-3 py-5 sm:px-5 sm:py-7 lg:px-8 lg:py-9">
+        {/* Page Header */}
+        <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6 lg:p-7">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-amber-500" />
 
-            <h1 className="mt-2 text-2xl font-bold leading-tight text-gray-900 sm:text-3xl lg:text-4xl">
-              Orders
-            </h1>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-600 sm:text-sm">
+                  Admin Panel
+                </p>
+              </div>
 
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
-              Manage customer orders and update their status.
-            </p>
+              <h1 className="mt-2 break-words text-2xl font-bold leading-tight text-gray-900 sm:text-3xl lg:text-4xl">
+                Orders
+              </h1>
+
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
+                Manage customer orders, monitor progress, and
+                update order status.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={fetchOrders}
+              disabled={isLoading}
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-800 shadow-sm transition hover:border-gray-400 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-200 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+            >
+              <span aria-hidden="true">↻</span>
+
+              {isLoading ? "Refreshing..." : "Refresh Orders"}
+            </button>
           </div>
-
-          <button
-            type="button"
-            onClick={fetchOrders}
-            disabled={isLoading}
-            className="min-h-11 w-full rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-800 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-200 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-          >
-            {isLoading ? "Refreshing..." : "Refresh Orders"}
-          </button>
-        </div>
+        </section>
 
         {/* Stats */}
-        <section className="mt-7 grid grid-cols-2 gap-3 sm:mt-8 sm:gap-4 lg:grid-cols-4">
-          <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
-            <p className="text-xs font-medium text-gray-500 sm:text-sm">
-              Total Orders
-            </p>
+        <section className="mt-5 grid grid-cols-2 gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className="group rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-5"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-gray-500 sm:text-sm">
+                    {stat.label}
+                  </p>
 
-            <p className="mt-2 text-2xl font-bold text-gray-900 sm:text-3xl">
-              {orderStats.total}
-            </p>
-          </div>
+                  <p
+                    className={`mt-2 text-2xl font-bold sm:text-3xl ${stat.valueColor}`}
+                  >
+                    {stat.value}
+                  </p>
+                </div>
 
-          <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
-            <p className="text-xs font-medium text-gray-500 sm:text-sm">
-              Pending
-            </p>
-
-            <p className="mt-2 text-2xl font-bold text-yellow-600 sm:text-3xl">
-              {orderStats.pending}
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
-            <p className="text-xs font-medium text-gray-500 sm:text-sm">
-              Preparing
-            </p>
-
-            <p className="mt-2 text-2xl font-bold text-orange-600 sm:text-3xl">
-              {orderStats.preparing}
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
-            <p className="text-xs font-medium text-gray-500 sm:text-sm">
-              Completed
-            </p>
-
-            <p className="mt-2 text-2xl font-bold text-green-600 sm:text-3xl">
-              {orderStats.completed}
-            </p>
-          </div>
+                <div
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-base sm:h-10 sm:w-10 ${stat.iconBg}`}
+                >
+                  {stat.icon}
+                </div>
+              </div>
+            </div>
+          ))}
         </section>
 
         {/* Error */}
         {error && (
           <div
             role="alert"
-            className="mt-6 flex flex-col gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
+            className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4 sm:mt-6 sm:p-5"
           >
-            <p className="break-words text-sm font-medium leading-6 text-red-700">
-              {error}
-            </p>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-red-800">
+                  Something went wrong
+                </p>
 
-            <button
-              type="button"
-              onClick={fetchOrders}
-              className="min-h-10 w-full shrink-0 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 sm:w-auto"
-            >
-              Try Again
-            </button>
+                <p className="mt-1 break-words text-sm leading-6 text-red-700">
+                  {error}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={fetchOrders}
+                className="min-h-10 w-full shrink-0 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-1 sm:w-auto"
+              >
+                Try Again
+              </button>
+            </div>
           </div>
         )}
 
         {/* Loading */}
         {isLoading && (
-          <div className="mt-7 rounded-2xl border border-gray-200 bg-white px-5 py-14 text-center shadow-sm sm:mt-8 sm:px-6 sm:py-16">
-            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-amber-600" />
+          <div className="mt-5 rounded-2xl border border-gray-200 bg-white px-5 py-14 text-center shadow-sm sm:mt-6 sm:px-6 sm:py-16">
+            <div
+              className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-amber-600"
+              aria-hidden="true"
+            />
 
-            <p className="mt-5 text-sm font-medium text-gray-600">
+            <p className="mt-5 text-sm font-semibold text-gray-700">
               Loading orders...
+            </p>
+
+            <p className="mt-1 text-xs text-gray-500">
+              Please wait while we fetch the latest orders.
             </p>
           </div>
         )}
 
         {/* Empty */}
         {!isLoading && !error && orders.length === 0 && (
-          <div className="mt-7 rounded-2xl border border-gray-200 bg-white px-5 py-14 text-center shadow-sm sm:mt-8 sm:px-6 sm:py-16">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-amber-50 text-3xl">
+          <div className="mt-5 rounded-2xl border border-gray-200 bg-white px-5 py-14 text-center shadow-sm sm:mt-6 sm:px-6 sm:py-16">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 text-3xl">
               📦
             </div>
 
@@ -371,25 +440,33 @@ function AdminOrders() {
             </h2>
 
             <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-600">
-              Customer orders will appear here after they place
-              an order from the website.
+              Customer orders will appear here after they
+              place an order from the website.
             </p>
+
+            <button
+              type="button"
+              onClick={fetchOrders}
+              className="mt-6 min-h-10 rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-800 transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-200"
+            >
+              Refresh Orders
+            </button>
           </div>
         )}
 
         {/* Orders */}
         {!isLoading && orders.length > 0 && (
-          <div className="mt-7 space-y-5 sm:mt-8 sm:space-y-6">
+          <section className="mt-5 space-y-5 sm:mt-6 sm:space-y-6">
             {orders.map((order) => (
               <article
                 key={order._id}
-                className="min-w-0 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm"
+                className="min-w-0 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md"
               >
                 {/* Order Header */}
-                <div className="border-b border-gray-200 bg-gray-50 px-4 py-5 sm:px-6">
-                  <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                <div className="border-b border-gray-200 bg-gray-50/80 px-4 py-5 sm:px-6 sm:py-6">
+                  <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
                     <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+                      <div className="flex flex-wrap items-center gap-2.5">
                         <h2 className="break-words text-lg font-bold text-gray-900 sm:text-xl">
                           Order #
                           {order._id
@@ -398,43 +475,61 @@ function AdminOrders() {
                         </h2>
 
                         <span
-                          className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold ${getStatusClasses(
+                          className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold ${getStatusClasses(
                             order.status
                           )}`}
                         >
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full ${getStatusDotClasses(
+                              order.status
+                            )}`}
+                          />
+
                           {order.status}
                         </span>
                       </div>
 
-                      <p className="mt-2 break-words text-xs leading-5 text-gray-500">
-                        {formatDate(order.createdAt)}
+                      <p className="mt-2 break-words text-xs leading-5 text-gray-500 sm:text-sm">
+                        Placed on {formatDate(order.createdAt)}
                       </p>
                     </div>
 
-                    <div className="grid w-full gap-2 sm:grid-cols-[minmax(0,1fr)_auto] lg:flex lg:w-auto">
-                      <select
-                        value={order.status}
-                        onChange={(event) =>
-                          handleStatusChange(
-                            order._id,
-                            event.target.value
-                          )
-                        }
-                        disabled={
-                          updatingOrderId === order._id
-                        }
-                        aria-label={`Update status for order ${order._id}`}
-                        className="min-h-11 w-full min-w-0 rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm font-medium text-gray-800 outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-100 disabled:cursor-not-allowed disabled:bg-gray-100 lg:w-auto lg:min-w-[170px]"
-                      >
-                        {STATUS_OPTIONS.map((status) => (
-                          <option
-                            key={status}
-                            value={status}
-                          >
-                            {status}
-                          </option>
-                        ))}
-                      </select>
+                    <div className="grid w-full gap-2.5 sm:grid-cols-[minmax(0,1fr)_auto] xl:flex xl:w-auto">
+                      <div className="relative min-w-0">
+                        <select
+                          value={order.status}
+                          onChange={(event) =>
+                            handleStatusChange(
+                              order._id,
+                              event.target.value
+                            )
+                          }
+                          disabled={
+                            updatingOrderId === order._id
+                          }
+                          aria-label={`Update status for order ${order._id}`}
+                          className="min-h-11 w-full min-w-0 appearance-none rounded-xl border border-gray-300 bg-white px-3 py-2.5 pr-9 text-sm font-semibold text-gray-800 outline-none transition hover:border-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-100 disabled:cursor-not-allowed disabled:bg-gray-100 sm:min-w-[180px]"
+                        >
+                          {STATUS_OPTIONS.map((status) => (
+                            <option
+                              key={status}
+                              value={status}
+                            >
+                              {updatingOrderId === order._id &&
+                              status === order.status
+                                ? "Updating..."
+                                : status}
+                            </option>
+                          ))}
+                        </select>
+
+                        <span
+                          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500"
+                          aria-hidden="true"
+                        >
+                          ▼
+                        </span>
+                      </div>
 
                       <button
                         type="button"
@@ -444,26 +539,32 @@ function AdminOrders() {
                         disabled={
                           deletingOrderId === order._id
                         }
-                        className="min-h-11 w-full rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200 disabled:cursor-not-allowed disabled:opacity-60 lg:w-auto"
+                        className="min-h-11 w-full rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:border-red-300 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60 xl:w-auto"
                       >
                         {deletingOrderId === order._id
                           ? "Deleting..."
-                          : "Delete"}
+                          : "Delete Order"}
                       </button>
                     </div>
                   </div>
                 </div>
 
                 {/* Order Content */}
-                <div className="p-4 sm:p-6">
-                  <div className="grid gap-6 lg:grid-cols-3">
+                <div className="p-4 sm:p-6 lg:p-7">
+                  <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
                     {/* Customer */}
-                    <div className="min-w-0">
-                      <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 sm:text-sm">
-                        Customer
-                      </h3>
+                    <div className="min-w-0 rounded-xl border border-gray-100 bg-gray-50/70 p-4 sm:p-5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base" aria-hidden="true">
+                          👤
+                        </span>
 
-                      <div className="mt-3 space-y-2">
+                        <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 sm:text-sm">
+                          Customer
+                        </h3>
+                      </div>
+
+                      <div className="mt-4 space-y-2.5">
                         <p className="break-words font-semibold text-gray-900">
                           {order.customer?.name || "-"}
                         </p>
@@ -481,14 +582,22 @@ function AdminOrders() {
                     </div>
 
                     {/* Address */}
-                    <div className="min-w-0">
-                      <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 sm:text-sm">
-                        {order.orderType === "Delivery"
-                          ? "Delivery Address"
-                          : "Pickup"}
-                      </h3>
+                    <div className="min-w-0 rounded-xl border border-gray-100 bg-gray-50/70 p-4 sm:p-5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base" aria-hidden="true">
+                          {order.orderType === "Delivery"
+                            ? "📍"
+                            : "🏪"}
+                        </span>
 
-                      <div className="mt-3">
+                        <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 sm:text-sm">
+                          {order.orderType === "Delivery"
+                            ? "Delivery Address"
+                            : "Pickup"}
+                        </h3>
+                      </div>
+
+                      <div className="mt-4">
                         {order.orderType === "Delivery" ? (
                           <p className="break-words text-sm leading-6 text-gray-700">
                             {order.address || "-"}
@@ -502,8 +611,8 @@ function AdminOrders() {
                       </div>
 
                       {order.note && (
-                        <div className="mt-4 rounded-xl bg-yellow-50 p-3.5">
-                          <p className="text-xs font-semibold text-yellow-800">
+                        <div className="mt-4 rounded-xl border border-yellow-100 bg-yellow-50 p-3.5">
+                          <p className="text-xs font-bold text-yellow-800">
                             Customer Note
                           </p>
 
@@ -515,18 +624,24 @@ function AdminOrders() {
                     </div>
 
                     {/* Payment Summary */}
-                    <div className="min-w-0">
-                      <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 sm:text-sm">
-                        Payment Summary
-                      </h3>
+                    <div className="min-w-0 rounded-xl border border-gray-100 bg-gray-50/70 p-4 sm:p-5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base" aria-hidden="true">
+                          💳
+                        </span>
 
-                      <div className="mt-3 space-y-3 text-sm">
+                        <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 sm:text-sm">
+                          Payment Summary
+                        </h3>
+                      </div>
+
+                      <div className="mt-4 space-y-3 text-sm">
                         <div className="flex items-center justify-between gap-4">
                           <span className="text-gray-600">
                             Subtotal
                           </span>
 
-                          <span className="shrink-0 font-medium text-gray-900">
+                          <span className="shrink-0 font-semibold text-gray-900">
                             ₹{formatPrice(order.subtotal)}
                           </span>
                         </div>
@@ -536,7 +651,7 @@ function AdminOrders() {
                             Delivery
                           </span>
 
-                          <span className="shrink-0 font-medium text-gray-900">
+                          <span className="shrink-0 font-semibold text-gray-900">
                             {order.deliveryCharge === 0
                               ? "Free"
                               : `₹${formatPrice(
@@ -563,15 +678,22 @@ function AdminOrders() {
                     </div>
                   </div>
 
-                  {/* Items */}
-                  <div className="mt-7 border-t border-gray-200 pt-6">
-                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                      <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 sm:text-sm">
-                        Ordered Items
-                      </h3>
+                  {/* Ordered Items */}
+                  <div className="mt-6 border-t border-gray-200 pt-6 sm:mt-7 sm:pt-7">
+                    <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 sm:text-sm">
+                          Ordered Items
+                        </h3>
 
-                      <p className="text-xs text-gray-400">
-                        Swipe horizontally to view all columns
+                        <p className="mt-1 text-xs text-gray-400 sm:hidden">
+                          Swipe left or right to view the
+                          complete table.
+                        </p>
+                      </div>
+
+                      <p className="hidden text-xs text-gray-400 sm:block">
+                        Scroll horizontally if needed
                       </p>
                     </div>
 
@@ -579,19 +701,19 @@ function AdminOrders() {
                       <table className="w-full min-w-[620px] text-left">
                         <thead className="bg-gray-50">
                           <tr className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500">
-                            <th className="px-4 py-3 font-semibold">
+                            <th className="px-4 py-3.5 font-semibold">
                               Item
                             </th>
 
-                            <th className="px-4 py-3 font-semibold">
+                            <th className="px-4 py-3.5 font-semibold">
                               Price
                             </th>
 
-                            <th className="px-4 py-3 font-semibold">
+                            <th className="px-4 py-3.5 font-semibold">
                               Quantity
                             </th>
 
-                            <th className="px-4 py-3 text-right font-semibold">
+                            <th className="px-4 py-3.5 text-right font-semibold">
                               Subtotal
                             </th>
                           </tr>
@@ -601,9 +723,9 @@ function AdminOrders() {
                           {order.items?.map((item, index) => (
                             <tr
                               key={`${order._id}-${item.menuItemId}-${index}`}
-                              className="border-b border-gray-100 last:border-b-0"
+                              className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50/70"
                             >
-                              <td className="max-w-[260px] px-4 py-4">
+                              <td className="max-w-[280px] px-4 py-4">
                                 <p className="break-words font-semibold text-gray-900">
                                   {item.name}
                                 </p>
@@ -613,11 +735,11 @@ function AdminOrders() {
                                 ₹{formatPrice(item.price)}
                               </td>
 
-                              <td className="px-4 py-4 text-sm text-gray-600">
+                              <td className="px-4 py-4 text-sm font-medium text-gray-700">
                                 {item.quantity}
                               </td>
 
-                              <td className="whitespace-nowrap px-4 py-4 text-right text-sm font-semibold text-gray-900">
+                              <td className="whitespace-nowrap px-4 py-4 text-right text-sm font-bold text-gray-900">
                                 ₹{formatPrice(item.subtotal)}
                               </td>
                             </tr>
@@ -629,7 +751,7 @@ function AdminOrders() {
                 </div>
               </article>
             ))}
-          </div>
+          </section>
         )}
       </main>
     </div>
