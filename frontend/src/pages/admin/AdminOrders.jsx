@@ -257,20 +257,20 @@ function AdminOrders() {
   }, [orders]);
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
+    <div className="min-h-screen overflow-x-hidden bg-gray-50">
+      <main className="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-wider text-amber-600">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-600 sm:text-sm sm:tracking-wider">
               Admin Panel
             </p>
 
-            <h1 className="mt-1 text-2xl font-bold text-gray-900 sm:text-3xl">
+            <h1 className="mt-2 text-2xl font-bold leading-tight text-gray-900 sm:text-3xl lg:text-4xl">
               Orders
             </h1>
 
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
               Manage customer orders and update their status.
             </p>
           </div>
@@ -279,66 +279,69 @@ function AdminOrders() {
             type="button"
             onClick={fetchOrders}
             disabled={isLoading}
-            className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-800 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+            className="min-h-11 w-full rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-800 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-200 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
           >
             {isLoading ? "Refreshing..." : "Refresh Orders"}
           </button>
         </div>
 
         {/* Stats */}
-        <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-            <p className="text-sm text-gray-500">
+        <section className="mt-7 grid grid-cols-2 gap-3 sm:mt-8 sm:gap-4 lg:grid-cols-4">
+          <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+            <p className="text-xs font-medium text-gray-500 sm:text-sm">
               Total Orders
             </p>
 
-            <p className="mt-2 text-2xl font-bold text-gray-900">
+            <p className="mt-2 text-2xl font-bold text-gray-900 sm:text-3xl">
               {orderStats.total}
             </p>
           </div>
 
-          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-            <p className="text-sm text-gray-500">
+          <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+            <p className="text-xs font-medium text-gray-500 sm:text-sm">
               Pending
             </p>
 
-            <p className="mt-2 text-2xl font-bold text-yellow-600">
+            <p className="mt-2 text-2xl font-bold text-yellow-600 sm:text-3xl">
               {orderStats.pending}
             </p>
           </div>
 
-          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-            <p className="text-sm text-gray-500">
+          <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+            <p className="text-xs font-medium text-gray-500 sm:text-sm">
               Preparing
             </p>
 
-            <p className="mt-2 text-2xl font-bold text-orange-600">
+            <p className="mt-2 text-2xl font-bold text-orange-600 sm:text-3xl">
               {orderStats.preparing}
             </p>
           </div>
 
-          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-            <p className="text-sm text-gray-500">
+          <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+            <p className="text-xs font-medium text-gray-500 sm:text-sm">
               Completed
             </p>
 
-            <p className="mt-2 text-2xl font-bold text-green-600">
+            <p className="mt-2 text-2xl font-bold text-green-600 sm:text-3xl">
               {orderStats.completed}
             </p>
           </div>
-        </div>
+        </section>
 
         {/* Error */}
         {error && (
-          <div className="mt-6 flex flex-col gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm font-medium text-red-700">
+          <div
+            role="alert"
+            className="mt-6 flex flex-col gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <p className="break-words text-sm font-medium leading-6 text-red-700">
               {error}
             </p>
 
             <button
               type="button"
               onClick={fetchOrders}
-              className="w-fit rounded-lg bg-red-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-red-700"
+              className="min-h-10 w-full shrink-0 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 sm:w-auto"
             >
               Try Again
             </button>
@@ -347,7 +350,7 @@ function AdminOrders() {
 
         {/* Loading */}
         {isLoading && (
-          <div className="mt-8 rounded-2xl border border-gray-200 bg-white px-6 py-16 text-center shadow-sm">
+          <div className="mt-7 rounded-2xl border border-gray-200 bg-white px-5 py-14 text-center shadow-sm sm:mt-8 sm:px-6 sm:py-16">
             <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-amber-600" />
 
             <p className="mt-5 text-sm font-medium text-gray-600">
@@ -358,12 +361,12 @@ function AdminOrders() {
 
         {/* Empty */}
         {!isLoading && !error && orders.length === 0 && (
-          <div className="mt-8 rounded-2xl border border-gray-200 bg-white px-6 py-16 text-center shadow-sm">
+          <div className="mt-7 rounded-2xl border border-gray-200 bg-white px-5 py-14 text-center shadow-sm sm:mt-8 sm:px-6 sm:py-16">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-amber-50 text-3xl">
               📦
             </div>
 
-            <h2 className="mt-5 text-xl font-bold text-gray-900">
+            <h2 className="mt-5 text-xl font-bold text-gray-900 sm:text-2xl">
               No Orders Yet
             </h2>
 
@@ -376,23 +379,26 @@ function AdminOrders() {
 
         {/* Orders */}
         {!isLoading && orders.length > 0 && (
-          <div className="mt-8 space-y-6">
+          <div className="mt-7 space-y-5 sm:mt-8 sm:space-y-6">
             {orders.map((order) => (
               <article
                 key={order._id}
-                className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm"
+                className="min-w-0 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm"
               >
                 {/* Order Header */}
-                <div className="border-b border-gray-200 bg-gray-50 px-5 py-5 sm:px-6">
-                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                    <div>
-                      <div className="flex flex-wrap items-center gap-3">
-                        <h2 className="text-lg font-bold text-gray-900">
-                          Order #{order._id.slice(-6).toUpperCase()}
+                <div className="border-b border-gray-200 bg-gray-50 px-4 py-5 sm:px-6">
+                  <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+                        <h2 className="break-words text-lg font-bold text-gray-900 sm:text-xl">
+                          Order #
+                          {order._id
+                            .slice(-6)
+                            .toUpperCase()}
                         </h2>
 
                         <span
-                          className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusClasses(
+                          className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold ${getStatusClasses(
                             order.status
                           )}`}
                         >
@@ -400,12 +406,12 @@ function AdminOrders() {
                         </span>
                       </div>
 
-                      <p className="mt-2 text-xs text-gray-500">
+                      <p className="mt-2 break-words text-xs leading-5 text-gray-500">
                         {formatDate(order.createdAt)}
                       </p>
                     </div>
 
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <div className="grid w-full gap-2 sm:grid-cols-[minmax(0,1fr)_auto] lg:flex lg:w-auto">
                       <select
                         value={order.status}
                         onChange={(event) =>
@@ -417,7 +423,8 @@ function AdminOrders() {
                         disabled={
                           updatingOrderId === order._id
                         }
-                        className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-800 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-100 disabled:cursor-not-allowed disabled:bg-gray-100"
+                        aria-label={`Update status for order ${order._id}`}
+                        className="min-h-11 w-full min-w-0 rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm font-medium text-gray-800 outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-100 disabled:cursor-not-allowed disabled:bg-gray-100 lg:w-auto lg:min-w-[170px]"
                       >
                         {STATUS_OPTIONS.map((status) => (
                           <option
@@ -437,7 +444,7 @@ function AdminOrders() {
                         disabled={
                           deletingOrderId === order._id
                         }
-                        className="rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="min-h-11 w-full rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200 disabled:cursor-not-allowed disabled:opacity-60 lg:w-auto"
                       >
                         {deletingOrderId === order._id
                           ? "Deleting..."
@@ -448,24 +455,24 @@ function AdminOrders() {
                 </div>
 
                 {/* Order Content */}
-                <div className="p-5 sm:p-6">
+                <div className="p-4 sm:p-6">
                   <div className="grid gap-6 lg:grid-cols-3">
                     {/* Customer */}
-                    <div>
-                      <h3 className="text-sm font-bold uppercase tracking-wide text-gray-500">
+                    <div className="min-w-0">
+                      <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 sm:text-sm">
                         Customer
                       </h3>
 
                       <div className="mt-3 space-y-2">
-                        <p className="font-semibold text-gray-900">
+                        <p className="break-words font-semibold text-gray-900">
                           {order.customer?.name || "-"}
                         </p>
 
-                        <p className="text-sm text-gray-600">
+                        <p className="break-words text-sm leading-6 text-gray-600">
                           📞 {order.customer?.mobile || "-"}
                         </p>
 
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm leading-6 text-gray-600">
                           {order.orderType === "Delivery"
                             ? "🚚 Delivery"
                             : "🏪 Pickup"}
@@ -474,8 +481,8 @@ function AdminOrders() {
                     </div>
 
                     {/* Address */}
-                    <div>
-                      <h3 className="text-sm font-bold uppercase tracking-wide text-gray-500">
+                    <div className="min-w-0">
+                      <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 sm:text-sm">
                         {order.orderType === "Delivery"
                           ? "Delivery Address"
                           : "Pickup"}
@@ -483,7 +490,7 @@ function AdminOrders() {
 
                       <div className="mt-3">
                         {order.orderType === "Delivery" ? (
-                          <p className="text-sm leading-6 text-gray-700">
+                          <p className="break-words text-sm leading-6 text-gray-700">
                             {order.address || "-"}
                           </p>
                         ) : (
@@ -495,12 +502,12 @@ function AdminOrders() {
                       </div>
 
                       {order.note && (
-                        <div className="mt-4 rounded-lg bg-yellow-50 p-3">
+                        <div className="mt-4 rounded-xl bg-yellow-50 p-3.5">
                           <p className="text-xs font-semibold text-yellow-800">
                             Customer Note
                           </p>
 
-                          <p className="mt-1 text-sm leading-5 text-yellow-900">
+                          <p className="mt-1 break-words text-sm leading-6 text-yellow-900">
                             {order.note}
                           </p>
                         </div>
@@ -508,28 +515,28 @@ function AdminOrders() {
                     </div>
 
                     {/* Payment Summary */}
-                    <div>
-                      <h3 className="text-sm font-bold uppercase tracking-wide text-gray-500">
+                    <div className="min-w-0">
+                      <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 sm:text-sm">
                         Payment Summary
                       </h3>
 
-                      <div className="mt-3 space-y-2 text-sm">
-                        <div className="flex justify-between gap-4">
+                      <div className="mt-3 space-y-3 text-sm">
+                        <div className="flex items-center justify-between gap-4">
                           <span className="text-gray-600">
                             Subtotal
                           </span>
 
-                          <span className="font-medium text-gray-900">
+                          <span className="shrink-0 font-medium text-gray-900">
                             ₹{formatPrice(order.subtotal)}
                           </span>
                         </div>
 
-                        <div className="flex justify-between gap-4">
+                        <div className="flex items-center justify-between gap-4">
                           <span className="text-gray-600">
                             Delivery
                           </span>
 
-                          <span className="font-medium text-gray-900">
+                          <span className="shrink-0 font-medium text-gray-900">
                             {order.deliveryCharge === 0
                               ? "Free"
                               : `₹${formatPrice(
@@ -539,13 +546,14 @@ function AdminOrders() {
                         </div>
 
                         <div className="border-t border-gray-200 pt-3">
-                          <div className="flex justify-between gap-4">
+                          <div className="flex items-center justify-between gap-4">
                             <span className="font-bold text-gray-900">
                               Total
                             </span>
 
-                            <span className="text-xl font-bold text-amber-600">
-                              ₹{formatPrice(
+                            <span className="shrink-0 text-xl font-bold text-amber-600">
+                              ₹
+                              {formatPrice(
                                 order.totalAmount
                               )}
                             </span>
@@ -557,27 +565,33 @@ function AdminOrders() {
 
                   {/* Items */}
                   <div className="mt-7 border-t border-gray-200 pt-6">
-                    <h3 className="text-sm font-bold uppercase tracking-wide text-gray-500">
-                      Ordered Items
-                    </h3>
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                      <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 sm:text-sm">
+                        Ordered Items
+                      </h3>
 
-                    <div className="mt-4 overflow-x-auto">
+                      <p className="text-xs text-gray-400">
+                        Swipe horizontally to view all columns
+                      </p>
+                    </div>
+
+                    <div className="mt-4 overflow-x-auto rounded-xl border border-gray-200">
                       <table className="w-full min-w-[620px] text-left">
-                        <thead>
+                        <thead className="bg-gray-50">
                           <tr className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500">
-                            <th className="pb-3 pr-4 font-semibold">
+                            <th className="px-4 py-3 font-semibold">
                               Item
                             </th>
 
-                            <th className="pb-3 pr-4 font-semibold">
+                            <th className="px-4 py-3 font-semibold">
                               Price
                             </th>
 
-                            <th className="pb-3 pr-4 font-semibold">
+                            <th className="px-4 py-3 font-semibold">
                               Quantity
                             </th>
 
-                            <th className="pb-3 text-right font-semibold">
+                            <th className="px-4 py-3 text-right font-semibold">
                               Subtotal
                             </th>
                           </tr>
@@ -589,21 +603,21 @@ function AdminOrders() {
                               key={`${order._id}-${item.menuItemId}-${index}`}
                               className="border-b border-gray-100 last:border-b-0"
                             >
-                              <td className="py-4 pr-4">
-                                <p className="font-semibold text-gray-900">
+                              <td className="max-w-[260px] px-4 py-4">
+                                <p className="break-words font-semibold text-gray-900">
                                   {item.name}
                                 </p>
                               </td>
 
-                              <td className="py-4 pr-4 text-sm text-gray-600">
+                              <td className="whitespace-nowrap px-4 py-4 text-sm text-gray-600">
                                 ₹{formatPrice(item.price)}
                               </td>
 
-                              <td className="py-4 pr-4 text-sm text-gray-600">
+                              <td className="px-4 py-4 text-sm text-gray-600">
                                 {item.quantity}
                               </td>
 
-                              <td className="py-4 text-right text-sm font-semibold text-gray-900">
+                              <td className="whitespace-nowrap px-4 py-4 text-right text-sm font-semibold text-gray-900">
                                 ₹{formatPrice(item.subtotal)}
                               </td>
                             </tr>
@@ -617,7 +631,7 @@ function AdminOrders() {
             ))}
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }
