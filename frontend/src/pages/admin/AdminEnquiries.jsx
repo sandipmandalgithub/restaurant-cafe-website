@@ -94,7 +94,10 @@ function AdminEnquiries() {
         "Enquiry status updated successfully."
       );
     } catch (error) {
-      console.error("Failed to update enquiry status:", error);
+      console.error(
+        "Failed to update enquiry status:",
+        error
+      );
 
       setErrorMessage(
         error.message || "Unable to update enquiry status."
@@ -270,22 +273,23 @@ CaféNest Team`;
     selectedStatus !== "All";
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+    <div className="min-h-screen overflow-x-hidden bg-gray-100">
+      <main className="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         {/* Page Header */}
-        <div className="mb-8">
-          <p className="text-sm font-semibold uppercase tracking-widest text-green-600">
+        <div className="mb-6 sm:mb-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-green-600 sm:text-sm sm:tracking-widest">
             Admin Panel
           </p>
 
           <div className="mt-2 flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">
+            <div className="min-w-0">
+              <h1 className="text-2xl font-bold leading-tight text-gray-900 sm:text-3xl lg:text-4xl">
                 Enquiry Management
               </h1>
 
               <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
-                View, search, filter, and manage customer enquiries.
+                View, search, filter, and manage customer
+                enquiries.
               </p>
             </div>
 
@@ -293,7 +297,7 @@ CaféNest Team`;
               type="button"
               onClick={handleRefresh}
               disabled={isLoading}
-              className="w-full rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+              className="min-h-11 w-full shrink-0 rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-200 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
             >
               {isLoading ? "Loading..." : "Refresh"}
             </button>
@@ -302,74 +306,81 @@ CaféNest Team`;
 
         {/* Messages */}
         {errorMessage && (
-          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+          <div
+            role="alert"
+            className="mb-5 break-words rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium leading-6 text-red-700 sm:mb-6"
+          >
             {errorMessage}
           </div>
         )}
 
         {successMessage && (
-          <div className="mb-6 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+          <div
+            role="status"
+            className="mb-5 break-words rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium leading-6 text-green-700 sm:mb-6"
+          >
             {successMessage}
           </div>
         )}
 
         {/* Summary Cards */}
-        <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-2xl bg-white p-5 shadow-sm">
+        <div className="mb-7 grid gap-4 sm:mb-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-2xl bg-white p-4 shadow-sm sm:p-5">
             <p className="text-sm font-medium text-gray-500">
               Total Enquiries
             </p>
 
-            <p className="mt-2 text-3xl font-bold text-gray-900">
+            <p className="mt-2 text-2xl font-bold text-gray-900 sm:text-3xl">
               {enquiries.length}
             </p>
           </div>
 
-          <div className="rounded-2xl bg-white p-5 shadow-sm">
+          <div className="rounded-2xl bg-white p-4 shadow-sm sm:p-5">
             <p className="text-sm font-medium text-gray-500">
               New
             </p>
 
-            <p className="mt-2 text-3xl font-bold text-yellow-600">
+            <p className="mt-2 text-2xl font-bold text-yellow-600 sm:text-3xl">
               {newCount}
             </p>
           </div>
 
-          <div className="rounded-2xl bg-white p-5 shadow-sm">
+          <div className="rounded-2xl bg-white p-4 shadow-sm sm:p-5">
             <p className="text-sm font-medium text-gray-500">
               Contacted
             </p>
 
-            <p className="mt-2 text-3xl font-bold text-blue-600">
+            <p className="mt-2 text-2xl font-bold text-blue-600 sm:text-3xl">
               {contactedCount}
             </p>
           </div>
 
-          <div className="rounded-2xl bg-white p-5 shadow-sm">
+          <div className="rounded-2xl bg-white p-4 shadow-sm sm:p-5">
             <p className="text-sm font-medium text-gray-500">
               Resolved
             </p>
 
-            <p className="mt-2 text-3xl font-bold text-green-600">
+            <p className="mt-2 text-2xl font-bold text-green-600 sm:text-3xl">
               {resolvedCount}
             </p>
           </div>
         </div>
 
         {/* Search and Filters */}
-        <section className="mb-8 rounded-2xl bg-white p-5 shadow-sm sm:p-6">
+        <section className="mb-7 rounded-2xl bg-white p-4 shadow-sm sm:mb-8 sm:p-6">
           <div className="mb-5">
-            <h2 className="text-xl font-bold text-gray-900">
+            <h2 className="text-lg font-bold text-gray-900 sm:text-xl">
               Search & Filter
             </h2>
 
-            <p className="mt-1 text-sm text-gray-500">
-              Find enquiries by customer details or filter them by status.
+            <p className="mt-1 text-sm leading-6 text-gray-500">
+              Find enquiries by customer details or filter
+              them by status.
             </p>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-[1fr_220px_auto]">
-            <div>
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px_auto]">
+            <div className="min-w-0">
               <label
                 htmlFor="enquiry-search"
                 className="mb-2 block text-sm font-semibold text-gray-700"
@@ -385,11 +396,11 @@ CaféNest Team`;
                   setSearchTerm(event.target.value)
                 }
                 placeholder="Search name, email, phone or message..."
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                className="min-h-11 w-full min-w-0 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
             </div>
 
-            <div>
+            <div className="min-w-0">
               <label
                 htmlFor="status-filter"
                 className="mb-2 block text-sm font-semibold text-gray-700"
@@ -403,7 +414,7 @@ CaféNest Team`;
                 onChange={(event) =>
                   setSelectedStatus(event.target.value)
                 }
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-800 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                className="min-h-11 w-full min-w-0 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-800 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               >
                 <option value="All">All Statuses</option>
 
@@ -420,7 +431,7 @@ CaféNest Team`;
                 type="button"
                 onClick={clearFilters}
                 disabled={!hasActiveFilters}
-                className="w-full rounded-lg border border-gray-300 bg-gray-50 px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 lg:w-auto"
+                className="min-h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-5 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-green-200 disabled:cursor-not-allowed disabled:opacity-50 lg:w-auto"
               >
                 Clear Filters
               </button>
@@ -441,7 +452,7 @@ CaféNest Team`;
             </p>
 
             {hasActiveFilters && (
-              <p className="text-green-600">
+              <p className="font-medium text-green-600">
                 Filters are active
               </p>
             )}
@@ -450,13 +461,13 @@ CaféNest Team`;
 
         {/* Enquiry List */}
         {isLoading ? (
-          <div className="rounded-2xl bg-white p-10 text-center shadow-sm">
+          <div className="rounded-2xl bg-white px-5 py-10 text-center shadow-sm sm:p-10">
             <p className="text-sm font-medium text-gray-500">
               Loading enquiries...
             </p>
           </div>
         ) : enquiries.length === 0 ? (
-          <div className="rounded-2xl bg-white p-10 text-center shadow-sm">
+          <div className="rounded-2xl bg-white px-5 py-10 text-center shadow-sm sm:p-10">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 text-2xl">
               ✉️
             </div>
@@ -465,12 +476,13 @@ CaféNest Team`;
               No enquiries found.
             </p>
 
-            <p className="mt-2 text-sm text-gray-500">
-              Customer enquiries will appear here when submitted.
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-500">
+              Customer enquiries will appear here when
+              submitted.
             </p>
           </div>
         ) : filteredEnquiries.length === 0 ? (
-          <div className="rounded-2xl bg-white p-10 text-center shadow-sm">
+          <div className="rounded-2xl bg-white px-5 py-10 text-center shadow-sm sm:p-10">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 text-2xl">
               🔎
             </div>
@@ -479,35 +491,37 @@ CaféNest Team`;
               No matching enquiries
             </p>
 
-            <p className="mt-2 text-sm text-gray-500">
-              Try changing your search term or status filter.
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-500">
+              Try changing your search term or status
+              filter.
             </p>
 
             <button
               type="button"
               onClick={clearFilters}
-              className="mt-5 rounded-lg bg-green-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700"
+              className="mt-5 min-h-11 rounded-lg bg-green-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-1"
             >
               Clear Filters
             </button>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-5 sm:space-y-6">
             {filteredEnquiries.map((enquiry) => (
               <article
                 key={enquiry._id}
-                className="overflow-hidden rounded-2xl bg-white shadow-sm"
+                className="min-w-0 overflow-hidden rounded-2xl bg-white shadow-sm"
               >
-                <div className="border-b border-gray-100 p-5 sm:p-6">
+                {/* Enquiry Header */}
+                <div className="border-b border-gray-100 p-4 sm:p-6">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-3">
-                        <h2 className="break-words text-xl font-bold text-gray-900">
+                      <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+                        <h2 className="max-w-full break-words text-lg font-bold text-gray-900 sm:text-xl">
                           {enquiry.name}
                         </h2>
 
                         <span
-                          className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusClasses(
+                          className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold ${getStatusClasses(
                             enquiry.status
                           )}`}
                         >
@@ -515,7 +529,7 @@ CaféNest Team`;
                         </span>
                       </div>
 
-                      <p className="mt-2 text-xs text-gray-500">
+                      <p className="mt-2 break-words text-xs leading-5 text-gray-500">
                         Submitted:{" "}
                         {new Date(
                           enquiry.createdAt
@@ -523,26 +537,27 @@ CaféNest Team`;
                       </p>
                     </div>
 
-                    <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
+                    {/* Action Buttons */}
+                    <div className="grid w-full gap-2 sm:grid-cols-2 lg:flex lg:w-auto">
                       {/* WhatsApp Reply Button */}
                       <button
                         type="button"
                         onClick={() =>
                           handleWhatsAppReply(enquiry)
                         }
-                        className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 sm:w-auto"
+                        className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 lg:w-auto"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           viewBox="0 0 24 24"
                           fill="currentColor"
-                          className="h-5 w-5"
+                          className="h-5 w-5 shrink-0"
                           aria-hidden="true"
                         >
                           <path d="M20.52 3.48A11.82 11.82 0 0 0 12.06 0C5.52 0 .2 5.31.2 11.86c0 2.09.55 4.13 1.59 5.93L.1 24l6.36-1.67a11.85 11.85 0 0 0 5.6 1.43h.01c6.54 0 11.86-5.32 11.86-11.86 0-3.17-1.23-6.14-3.41-8.42ZM12.07 21.72h-.01a9.84 9.84 0 0 1-5.02-1.38l-.36-.21-3.77.99 1.01-3.67-.23-.38a9.85 9.85 0 0 1-1.51-5.21c0-5.43 4.42-9.85 9.86-9.85 2.63 0 5.1 1.03 6.96 2.89a9.79 9.79 0 0 1 2.89 6.97c0 5.43-4.42 9.85-9.82 9.85Zm5.4-7.38c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.47-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.05 1.02-1.05 2.49s1.07 2.89 1.22 3.09c.15.2 2.1 3.2 5.09 4.49.71.31 1.27.49 1.7.63.71.23 1.35.2 1.86.12.57-.08 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35Z" />
                         </svg>
 
-                        Reply on WhatsApp
+                        <span>Reply on WhatsApp</span>
                       </button>
 
                       {/* Delete Button */}
@@ -554,7 +569,7 @@ CaféNest Team`;
                         disabled={
                           deletingId === enquiry._id
                         }
-                        className="w-full rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                        className="min-h-11 w-full rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60 lg:w-auto"
                       >
                         {deletingId === enquiry._id
                           ? "Deleting..."
@@ -564,13 +579,14 @@ CaféNest Team`;
                   </div>
                 </div>
 
-                <div className="grid gap-5 p-5 sm:grid-cols-2 sm:p-6 lg:grid-cols-3">
+                {/* Customer Details */}
+                <div className="grid gap-5 p-4 sm:grid-cols-2 sm:p-6 lg:grid-cols-3">
                   <div className="min-w-0">
                     <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
                       Name
                     </p>
 
-                    <p className="mt-1 break-words text-sm font-medium text-gray-800">
+                    <p className="mt-1 break-words text-sm font-medium leading-6 text-gray-800">
                       {enquiry.name}
                     </p>
                   </div>
@@ -580,7 +596,7 @@ CaféNest Team`;
                       Email
                     </p>
 
-                    <p className="mt-1 break-all text-sm font-medium text-gray-800">
+                    <p className="mt-1 break-all text-sm font-medium leading-6 text-gray-800">
                       {enquiry.email}
                     </p>
                   </div>
@@ -590,12 +606,13 @@ CaféNest Team`;
                       Phone
                     </p>
 
-                    <p className="mt-1 break-words text-sm font-medium text-gray-800">
+                    <p className="mt-1 break-words text-sm font-medium leading-6 text-gray-800">
                       {enquiry.phone}
                     </p>
                   </div>
 
-                  <div className="sm:col-span-2 lg:col-span-3">
+                  {/* Status Update */}
+                  <div className="min-w-0 sm:col-span-2 lg:col-span-3">
                     <label
                       htmlFor={`status-${enquiry._id}`}
                       className="text-xs font-semibold uppercase tracking-wide text-gray-400"
@@ -615,7 +632,7 @@ CaféNest Team`;
                       disabled={
                         updatingId === enquiry._id
                       }
-                      className="mt-2 w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm font-medium text-gray-800 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100 disabled:cursor-not-allowed disabled:opacity-60 sm:max-w-xs"
+                      className="mt-2 min-h-11 w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm font-medium text-gray-800 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100 disabled:cursor-not-allowed disabled:opacity-60 sm:max-w-xs"
                     >
                       {statusOptions.map((status) => (
                         <option
@@ -635,8 +652,9 @@ CaféNest Team`;
                   </div>
                 </div>
 
-                <div className="px-5 pb-5 sm:px-6 sm:pb-6">
-                  <div className="rounded-xl bg-gray-50 p-5">
+                {/* Customer Message */}
+                <div className="px-4 pb-4 sm:px-6 sm:pb-6">
+                  <div className="rounded-xl bg-gray-50 p-4 sm:p-5">
                     <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
                       Customer Message
                     </p>
