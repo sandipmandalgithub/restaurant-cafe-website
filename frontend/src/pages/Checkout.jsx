@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 const CART_STORAGE_KEY = "cafeNestCart";
 const CART_UPDATED_EVENT = "cafeNestCartUpdated";
 
-const API_URL = "http://localhost:5000/api/orders";
+const API_URL = `${import.meta.env.VITE_API_URL}/api/orders`;
 
 // Replace with your CaféNest WhatsApp number.
 // Example: 9876543210 -> 919876543210

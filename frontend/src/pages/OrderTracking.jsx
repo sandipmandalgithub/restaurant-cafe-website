@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
-const API_URL = "http://localhost:5000/api/orders";
+const API_URL = `${import.meta.env.VITE_API_URL}/api/orders`;
 
 function OrderTracking() {
   const location = useLocation();

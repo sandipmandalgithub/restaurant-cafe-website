@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:5000/api/reviews";
+const API_URL = `${import.meta.env.VITE_API_URL}/api/reviews`;
 
 // Submit a new customer review
 export const createReview = async (reviewData) => {

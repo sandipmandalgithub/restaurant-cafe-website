@@ -3,11 +3,11 @@ import { Link } from "react-router-dom";
 
 import { getDashboardStats } from "../../services/adminDashboardService";
 
-const ORDERS_API_URL = "http://localhost:5000/api/orders";
-const ORDER_STATISTICS_API_URL =
-  "http://localhost:5000/api/orders/statistics";
-const ENQUIRIES_API_URL =
-  "http://localhost:5000/api/enquiries";
+const API_URL = import.meta.env.VITE_API_URL;
+
+const ORDERS_API_URL = `${API_URL}/api/orders`;
+const ORDER_STATISTICS_API_URL = `${API_URL}/api/orders/statistics`;
+const ENQUIRIES_API_URL = `${API_URL}/api/enquiries`;
 
 const STATUS_OPTIONS = [
   "Pending",
@@ -708,15 +708,13 @@ function AdminDashboard() {
                   to="/admin/enquiries"
                   className="min-w-0 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-gray-100"
                 >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-green-100 text-xl">
-                      📨
-                    </div>
-
-                    <span className="text-[10px] font-bold tracking-wide text-gray-400 sm:text-xs">
-                      NEW
-                    </span>
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-green-100 text-xl">
+                    📨
                   </div>
+
+                  <span className="text-[10px] font-bold tracking-wide text-gray-400 sm:text-xs">
+                    NEW
+                  </span>
 
                   <p className="mt-5 text-sm text-gray-500">
                     New Enquiries

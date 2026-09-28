@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import menuData from "../data/menuData";
 
-const BUSINESS_SETTINGS_API =
-  "http://localhost:5000/api/business-settings";
+const BUSINESS_SETTINGS_API = `${import.meta.env.VITE_API_URL}/api/business-settings`;
 
 // WhatsApp Icon Component
 function WhatsAppIcon() {

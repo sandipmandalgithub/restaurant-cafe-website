@@ -3,8 +3,7 @@ import { NavLink } from "react-router-dom";
 
 const CART_STORAGE_KEY = "cafeNestCart";
 const CART_UPDATED_EVENT = "cafeNestCartUpdated";
-const BUSINESS_SETTINGS_API =
-  "http://localhost:5000/api/business-settings";
+const BUSINESS_SETTINGS_API = `${import.meta.env.VITE_API_URL}/api/business-settings`;
 
 // Cart Icon Component
 function CartIcon() {
