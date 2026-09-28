@@ -27,8 +27,7 @@ function AdminGallery() {
   const [successMessage, setSuccessMessage] = useState("");
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] =
-    useState("All");
+  const [selectedCategory, setSelectedCategory] = useState("All");
 
   const fetchGallery = async () => {
     try {
@@ -204,11 +203,7 @@ function AdminGallery() {
 
       return matchesSearch && matchesCategory;
     });
-  }, [
-    gallery,
-    searchTerm,
-    selectedCategory,
-  ]);
+  }, [gallery, searchTerm, selectedCategory]);
 
   const hasActiveFilters =
     searchTerm.trim() !== "" ||
@@ -220,19 +215,19 @@ function AdminGallery() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="min-h-screen overflow-x-hidden bg-gray-100">
+      <main className="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         {/* Page Header */}
-        <div className="mb-8">
-          <p className="text-sm font-semibold uppercase tracking-widest text-orange-600">
+        <div className="mb-6 sm:mb-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-orange-600 sm:text-sm sm:tracking-widest">
             Admin Panel
           </p>
 
-          <h1 className="mt-2 text-3xl font-bold text-gray-900">
+          <h1 className="mt-2 text-2xl font-bold leading-tight text-gray-900 sm:text-3xl">
             Gallery Management
           </h1>
 
-          <p className="mt-2 text-sm text-gray-600 sm:text-base">
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
             Add, edit, delete, search, and filter restaurant
             gallery images.
           </p>
@@ -240,28 +235,34 @@ function AdminGallery() {
 
         {/* Messages */}
         {errorMessage && (
-          <div className="mb-6 rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+          <div
+            role="alert"
+            className="mb-5 break-words rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium leading-6 text-red-700 sm:mb-6"
+          >
             {errorMessage}
           </div>
         )}
 
         {successMessage && (
-          <div className="mb-6 rounded-lg bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+          <div
+            role="status"
+            className="mb-5 break-words rounded-xl border border-green-100 bg-green-50 px-4 py-3 text-sm font-medium leading-6 text-green-700 sm:mb-6"
+          >
             {successMessage}
           </div>
         )}
 
         {/* Form */}
-        <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
-          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">
+        <section className="rounded-2xl bg-white p-4 shadow-sm sm:p-6 lg:p-8">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+            <div className="min-w-0">
+              <h2 className="text-lg font-bold text-gray-900 sm:text-xl">
                 {editingId
                   ? "Edit Gallery Item"
                   : "Add Gallery Item"}
               </h2>
 
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm leading-6 text-gray-500">
                 {editingId
                   ? "Update the selected gallery item."
                   : "Add a new image to your gallery."}
@@ -272,7 +273,7 @@ function AdminGallery() {
               <button
                 type="button"
                 onClick={resetForm}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+                className="min-h-11 w-full shrink-0 rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-200 sm:w-auto"
               >
                 Cancel Edit
               </button>
@@ -284,7 +285,7 @@ function AdminGallery() {
             className="mt-6 grid gap-5 md:grid-cols-2"
           >
             {/* Image URL */}
-            <div className="md:col-span-2">
+            <div className="min-w-0 md:col-span-2">
               <label
                 htmlFor="image"
                 className="mb-2 block text-sm font-medium text-gray-700"
@@ -300,7 +301,7 @@ function AdminGallery() {
                 onChange={handleChange}
                 required
                 placeholder="https://example.com/image.jpg"
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                className="min-h-11 w-full min-w-0 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
               />
 
               {formData.image && (
@@ -313,14 +314,14 @@ function AdminGallery() {
                     src={formData.image}
                     alt="Gallery preview"
                     onError={handleImageError}
-                    className="h-56 w-full object-cover sm:h-72"
+                    className="aspect-[4/3] w-full object-cover sm:aspect-[16/8] sm:max-h-80"
                   />
                 </div>
               )}
             </div>
 
             {/* Title */}
-            <div>
+            <div className="min-w-0">
               <label
                 htmlFor="title"
                 className="mb-2 block text-sm font-medium text-gray-700"
@@ -336,12 +337,12 @@ function AdminGallery() {
                 onChange={handleChange}
                 required
                 placeholder="e.g. Special Biryani"
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                className="min-h-11 w-full min-w-0 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
               />
             </div>
 
             {/* Category */}
-            <div>
+            <div className="min-w-0">
               <label
                 htmlFor="category"
                 className="mb-2 block text-sm font-medium text-gray-700"
@@ -357,12 +358,12 @@ function AdminGallery() {
                 onChange={handleChange}
                 required
                 placeholder="e.g. Food"
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                className="min-h-11 w-full min-w-0 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
               />
             </div>
 
             {/* Description */}
-            <div className="md:col-span-2">
+            <div className="min-w-0 md:col-span-2">
               <label
                 htmlFor="description"
                 className="mb-2 block text-sm font-medium text-gray-700"
@@ -377,16 +378,16 @@ function AdminGallery() {
                 onChange={handleChange}
                 rows="4"
                 placeholder="Describe this gallery image..."
-                className="w-full resize-none rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                className="w-full min-w-0 resize-none rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm leading-6 outline-none transition placeholder:text-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
               />
             </div>
 
             {/* Submit */}
-            <div className="flex flex-col gap-3 sm:flex-row md:col-span-2">
+            <div className="flex flex-col gap-3 md:col-span-2 sm:flex-row">
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full rounded-lg bg-orange-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                className="min-h-11 w-full rounded-lg bg-orange-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
               >
                 {isSubmitting
                   ? "Saving..."
@@ -400,24 +401,24 @@ function AdminGallery() {
                   type="button"
                   onClick={resetForm}
                   disabled={isSubmitting}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                  className="min-h-11 w-full rounded-lg border border-gray-300 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-200 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                 >
                   Cancel
                 </button>
               )}
             </div>
           </form>
-        </div>
+        </section>
 
         {/* Gallery List */}
-        <div className="mt-8">
+        <section className="mt-7 sm:mt-8">
           <div className="mb-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">
+            <div className="min-w-0">
+              <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">
                 Existing Gallery Items
               </h2>
 
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 break-words text-sm leading-6 text-gray-500">
                 Total items: {gallery.length}
                 {hasActiveFilters &&
                   ` • Showing: ${filteredGallery.length}`}
@@ -428,7 +429,7 @@ function AdminGallery() {
               type="button"
               onClick={fetchGallery}
               disabled={isLoading}
-              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+              className="min-h-11 w-full shrink-0 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-200 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
             >
               {isLoading ? "Loading..." : "Refresh"}
             </button>
@@ -436,20 +437,20 @@ function AdminGallery() {
 
           {/* Search & Filters */}
           {!isLoading && gallery.length > 0 && (
-            <div className="mb-6 rounded-2xl bg-white p-5 shadow-sm sm:p-6">
+            <div className="mb-6 rounded-2xl bg-white p-4 shadow-sm sm:p-6">
               <div className="mb-5">
-                <h3 className="text-lg font-bold text-gray-900">
+                <h3 className="text-base font-bold text-gray-900 sm:text-lg">
                   Search & Filters
                 </h3>
 
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-sm leading-6 text-gray-500">
                   Find gallery images quickly by title or
                   category.
                 </p>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
-                <div>
+                <div className="min-w-0">
                   <label
                     htmlFor="gallerySearch"
                     className="mb-2 block text-sm font-medium text-gray-700"
@@ -470,12 +471,12 @@ function AdminGallery() {
                         setSearchTerm(event.target.value)
                       }
                       placeholder="Search gallery title..."
-                      className="w-full rounded-lg border border-gray-300 py-3 pl-11 pr-4 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                      className="min-h-11 w-full min-w-0 rounded-lg border border-gray-300 bg-white py-3 pl-11 pr-4 text-sm outline-none transition placeholder:text-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
                     />
                   </div>
                 </div>
 
-                <div>
+                <div className="min-w-0">
                   <label
                     htmlFor="galleryCategoryFilter"
                     className="mb-2 block text-sm font-medium text-gray-700"
@@ -487,11 +488,9 @@ function AdminGallery() {
                     id="galleryCategoryFilter"
                     value={selectedCategory}
                     onChange={(event) =>
-                      setSelectedCategory(
-                        event.target.value
-                      )
+                      setSelectedCategory(event.target.value)
                     }
-                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                    className="min-h-11 w-full min-w-0 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
                   >
                     <option value="All">
                       All Categories
@@ -510,7 +509,7 @@ function AdminGallery() {
               </div>
 
               <div className="mt-5 flex flex-col gap-3 border-t border-gray-100 pt-5 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm leading-6 text-gray-600">
                   Showing{" "}
                   <span className="font-bold text-gray-900">
                     {filteredGallery.length}
@@ -526,7 +525,7 @@ function AdminGallery() {
                   <button
                     type="button"
                     onClick={handleClearFilters}
-                    className="w-full rounded-lg border border-orange-200 bg-orange-50 px-4 py-2.5 text-sm font-semibold text-orange-700 transition hover:bg-orange-100 sm:w-auto"
+                    className="min-h-11 w-full rounded-lg border border-orange-200 bg-orange-50 px-4 py-2.5 text-sm font-semibold text-orange-700 transition hover:bg-orange-100 focus:outline-none focus:ring-2 focus:ring-orange-200 sm:w-auto"
                   >
                     Clear Filters
                   </button>
@@ -543,7 +542,7 @@ function AdminGallery() {
               </p>
             </div>
           ) : gallery.length === 0 ? (
-            <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
+            <div className="rounded-2xl bg-white px-5 py-10 text-center shadow-sm sm:p-10">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-50 text-2xl">
                 🖼️
               </div>
@@ -552,13 +551,13 @@ function AdminGallery() {
                 No Gallery Items
               </h3>
 
-              <p className="mt-2 text-sm text-gray-500">
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-500">
                 Add your first gallery image using the form
                 above.
               </p>
             </div>
           ) : filteredGallery.length === 0 ? (
-            <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
+            <div className="rounded-2xl bg-white px-5 py-10 text-center shadow-sm sm:p-10">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-50 text-2xl">
                 🔎
               </div>
@@ -567,7 +566,7 @@ function AdminGallery() {
                 No Matching Gallery Items
               </h3>
 
-              <p className="mt-2 text-sm text-gray-500">
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-500">
                 Try changing your search term or category
                 filter.
               </p>
@@ -575,47 +574,48 @@ function AdminGallery() {
               <button
                 type="button"
                 onClick={handleClearFilters}
-                className="mt-5 rounded-lg bg-orange-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-700"
+                className="mt-5 min-h-11 rounded-lg bg-orange-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:ring-offset-1"
               >
                 Clear Filters
               </button>
             </div>
           ) : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {filteredGallery.map((item) => (
                 <article
                   key={item._id}
-                  className="overflow-hidden rounded-2xl bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+                  className="min-w-0 overflow-hidden rounded-2xl bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md"
                 >
                   <div className="relative">
                     <img
                       src={item.image}
                       alt={item.title}
                       onError={handleImageError}
-                      className="h-56 w-full object-cover"
+                      loading="lazy"
+                      className="aspect-[4/3] w-full object-cover"
                     />
 
-                    <span className="absolute right-3 top-3 rounded-full bg-white/95 px-3 py-1.5 text-xs font-bold text-orange-700 shadow-sm">
+                    <span className="absolute right-3 top-3 max-w-[calc(100%-1.5rem)] truncate rounded-full bg-white/95 px-3 py-1.5 text-xs font-bold text-orange-700 shadow-sm">
                       {item.category}
                     </span>
                   </div>
 
-                  <div className="p-5">
-                    <h3 className="text-lg font-bold text-gray-900">
+                  <div className="min-w-0 p-4 sm:p-5">
+                    <h3 className="break-words text-base font-bold text-gray-900 sm:text-lg">
                       {item.title}
                     </h3>
 
                     {item.description && (
-                      <p className="mt-3 line-clamp-3 text-sm leading-6 text-gray-600">
+                      <p className="mt-3 line-clamp-3 break-words text-sm leading-6 text-gray-600">
                         {item.description}
                       </p>
                     )}
 
-                    <div className="mt-5 flex gap-3">
+                    <div className="mt-5 grid grid-cols-2 gap-3">
                       <button
                         type="button"
                         onClick={() => handleEdit(item)}
-                        className="flex-1 rounded-lg border border-blue-600 px-4 py-2.5 text-sm font-semibold text-blue-600 transition hover:bg-blue-50"
+                        className="min-h-11 rounded-lg border border-blue-600 px-3 py-2.5 text-sm font-semibold text-blue-600 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-200"
                       >
                         Edit
                       </button>
@@ -625,7 +625,7 @@ function AdminGallery() {
                         onClick={() =>
                           handleDelete(item._id)
                         }
-                        className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
+                        className="min-h-11 rounded-lg bg-red-600 px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300"
                       >
                         Delete
                       </button>
@@ -635,7 +635,7 @@ function AdminGallery() {
               ))}
             </div>
           )}
-        </div>
+        </section>
       </main>
     </div>
   );
