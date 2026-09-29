@@ -8,13 +8,15 @@ The project includes a customer-facing restaurant website and a secure admin pan
 
 ## 🌐 Live Demo
 
-> Live demo will be added after deployment.
+The CaféNest restaurant website is deployed and available online.
 
 **Customer Website:**
-https://your-live-domain.com
+
+https://restaurant-cafe-website-nine.vercel.app/
 
 **Admin Panel:**
-https://your-live-domain.com/admin/login
+
+https://restaurant-cafe-website-nine.vercel.app/admin/login
 
 
 
