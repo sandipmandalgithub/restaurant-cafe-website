@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const Order = require("../models/Order");
 
 // ======================================================
-// Create Order - Public
+// Create Order - Public / Optional Customer Authentication
 // ======================================================
 const createOrder = async (req, res) => {
   try {
@@ -121,8 +121,8 @@ const createOrder = async (req, res) => {
     // Final total
     const totalAmount = subtotal + deliveryCharge;
 
-    // Create order
-    const order = await Order.create({
+    // Prepare order data
+    const orderData = {
       customer: {
         name: name.trim(),
         mobile: mobile.trim(),
@@ -146,7 +146,20 @@ const createOrder = async (req, res) => {
       totalAmount,
 
       status: "Pending",
-    });
+    };
+
+    // Attach logged-in customer ID when available.
+    // Guest orders will not have customerId.
+    if (
+      req.customer &&
+      req.customer.id &&
+      mongoose.Types.ObjectId.isValid(req.customer.id)
+    ) {
+      orderData.customerId = req.customer.id;
+    }
+
+    // Create order
+    const order = await Order.create(orderData);
 
     res.status(201).json({
       success: true,
@@ -159,6 +172,46 @@ const createOrder = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to create order.",
+    });
+  }
+};
+
+// ======================================================
+// Get Customer Order History - Customer Only
+// ======================================================
+const getCustomerOrderHistory = async (req, res) => {
+  try {
+    if (!req.customer || !req.customer.id) {
+      return res.status(401).json({
+        success: false,
+        message: "Customer authentication required.",
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(req.customer.id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid customer ID.",
+      });
+    }
+
+    const orders = await Order.find({
+      customerId: req.customer.id,
+    }).sort({
+      createdAt: -1,
+    });
+
+    res.status(200).json({
+      success: true,
+      count: orders.length,
+      data: orders,
+    });
+  } catch (error) {
+    console.error("Get customer order history error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch customer order history.",
     });
   }
 };
@@ -456,10 +509,7 @@ const getOrderStatistics = async (req, res) => {
       (order) => order.orderType === "Pickup"
     ).length;
 
-    // ==================================================
     // Best Selling Items
-    // ==================================================
-
     const itemSalesMap = {};
 
     validOrders.forEach((order) => {
@@ -499,10 +549,7 @@ const getOrderStatistics = async (req, res) => {
       })
       .slice(0, 10);
 
-    // ==================================================
     // Revenue by Date
-    // ==================================================
-
     const revenueByDateMap = {};
 
     validOrders.forEach((order) => {
@@ -531,10 +578,6 @@ const getOrderStatistics = async (req, res) => {
 
     const revenueByDate = Object.values(revenueByDateMap)
       .sort((a, b) => a.date.localeCompare(b.date));
-
-    // ==================================================
-    // Final Response
-    // ==================================================
 
     res.status(200).json({
       success: true,
@@ -574,11 +617,9 @@ const getOrderStatistics = async (req, res) => {
   }
 };
 
-// ======================================================
-// Exports
-// ======================================================
 module.exports = {
   createOrder,
+  getCustomerOrderHistory,
   getOrders,
   getOrderById,
   trackOrder,

@@ -8,9 +8,12 @@ const {
   updateOrderStatus,
   deleteOrder,
   getOrderStatistics,
+  getCustomerOrderHistory,
 } = require("../controllers/orderController");
 
 const protect = require("../middleware/authMiddleware");
+const customerProtect = require("../middleware/customerAuthMiddleware");
+const customerOptionalAuth = require("../middleware/customerOptionalAuthMiddleware");
 
 const router = express.Router();
 
@@ -19,12 +22,25 @@ const router = express.Router();
 // ======================================================
 
 // Place new order
-router.post("/", createOrder);
+// Guest checkout is allowed.
+// Logged-in customers are also supported.
+router.post("/", customerOptionalAuth, createOrder);
 
 // Track customer order
 // Example:
 // GET /api/orders/track/ORDER_ID?mobile=9876543210
 router.get("/track/:id", trackOrder);
+
+// ======================================================
+// Customer - Protected
+// ======================================================
+
+// Get logged-in customer's order history
+router.get(
+  "/customer/history",
+  customerProtect,
+  getCustomerOrderHistory
+);
 
 // ======================================================
 // Admin - Protected

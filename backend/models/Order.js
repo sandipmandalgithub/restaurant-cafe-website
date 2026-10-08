@@ -38,6 +38,15 @@ const orderItemSchema = new mongoose.Schema(
 
 const orderSchema = new mongoose.Schema(
   {
+    // Logged-in customer reference.
+    // Optional so existing guest orders continue to work.
+    customerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Customer",
+      default: null,
+      index: true,
+    },
+
     customer: {
       name: {
         type: String,

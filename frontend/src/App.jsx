@@ -16,6 +16,7 @@ import Location from "./pages/Location";
 import CustomerLogin from "./pages/CustomerLogin";
 import CustomerRegister from "./pages/CustomerRegister";
 import CustomerProfile from "./pages/CustomerProfile";
+import CustomerOrders from "./pages/CustomerOrders";
 
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -63,6 +64,11 @@ function App() {
             <Route
               path="/customer/profile"
               element={<CustomerProfile />}
+            />
+
+            <Route
+              path="/customer/orders"
+              element={<CustomerOrders />}
             />
           </Route>
         </Route>
