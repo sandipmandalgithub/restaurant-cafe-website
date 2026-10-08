@@ -1,4 +1,4 @@
-const API_URL = "https://restaurant-cafe-website-p12v.onrender.com/api/customers";
+const API_URL ="https://restaurant-cafe-backend.onrender.com/api/customers";
 
 // Customer Registration
 export const registerCustomer = async (customerData) => {
