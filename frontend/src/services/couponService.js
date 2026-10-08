@@ -2,7 +2,10 @@ const API_URL =
   "https://restaurant-cafe-backend.onrender.com/api/coupons";
 
 // Validate coupon for customers
-export const validateCoupon = async (code, orderAmount) => {
+export const validateCoupon = async ({
+  code,
+  orderAmount,
+}) => {
   try {
     const response = await fetch(`${API_URL}/validate`, {
       method: "POST",
