@@ -13,10 +13,12 @@ import Reviews from "./pages/Reviews";
 import Gallery from "./pages/Gallery";
 import Contact from "./pages/Contact";
 import Location from "./pages/Location";
+import Reservation from "./pages/Reservation";
 import CustomerLogin from "./pages/CustomerLogin";
 import CustomerRegister from "./pages/CustomerRegister";
 import CustomerProfile from "./pages/CustomerProfile";
 import CustomerOrders from "./pages/CustomerOrders";
+import CustomerReservations from "./pages/CustomerReservations";
 
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -26,6 +28,7 @@ import AdminEnquiries from "./pages/admin/AdminEnquiries";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminBusinessSettings from "./pages/admin/AdminBusinessSettings";
 import AdminCoupons from "./pages/admin/AdminCoupons";
+import AdminReservations from "./pages/admin/AdminReservations";
 
 import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
 import CustomerProtectedRoute from "./components/customer/CustomerProtectedRoute";
@@ -43,11 +46,20 @@ function App() {
           <Route path="/menu" element={<Menu />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
-          <Route path="/order-tracking" element={<OrderTracking />} />
+          <Route
+            path="/order-tracking"
+            element={<OrderTracking />}
+          />
           <Route path="/reviews" element={<Reviews />} />
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/location" element={<Location />} />
+
+          {/* Table Reservation */}
+          <Route
+            path="/reservation"
+            element={<Reservation />}
+          />
 
           {/* Customer Authentication */}
           <Route
@@ -71,6 +83,11 @@ function App() {
               path="/customer/orders"
               element={<CustomerOrders />}
             />
+
+            <Route
+              path="/customer/reservations"
+              element={<CustomerReservations />}
+            />
           </Route>
         </Route>
 
@@ -89,11 +106,19 @@ function App() {
               element={<AdminDashboard />}
             />
 
-            <Route path="/admin/menu" element={<AdminMenu />} />
+            <Route
+              path="/admin/menu"
+              element={<AdminMenu />}
+            />
 
             <Route
               path="/admin/orders"
               element={<AdminOrders />}
+            />
+
+            <Route
+              path="/admin/reservations"
+              element={<AdminReservations />}
             />
 
             <Route

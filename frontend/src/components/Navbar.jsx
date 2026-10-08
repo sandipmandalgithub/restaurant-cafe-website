@@ -22,7 +22,7 @@ function CartIcon() {
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
-        d="M2.25 3h1.386c.51 0 .955.343 1.085.835L5.5 6.75m0 0h14.25l-1.5 8.25H6.75L5.5 6.75Zm0 0L4.72 4.5M8.25 19.5a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm10.5 0a.75.75 0 1 1-1.5 0 1.5 1.5 0 0 1 1.5 0Z"
+        d="M2.25 3h1.386c.51 0 .955.343 1.085.835L5.5 6.75m0 0h14.25l-1.5 8.25H6.75L5.5 6.75Zm0 0L4.72 4.5M8.25 19.5a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm10.5 0a.75.75 0 1 1-1.5 0 1.5 1.5 0 0 1 1.5 0 0 0Z"
       />
     </svg>
   );
@@ -102,7 +102,8 @@ function Navbar() {
           setBusinessSettings((previousSettings) => ({
             ...previousSettings,
             businessName:
-              result.data.businessName || previousSettings.businessName,
+              result.data.businessName ||
+              previousSettings.businessName,
             whatsappNumber:
               result.data.whatsappNumber ||
               previousSettings.whatsappNumber,
@@ -246,6 +247,20 @@ function Navbar() {
 
         {/* Desktop Right Actions */}
         <div className="hidden shrink-0 items-center gap-2 lg:flex">
+          {/* Reserve a Table */}
+          <NavLink
+            to="/reservation"
+            className={({ isActive }) =>
+              `inline-flex items-center rounded-lg px-3 py-2.5 text-sm font-semibold transition ${
+                isActive
+                  ? "bg-orange-600 text-white"
+                  : "bg-orange-50 text-orange-600 hover:bg-orange-100"
+              }`
+            }
+          >
+            Reserve a Table
+          </NavLink>
+
           {/* My Orders */}
           {isAuthenticated && (
             <NavLink
@@ -259,6 +274,22 @@ function Navbar() {
               }
             >
               My Orders
+            </NavLink>
+          )}
+
+          {/* My Reservations */}
+          {isAuthenticated && (
+            <NavLink
+              to="/customer/reservations"
+              className={({ isActive }) =>
+                `inline-flex items-center rounded-lg px-3 py-2.5 text-sm font-semibold transition ${
+                  isActive
+                    ? "bg-orange-50 text-orange-600"
+                    : "text-gray-700 hover:bg-gray-50 hover:text-orange-600"
+                }`
+              }
+            >
+              My Reservations
             </NavLink>
           )}
 
@@ -371,95 +402,127 @@ function Navbar() {
             )}
           </button>
         </div>
-      </nav>
 
-      {/* Mobile Navigation */}
-      <div
-        id="mobile-navigation"
-        className={`overflow-hidden border-t border-gray-200 bg-white shadow-sm transition-all duration-300 md:hidden ${
-          isMenuOpen
-            ? "max-h-[600px] opacity-100"
-            : "max-h-0 opacity-0"
-        }`}
-      >
-        <div className="mx-auto max-w-7xl px-3 py-3 sm:px-6">
-          <div className="flex flex-col gap-1">
-            {navLinks.map((link) => (
+        {/* Mobile Navigation */}
+        <div
+          id="mobile-navigation"
+          className={`overflow-hidden border-t border-gray-200 bg-white shadow-sm transition-all duration-300 md:hidden ${
+            isMenuOpen
+              ? "max-h-[600px] opacity-100"
+              : "max-h-0 opacity-0"
+          }`}
+        >
+          <div className="mx-auto max-w-7xl px-3 py-3 sm:px-6">
+            <div className="flex flex-col gap-1">
+              {navLinks.map((link) => (
+                <NavLink
+                  key={link.path}
+                  to={link.path}
+                  onClick={handleLinkClick}
+                  className={({ isActive }) =>
+                    `rounded-lg px-4 py-3 text-sm font-semibold transition ${
+                      isActive
+                        ? "bg-orange-50 text-orange-600"
+                        : "text-gray-700 hover:bg-gray-50 hover:text-orange-600"
+                    }`
+                  }
+                >
+                  {link.name}
+                </NavLink>
+              ))}
+
+              {/* Mobile Reserve a Table */}
               <NavLink
-                key={link.path}
-                to={link.path}
+                to="/reservation"
                 onClick={handleLinkClick}
                 className={({ isActive }) =>
-                  `rounded-lg px-4 py-3 text-sm font-semibold transition ${
+                  `mt-1 rounded-lg px-4 py-3 text-sm font-semibold transition ${
+                    isActive
+                      ? "bg-orange-600 text-white"
+                      : "bg-orange-50 text-orange-600 hover:bg-orange-100"
+                  }`
+                }
+              >
+                Reserve a Table
+              </NavLink>
+
+              {/* Mobile My Orders */}
+              {isAuthenticated && (
+                <NavLink
+                  to="/customer/orders"
+                  onClick={handleLinkClick}
+                  className={({ isActive }) =>
+                    `rounded-lg px-4 py-3 text-sm font-semibold transition ${
+                      isActive
+                        ? "bg-orange-50 text-orange-600"
+                        : "text-gray-700 hover:bg-gray-50 hover:text-orange-600"
+                    }`
+                  }
+                >
+                  My Orders
+                </NavLink>
+              )}
+
+              {/* Mobile My Reservations */}
+              {isAuthenticated && (
+                <NavLink
+                  to="/customer/reservations"
+                  onClick={handleLinkClick}
+                  className={({ isActive }) =>
+                    `rounded-lg px-4 py-3 text-sm font-semibold transition ${
+                      isActive
+                        ? "bg-orange-50 text-orange-600"
+                        : "text-gray-700 hover:bg-gray-50 hover:text-orange-600"
+                    }`
+                  }
+                >
+                  My Reservations
+                </NavLink>
+              )}
+
+              {/* Mobile Cart */}
+              <NavLink
+                to="/cart"
+                onClick={handleLinkClick}
+                className={({ isActive }) =>
+                  `mt-1 flex items-center justify-between rounded-lg px-4 py-3 text-sm font-semibold transition ${
                     isActive
                       ? "bg-orange-50 text-orange-600"
                       : "text-gray-700 hover:bg-gray-50 hover:text-orange-600"
                   }`
                 }
               >
-                {link.name}
-              </NavLink>
-            ))}
+                <span className="flex items-center gap-3">
+                  <CartIcon />
+                  Cart
+                </span>
 
-            {/* Mobile My Orders */}
-            {isAuthenticated && (
-              <NavLink
-                to="/customer/orders"
+                <span
+                  className={`flex min-h-6 min-w-6 items-center justify-center rounded-full px-1.5 text-xs font-bold ${
+                    cartItemCount > 0
+                      ? "bg-orange-600 text-white"
+                      : "bg-gray-100 text-gray-500"
+                  }`}
+                >
+                  {cartItemCount > 99 ? "99+" : cartItemCount}
+                </span>
+              </NavLink>
+
+              {/* Mobile WhatsApp */}
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
                 onClick={handleLinkClick}
-                className={({ isActive }) =>
-                  `rounded-lg px-4 py-3 text-sm font-semibold transition ${
-                    isActive
-                      ? "bg-orange-50 text-orange-600"
-                      : "text-gray-700 hover:bg-gray-50 hover:text-orange-600"
-                  }`
-                }
+                className="mt-2 inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
               >
-                My Orders
-              </NavLink>
-            )}
-
-            {/* Mobile Cart */}
-            <NavLink
-              to="/cart"
-              onClick={handleLinkClick}
-              className={({ isActive }) =>
-                `mt-1 flex items-center justify-between rounded-lg px-4 py-3 text-sm font-semibold transition ${
-                  isActive
-                    ? "bg-orange-50 text-orange-600"
-                    : "text-gray-700 hover:bg-gray-50 hover:text-orange-600"
-                }`
-              }
-            >
-              <span className="flex items-center gap-3">
-                <CartIcon />
-                Cart
-              </span>
-
-              <span
-                className={`flex min-h-6 min-w-6 items-center justify-center rounded-full px-1.5 text-xs font-bold ${
-                  cartItemCount > 0
-                    ? "bg-orange-600 text-white"
-                    : "bg-gray-100 text-gray-500"
-                }`}
-              >
-                {cartItemCount > 99 ? "99+" : cartItemCount}
-              </span>
-            </NavLink>
-
-            {/* Mobile WhatsApp */}
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={handleLinkClick}
-              className="mt-2 inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-            >
-              <WhatsAppIcon />
-              WhatsApp Us
-            </a>
+                <WhatsAppIcon />
+                WhatsApp Us
+              </a>
+            </div>
           </div>
         </div>
-      </div>
+      </nav>
     </header>
   );
 }
