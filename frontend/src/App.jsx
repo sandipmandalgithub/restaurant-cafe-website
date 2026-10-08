@@ -13,6 +13,9 @@ import Reviews from "./pages/Reviews";
 import Gallery from "./pages/Gallery";
 import Contact from "./pages/Contact";
 import Location from "./pages/Location";
+import CustomerLogin from "./pages/CustomerLogin";
+import CustomerRegister from "./pages/CustomerRegister";
+import CustomerProfile from "./pages/CustomerProfile";
 
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -23,6 +26,7 @@ import AdminOrders from "./pages/admin/AdminOrders";
 import AdminBusinessSettings from "./pages/admin/AdminBusinessSettings";
 
 import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
+import CustomerProtectedRoute from "./components/customer/CustomerProtectedRoute";
 
 function App() {
   return (
@@ -42,6 +46,25 @@ function App() {
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/location" element={<Location />} />
+
+          {/* Customer Authentication */}
+          <Route
+            path="/customer/login"
+            element={<CustomerLogin />}
+          />
+
+          <Route
+            path="/customer/register"
+            element={<CustomerRegister />}
+          />
+
+          {/* Protected Customer Routes */}
+          <Route element={<CustomerProtectedRoute />}>
+            <Route
+              path="/customer/profile"
+              element={<CustomerProfile />}
+            />
+          </Route>
         </Route>
 
         {/* ================================
