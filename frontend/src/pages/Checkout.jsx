@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+import { validateCoupon } from "../services/couponService";
+
 const CART_STORAGE_KEY = "cafeNestCart";
 const CART_UPDATED_EVENT = "cafeNestCartUpdated";
 
@@ -38,6 +40,15 @@ function Checkout() {
   const [orderSuccess, setOrderSuccess] = useState(null);
   const [trackingMobile, setTrackingMobile] = useState("");
 
+  // ======================================================
+  // Coupon State
+  // ======================================================
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState("");
+  const [couponSuccess, setCouponSuccess] = useState("");
+
   const cartItemCount = useMemo(() => {
     return cart.reduce(
       (total, item) => total + Number(item.quantity || 0),
@@ -57,10 +68,26 @@ function Checkout() {
   const deliveryCharge =
     formData.orderType === "Delivery" ? 40 : 0;
 
-  const total = subtotal + deliveryCharge;
+  // ======================================================
+  // Coupon Discount
+  // ======================================================
+  const discountAmount = useMemo(() => {
+    if (!appliedCoupon) {
+      return 0;
+    }
+
+    return Number(appliedCoupon.discountAmount || 0);
+  }, [appliedCoupon]);
+
+  const total = Math.max(
+    0,
+    subtotal + deliveryCharge - discountAmount
+  );
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat("en-IN").format(price);
+    return new Intl.NumberFormat("en-IN").format(
+      Number(price || 0)
+    );
   };
 
   const handleChange = (event) => {
@@ -77,6 +104,76 @@ function Checkout() {
     }));
 
     setSubmitError("");
+  };
+
+  // ======================================================
+  // Apply Coupon
+  // ======================================================
+  const handleApplyCoupon = async () => {
+    const code = couponCode.trim().toUpperCase();
+
+    setCouponError("");
+    setCouponSuccess("");
+
+    if (!code) {
+      setCouponError("Please enter a coupon code.");
+      return;
+    }
+
+    if (subtotal <= 0) {
+      setCouponError(
+        "Your cart total must be greater than ₹0."
+      );
+      return;
+    }
+
+    setCouponLoading(true);
+
+    try {
+      const response = await validateCoupon({
+        code,
+        orderAmount: subtotal,
+      });
+
+      if (!response.success) {
+        setAppliedCoupon(null);
+        setCouponError(
+          response.message || "Invalid coupon code."
+        );
+        return;
+      }
+
+      setAppliedCoupon(response.data);
+
+      setCouponCode(response.data.code || code);
+
+      setCouponSuccess(
+        `${response.data.code || code} applied successfully. You saved ₹${formatPrice(
+          response.data.discountAmount || 0
+        )}.`
+      );
+    } catch (error) {
+      console.error("Apply coupon error:", error);
+
+      setAppliedCoupon(null);
+
+      setCouponError(
+        error.message ||
+          "Unable to validate coupon. Please try again."
+      );
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  // ======================================================
+  // Remove Coupon
+  // ======================================================
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    setCouponError("");
+    setCouponSuccess("");
   };
 
   const validateForm = () => {
@@ -168,6 +265,17 @@ function Checkout() {
       ? `\nOrder Note: ${orderSuccess.note}`
       : "";
 
+    const couponText = orderSuccess.couponCode
+      ? `\nCoupon: ${orderSuccess.couponCode}`
+      : "";
+
+    const discountText =
+      Number(orderSuccess.discountAmount || 0) > 0
+        ? `\nDiscount: ₹${formatPrice(
+            Number(orderSuccess.discountAmount || 0)
+          )}`
+        : "";
+
     const message = `Hello CaféNest,
 
 I have placed an order.
@@ -176,7 +284,7 @@ Order ID: ${orderSuccess._id}
 
 Customer Name: ${orderSuccess.customer?.name || ""}
 Mobile: ${orderSuccess.customer?.mobile || ""}
-Order Type: ${orderSuccess.orderType || ""}${addressText}${noteText}
+Order Type: ${orderSuccess.orderType || ""}${addressText}${noteText}${couponText}${discountText}
 
 Order Items:
 ${itemsText}
@@ -184,6 +292,13 @@ ${itemsText}
 Subtotal: ₹${formatPrice(
       Number(orderSuccess.subtotal || 0)
     )}
+Discount: ${
+      Number(orderSuccess.discountAmount || 0) > 0
+        ? `₹${formatPrice(
+            Number(orderSuccess.discountAmount || 0)
+          )}`
+        : "₹0"
+    }
 Delivery Charge: ${
       Number(orderSuccess.deliveryCharge || 0) === 0
         ? "Free"
@@ -241,19 +356,36 @@ Thank you!`;
             ? formData.address.trim()
             : "",
         note: formData.note.trim(),
+
         items: cart.map((item) => ({
           menuItemId: item._id,
           name: item.name,
           price: Number(item.price),
           quantity: Number(item.quantity),
         })),
+
+        // Coupon information
+        couponCode: appliedCoupon?.code || "",
+        discountAmount,
+        deliveryCharge,
+        subtotal,
+        totalAmount: total,
       };
+
+      const customerToken =
+        localStorage.getItem("customerToken");
+
+      const headers = {
+        "Content-Type": "application/json",
+      };
+
+      if (customerToken) {
+        headers.Authorization = `Bearer ${customerToken}`;
+      }
 
       const response = await fetch(API_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
         body: JSON.stringify(orderData),
       });
 
@@ -280,6 +412,10 @@ Thank you!`;
       });
 
       setErrors({});
+      setAppliedCoupon(null);
+      setCouponCode("");
+      setCouponError("");
+      setCouponSuccess("");
     } catch (error) {
       console.error("Place order error:", error);
 
@@ -379,6 +515,21 @@ Thank you!`;
               </span>
             </div>
 
+            {Number(orderSuccess.discountAmount || 0) > 0 && (
+              <div className="flex items-center justify-between gap-4 border-t border-gray-200 py-4">
+                <span className="text-sm text-gray-600">
+                  Discount
+                </span>
+
+                <span className="shrink-0 text-sm font-bold text-green-600">
+                  -₹
+                  {formatPrice(
+                    Number(orderSuccess.discountAmount || 0)
+                  )}
+                </span>
+              </div>
+            )}
+
             <div className="flex items-center justify-between gap-4 border-t border-gray-200 pt-4">
               <span className="text-sm text-gray-600">
                 Total Amount
@@ -400,7 +551,7 @@ Thank you!`;
                 className="h-8 w-8"
                 aria-hidden="true"
               >
-                <path d="M20.52 3.48A11.82 11.82 0 0 0 12.06 0C5.52 0 .2 5.31.2 11.86c0 2.09.55 4.13 1.59 5.93L.1 24l6.36-1.67a11.85 11.85 0 0 0 5.6 1.43h.01c6.54 0 11.86-5.32 11.86-11.86 0-3.17-1.23-6.14-3.41-8.42ZM12.07 21.72h-.01a9.84 9.84 0 0 1-5.02-1.38l-.36-.21-3.77.99 1.01-3.67-.23-.38a9.85 9.85 0 0 1-1.51-5.21c0-5.43 4.42-9.85 9.86-9.85 2.63 0 5.1 1.03 6.96 2.89a9.79 9.79 0 0 1 2.89 6.97c0 5.43-4.42 9.85-9.82 9.85Zm5.4-7.38c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.47-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.05 1.02-1.05 2.49s1.07 2.89 1.22 3.09c.15.2 2.1 3.2 5.09 4.49.71.31 1.27.49 1.7.63.71.23 1.35.2 1.86.12.57-.08 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35Z" />
+                <path d="M20.52 3.48A11.82 11.82 0 0 0 12.06 0C5.52 0 .2 5.31.2 11.86c0 2.09.55 4.13 1.59 5.93L.1 24l6.36-1.67a11.85 11.85 0 0 0 5.6 1.43h.01c6.54 0 11.86-5.32 11.86-11.86 0-3.17-1.23-6.14-3.41-8.42ZM12.07 21.72h-.01a9.84 9.84 0 0 1-5.02-1.38l-.36-.21-3.77.99 1.01-3.67-.23-.38a9.85 9.85 0 0 1-1.51-5.21c0-5.43 4.42-9.85 9.86-9.85 2.63 0 5.1 1.03 6.96 2.89a9.79 9.79 0 0 1 2.89 6.97c0 5.43-4.42 9.85-9.82 9.85Zm5.4-7.38c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.47-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.2-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.05 1.02-1.05 2.49s1.07 2.89 1.22 3.09c.15.2 2.1 3.2 5.09 4.49.71.31 1.27.49 1.7.63.71.23 1.35.2 1.86.12.57-.08 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35Z" />
               </svg>
             </div>
 
@@ -425,7 +576,7 @@ Thank you!`;
                 className="h-5 w-5"
                 aria-hidden="true"
               >
-                <path d="M20.52 3.48A11.82 11.82 0 0 0 12.06 0C5.52 0 .2 5.31.2 11.86c0 2.09.55 4.13 1.59 5.93L.1 24l6.36-1.67a11.85 11.85 0 0 0 5.6 1.43h.01c6.54 0 11.86-5.32 11.86-11.86 0-3.17-1.23-6.14-3.41-8.42ZM12.07 21.72h-.01a9.84 9.84 0 0 1-5.02-1.38l-.36-.21-3.77.99 1.01-3.67-.23-.38a9.85 9.85 0 0 1-1.51-5.21c0-5.43 4.42-9.85 9.86-9.85 2.63 0 5.1 1.03 6.96 2.89a9.79 9.79 0 0 1 2.89 6.97c0 5.43-4.42 9.85-9.82 9.85Zm5.4-7.38c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.47-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.2-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.05 1.02-1.05 2.49s1.07 2.89 1.22 3.09c.15.2 2.1 3.2 5.09 4.49.71.31 1.27.49 1.7.63.71.23 1.35.2 1.86.12.57-.08 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35Z" />
+                <path d="M20.52 3.48A11.82 11.82 0 0 0 12.06 0C5.52 0 .2 5.31.2 11.86c0 2.09.55 4.13 1.59 5.93L.1 24l6.36-1.67a11.85 11.85 0 0 0 5.6 1.43h.01c6.54 0 11.86-5.32 11.86-11.86 0-3.17-1.23-6.14-3.41-8.42Zm-8.45 18.24h-.01a9.84 9.84 0 0 1-5.02-1.38l-.36-.21-3.77.99 1.01-3.67-.23-.38a9.85 9.85 0 0 1-1.51-5.21c0-5.43 4.42-9.85 9.86-9.85 2.63 0 5.1 1.03 6.96 2.89a9.79 9.79 0 0 1 2.89 6.97c0 5.43-4.42 9.85-9.82 9.85Zm5.4-7.38c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.47-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.2-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.05 1.02-1.05 2.49s1.07 2.89 1.22 3.09c.15.2 2.1 3.2 5.09 4.49.71.31 1.27.49 1.7.63.71.23 1.35.2 1.86.12.57-.08 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35Z" />
               </svg>
 
               Send Order on WhatsApp
@@ -795,6 +946,106 @@ Thank you!`;
                 })}
               </div>
 
+              {/* Coupon */}
+              <div className="mt-6 rounded-xl border border-gray-200 bg-gray-50 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-900">
+                      Have a Coupon?
+                    </h3>
+
+                    <p className="mt-1 text-xs text-gray-500">
+                      Apply a valid coupon to save on your order.
+                    </p>
+                  </div>
+
+                  {appliedCoupon && (
+                    <span className="shrink-0 text-lg">
+                      🎟️
+                    </span>
+                  )}
+                </div>
+
+                {!appliedCoupon ? (
+                  <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                    <input
+                      type="text"
+                      value={couponCode}
+                      onChange={(event) => {
+                        setCouponCode(
+                          event.target.value.toUpperCase()
+                        );
+                        setCouponError("");
+                        setCouponSuccess("");
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          event.preventDefault();
+                          handleApplyCoupon();
+                        }
+                      }}
+                      placeholder="Enter coupon code"
+                      disabled={couponLoading || isSubmitting}
+                      className="min-h-11 min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium uppercase outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-100 disabled:cursor-not-allowed disabled:bg-gray-100"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={handleApplyCoupon}
+                      disabled={
+                        couponLoading ||
+                        isSubmitting ||
+                        !couponCode.trim()
+                      }
+                      className="min-h-11 rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {couponLoading ? "Applying..." : "Apply"}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mt-4 rounded-lg border border-green-200 bg-green-50 p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="break-all text-sm font-bold text-green-800">
+                          {appliedCoupon.code}
+                        </p>
+
+                        <p className="mt-1 text-xs text-green-700">
+                          {appliedCoupon.description ||
+                            "Coupon applied successfully."}
+                        </p>
+
+                        <p className="mt-2 text-sm font-bold text-green-700">
+                          You save ₹
+                          {formatPrice(discountAmount)}
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleRemoveCoupon}
+                        disabled={isSubmitting}
+                        className="shrink-0 rounded-md px-2 py-1 text-xs font-semibold text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {couponError && (
+                  <p className="mt-2 text-xs font-medium leading-5 text-red-600">
+                    {couponError}
+                  </p>
+                )}
+
+                {couponSuccess && !couponError && (
+                  <p className="mt-2 text-xs font-medium leading-5 text-green-600">
+                    {couponSuccess}
+                  </p>
+                )}
+              </div>
+
               {/* Pricing */}
               <div className="mt-5 space-y-3 text-sm">
                 <div className="flex items-center justify-between gap-4 text-gray-600">
@@ -804,6 +1055,21 @@ Thank you!`;
                     ₹{formatPrice(subtotal)}
                   </span>
                 </div>
+
+                {discountAmount > 0 && (
+                  <div className="flex items-center justify-between gap-4 text-green-600">
+                    <span>
+                      Discount
+                      {appliedCoupon?.code
+                        ? ` (${appliedCoupon.code})`
+                        : ""}
+                    </span>
+
+                    <span className="shrink-0 font-semibold">
+                      -₹{formatPrice(discountAmount)}
+                    </span>
+                  </div>
+                )}
 
                 <div className="flex items-center justify-between gap-4 text-gray-600">
                   <span>Delivery Charge</span>

@@ -31,6 +31,11 @@ function AdminLayout() {
       icon: "📦",
     },
     {
+      label: "Coupons",
+      path: "/admin/coupons",
+      icon: "🎟️",
+    },
+    {
       label: "Gallery",
       path: "/admin/gallery",
       icon: "🖼️",

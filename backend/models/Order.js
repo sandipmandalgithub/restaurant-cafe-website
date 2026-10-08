@@ -96,6 +96,22 @@ const orderSchema = new mongoose.Schema(
       min: 0,
     },
 
+    // Applied coupon code.
+    // Empty for orders without a coupon.
+    couponCode: {
+      type: String,
+      trim: true,
+      uppercase: true,
+      default: "",
+    },
+
+    // Discount amount applied to the order.
+    discountAmount: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+
     deliveryCharge: {
       type: Number,
       required: true,

@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
 const Order = require("../models/Order");
+const Coupon = require("../models/Coupon");
 
 // ======================================================
 // Create Order - Public / Optional Customer Authentication
@@ -14,6 +15,7 @@ const createOrder = async (req, res) => {
       address,
       note,
       items,
+      couponCode,
     } = req.body;
 
     // Validate customer name
@@ -63,7 +65,9 @@ const createOrder = async (req, res) => {
       });
     }
 
-    // Prepare order items
+    // ======================================================
+    // Prepare Order Items
+    // ======================================================
     const orderItems = [];
 
     for (const item of items) {
@@ -98,7 +102,8 @@ const createOrder = async (req, res) => {
         });
       }
 
-      const itemSubtotal = price * quantity;
+      // Server-side item subtotal
+      const itemSubtotal = Number((price * quantity).toFixed(2));
 
       orderItems.push({
         menuItemId: item.menuItemId,
@@ -109,19 +114,109 @@ const createOrder = async (req, res) => {
       });
     }
 
-    // Calculate subtotal
-    const subtotal = orderItems.reduce(
-      (total, item) => total + item.subtotal,
-      0
+    // ======================================================
+    // Server-side Subtotal Calculation
+    // ======================================================
+    const subtotal = Number(
+      orderItems
+        .reduce((total, item) => total + item.subtotal, 0)
+        .toFixed(2)
     );
 
-    // Delivery charge
+    // ======================================================
+    // Server-side Delivery Charge
+    // ======================================================
     const deliveryCharge = orderType === "Delivery" ? 40 : 0;
 
-    // Final total
-    const totalAmount = subtotal + deliveryCharge;
+    // ======================================================
+    // Server-side Coupon Validation
+    // ======================================================
+    let appliedCouponCode = "";
+    let discountAmount = 0;
 
-    // Prepare order data
+    if (couponCode && couponCode.trim()) {
+      const normalizedCouponCode = couponCode.trim().toUpperCase();
+
+      const coupon = await Coupon.findOne({
+        code: normalizedCouponCode,
+      });
+
+      if (!coupon) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid coupon code.",
+        });
+      }
+
+      // Check active status
+      if (!coupon.isActive) {
+        return res.status(400).json({
+          success: false,
+          message: "This coupon is currently inactive.",
+        });
+      }
+
+      // Check expiry
+      const currentDate = new Date();
+
+      if (new Date(coupon.expiryDate) <= currentDate) {
+        return res.status(400).json({
+          success: false,
+          message: "This coupon has expired.",
+        });
+      }
+
+      // Check minimum order amount
+      if (subtotal < Number(coupon.minimumOrderAmount || 0)) {
+        return res.status(400).json({
+          success: false,
+          message: `Minimum order amount for this coupon is ₹${Number(
+            coupon.minimumOrderAmount || 0
+          ).toFixed(2)}.`,
+        });
+      }
+
+      // Calculate discount
+      if (coupon.discountType === "percentage") {
+        discountAmount =
+          subtotal * (Number(coupon.discountValue) / 100);
+      } else if (coupon.discountType === "fixed") {
+        discountAmount = Number(coupon.discountValue);
+      }
+
+      // Maximum discount limit
+      if (
+        coupon.maximumDiscountAmount !== null &&
+        coupon.maximumDiscountAmount !== undefined
+      ) {
+        discountAmount = Math.min(
+          discountAmount,
+          Number(coupon.maximumDiscountAmount)
+        );
+      }
+
+      // Discount cannot exceed subtotal
+      discountAmount = Math.min(discountAmount, subtotal);
+
+      // Round discount
+      discountAmount = Number(discountAmount.toFixed(2));
+
+      appliedCouponCode = coupon.code;
+    }
+
+    // ======================================================
+    // Server-side Final Total Calculation
+    // ======================================================
+    const totalAmount = Number(
+      Math.max(
+        0,
+        subtotal + deliveryCharge - discountAmount
+      ).toFixed(2)
+    );
+
+    // ======================================================
+    // Prepare Order Data
+    // ======================================================
     const orderData = {
       customer: {
         name: name.trim(),
@@ -141,6 +236,10 @@ const createOrder = async (req, res) => {
 
       subtotal,
 
+      couponCode: appliedCouponCode,
+
+      discountAmount,
+
       deliveryCharge,
 
       totalAmount,
@@ -148,8 +247,10 @@ const createOrder = async (req, res) => {
       status: "Pending",
     };
 
-    // Attach logged-in customer ID when available.
+    // ======================================================
+    // Attach Logged-in Customer ID When Available
     // Guest orders will not have customerId.
+    // ======================================================
     if (
       req.customer &&
       req.customer.id &&
@@ -158,7 +259,9 @@ const createOrder = async (req, res) => {
       orderData.customerId = req.customer.id;
     }
 
-    // Create order
+    // ======================================================
+    // Create Order
+    // ======================================================
     const order = await Order.create(orderData);
 
     res.status(201).json({
@@ -221,8 +324,7 @@ const getCustomerOrderHistory = async (req, res) => {
 // ======================================================
 const getOrders = async (req, res) => {
   try {
-    const orders = await Order.find()
-      .sort({ createdAt: -1 });
+    const orders = await Order.find().sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
@@ -576,8 +678,9 @@ const getOrderStatistics = async (req, res) => {
       revenueByDateMap[date].orders += 1;
     });
 
-    const revenueByDate = Object.values(revenueByDateMap)
-      .sort((a, b) => a.date.localeCompare(b.date));
+    const revenueByDate = Object.values(revenueByDateMap).sort(
+      (a, b) => a.date.localeCompare(b.date)
+    );
 
     res.status(200).json({
       success: true,

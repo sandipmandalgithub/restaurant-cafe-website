@@ -12,6 +12,7 @@ const orderRoutes = require("./routes/orderRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const businessSettingsRoutes = require("./routes/businessSettingsRoutes");
 const customerRoutes = require("./routes/customerRoutes");
+const couponRoutes = require("./routes/couponRoutes");
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/business-settings", businessSettingsRoutes);
 app.use("/api/customers", customerRoutes);
+app.use("/api/coupons", couponRoutes);
 
 // Health check route
 app.get("/", (req, res) => {

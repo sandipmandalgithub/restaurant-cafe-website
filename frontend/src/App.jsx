@@ -25,6 +25,7 @@ import AdminGallery from "./pages/admin/AdminGallery";
 import AdminEnquiries from "./pages/admin/AdminEnquiries";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminBusinessSettings from "./pages/admin/AdminBusinessSettings";
+import AdminCoupons from "./pages/admin/AdminCoupons";
 
 import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
 import CustomerProtectedRoute from "./components/customer/CustomerProtectedRoute";
@@ -93,6 +94,11 @@ function App() {
             <Route
               path="/admin/orders"
               element={<AdminOrders />}
+            />
+
+            <Route
+              path="/admin/coupons"
+              element={<AdminCoupons />}
             />
 
             <Route
