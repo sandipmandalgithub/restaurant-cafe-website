@@ -1,20 +1,5 @@
-const nodemailer = require("nodemailer");
 
-const createTransporter = () => {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_APP_PASSWORD) {
-    throw new Error(
-      "Email configuration is missing. Please check EMAIL_USER and EMAIL_APP_PASSWORD."
-    );
-  }
-
-  return nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_APP_PASSWORD.replace(/\s+/g, ""),
-    },
-  });
-};
+const { Resend } = require("resend");
 
 const escapeHtml = (value = "") => {
   return String(value).replace(/[&<>"']/g, (character) => {
@@ -36,18 +21,28 @@ const sendEmail = async ({ to, subject, html, text }) => {
     return false;
   }
 
-  try {
-    const transporter = createTransporter();
+  if (!process.env.RESEND_API_KEY) {
+    console.error("Email sending failed: RESEND_API_KEY is missing.");
+    return false;
+  }
 
-    await transporter.sendMail({
-      from: `"CaféNest" <${process.env.EMAIL_USER}>`,
-      to,
+  try {
+    const resend = new Resend(process.env.RESEND_API_KEY);
+
+    const { data, error } = await resend.emails.send({
+      from: "CaféNest <onboarding@resend.dev>",
+      to: [to],
       subject,
-      text,
       html,
+      text,
     });
 
-    console.log(`Email sent successfully to ${to}`);
+    if (error) {
+      console.error("Email sending failed:", error.message);
+      return false;
+    }
+
+    console.log("Email sent successfully. Resend ID:", data?.id);
     return true;
   } catch (error) {
     console.error("Email sending failed:", error.message);
@@ -55,33 +50,34 @@ const sendEmail = async ({ to, subject, html, text }) => {
   }
 };
 
+const formatReservationDate = (date) => {
+  if (!date) return "To be confirmed";
+
+  return new Date(date).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "Asia/Kolkata",
+  });
+};
+
 const sendReservationCreatedEmail = async (reservation) => {
   const customer = reservation.customer || {};
-  const customerName = escapeHtml(customer.name || "Customer");
-  const reservationDate = reservation.reservationDate
-    ? new Date(reservation.reservationDate).toLocaleDateString("en-IN", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-        timeZone: "Asia/Kolkata",
-      })
-    : "To be confirmed";
-
-  const reservationTime = escapeHtml(
-    reservation.reservationTime || "To be confirmed"
-  );
-
+  const customerName = customer.name || "Customer";
+  const safeName = escapeHtml(customerName);
+  const date = formatReservationDate(reservation.reservationDate);
+  const time = reservation.reservationTime || "To be confirmed";
   const guests = Number(reservation.guests) || 1;
 
   const html = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#292524;line-height:1.6">
       <h2 style="color:#b45309">CaféNest</h2>
       <h3>Reservation Request Received</h3>
-      <p>Dear ${customerName},</p>
+      <p>Dear ${safeName},</p>
       <p>Thank you for choosing CaféNest. We have received your table reservation request.</p>
       <div style="background:#fafaf9;padding:16px;border-radius:8px">
-        <p><strong>Date:</strong> ${escapeHtml(reservationDate)}</p>
-        <p><strong>Time:</strong> ${reservationTime}</p>
+        <p><strong>Date:</strong> ${escapeHtml(date)}</p>
+        <p><strong>Time:</strong> ${escapeHtml(time)}</p>
         <p><strong>Guests:</strong> ${guests}</p>
         <p><strong>Status:</strong> Pending</p>
       </div>
@@ -93,67 +89,61 @@ const sendReservationCreatedEmail = async (reservation) => {
   return sendEmail({
     to: customer.email,
     subject: "CaféNest - Reservation Request Received",
-    text: `Dear ${customer.name || "Customer"}, we received your reservation request for ${reservationDate} at ${reservationTime}. Current status: Pending.`,
+    text: `Dear ${customerName}, we received your reservation request for ${date} at ${time}. Current status: Pending.`,
     html,
   });
 };
 
 const sendReservationStatusEmail = async (reservation, newStatus) => {
   const customer = reservation.customer || {};
-  const customerName = escapeHtml(customer.name || "Customer");
+  const customerName = customer.name || "Customer";
+  const safeName = escapeHtml(customerName);
 
   const statusMessages = {
     Confirmed: {
       subject: "CaféNest - Your Reservation Is Confirmed",
       heading: "Your Reservation Is Confirmed!",
-      message: "Your table reservation has been confirmed. We look forward to welcoming you.",
+      message:
+        "Your table reservation has been confirmed. We look forward to welcoming you.",
     },
     Rejected: {
       subject: "CaféNest - Reservation Update",
       heading: "Reservation Update",
-      message: "Unfortunately, we are unable to confirm your reservation. Please contact us if you need assistance.",
+      message:
+        "Unfortunately, we are unable to confirm your reservation. Please contact us if you need assistance.",
     },
     Cancelled: {
       subject: "CaféNest - Reservation Cancelled",
       heading: "Reservation Cancelled",
-      message: "Your reservation has been cancelled. Please contact us if you have any questions.",
+      message:
+        "Your reservation has been cancelled. Please contact us if you have any questions.",
     },
     Completed: {
       subject: "CaféNest - Thank You for Visiting",
       heading: "Thank You for Visiting CaféNest!",
-      message: "We hope you enjoyed your visit. We look forward to serving you again.",
+      message:
+        "We hope you enjoyed your visit. We look forward to serving you again.",
     },
   };
 
   const statusInfo = statusMessages[newStatus];
 
-  if (!statusInfo) {
-    return false;
-  }
+  if (!statusInfo) return false;
 
-  const reservationDate = reservation.reservationDate
-    ? new Date(reservation.reservationDate).toLocaleDateString("en-IN", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-        timeZone: "Asia/Kolkata",
-      })
-    : "Not available";
-
-  const reservationTime = escapeHtml(
-    reservation.reservationTime || "Not available"
-  );
+  const date = formatReservationDate(reservation.reservationDate);
+  const time = reservation.reservationTime || "Not available";
+  const guests = Number(reservation.guests) || 1;
 
   const html = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#292524;line-height:1.6">
       <h2 style="color:#b45309">CaféNest</h2>
-      <h3>${statusInfo.heading}</h3>
-      <p>Dear ${customerName},</p>
-      <p>${statusInfo.message}</p>
+      <h3>${escapeHtml(statusInfo.heading)}</h3>
+      <p>Dear ${safeName},</p>
+      <p>${escapeHtml(statusInfo.message)}</p>
       <div style="background:#fafaf9;padding:16px;border-radius:8px">
-        <p><strong>Date:</strong> ${escapeHtml(reservationDate)}</p>
-        <p><strong>Time:</strong> ${reservationTime}</p>
-        <p><strong>Guests:</strong> ${Number(reservation.guests) || 1}</p>
+        <p><strong>Date:</strong> ${escapeHtml(date)}</p>
+        <p><strong>Time:</strong> ${escapeHtml(time)}</p>
+        <p><strong>Guests:</strong> ${guests}</p>
         <p><strong>Status:</strong> ${escapeHtml(newStatus)}</p>
       </div>
       <p>Thank you for choosing CaféNest.</p>
@@ -164,7 +154,7 @@ const sendReservationStatusEmail = async (reservation, newStatus) => {
   return sendEmail({
     to: customer.email,
     subject: statusInfo.subject,
-    text: `Dear ${customer.name || "Customer"}, ${statusInfo.message} Reservation status: ${newStatus}. Date: ${reservationDate}, Time: ${reservationTime}.`,
+    text: `Dear ${customerName}, ${statusInfo.message} Reservation status: ${newStatus}. Date: ${date}, Time: ${time}.`,
     html,
   });
 };
