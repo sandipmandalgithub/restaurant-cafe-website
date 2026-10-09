@@ -2,6 +2,24 @@ const mongoose = require("mongoose");
 
 const Reservation = require("../models/Reservation");
 
+const {
+  sendReservationCreatedEmail,
+  sendReservationStatusEmail,
+} = require("../config/emailService");
+
+// Send an email without interrupting the reservation operation.
+const sendEmailSafely = async (emailTask, reservation, status = null) => {
+  try {
+    if (status) {
+      await emailTask(reservation, status);
+    } else {
+      await emailTask(reservation);
+    }
+  } catch (error) {
+    console.error("Reservation email notification error:", error.message);
+  }
+};
+
 const createReservation = async (req, res) => {
   try {
     const {
@@ -14,7 +32,7 @@ const createReservation = async (req, res) => {
       specialRequest,
     } = req.body;
 
-    // Validate customer name
+    // Validate customer name.
     if (!name || !name.trim()) {
       return res.status(400).json({
         success: false,
@@ -22,7 +40,7 @@ const createReservation = async (req, res) => {
       });
     }
 
-    // Validate mobile
+    // Validate mobile.
     if (!mobile || !mobile.trim()) {
       return res.status(400).json({
         success: false,
@@ -30,7 +48,22 @@ const createReservation = async (req, res) => {
       });
     }
 
-    // Validate reservation date
+    // Validate email when provided.
+    const normalizedEmail = email
+      ? email.trim().toLowerCase()
+      : "";
+
+    if (
+      normalizedEmail &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide a valid email address.",
+      });
+    }
+
+    // Validate reservation date.
     if (!reservationDate) {
       return res.status(400).json({
         success: false,
@@ -47,9 +80,8 @@ const createReservation = async (req, res) => {
       });
     }
 
-    // Validate reservation date is not in the past
+    // Validate reservation date is not in the past.
     const today = new Date();
-
     today.setHours(0, 0, 0, 0);
     parsedDate.setHours(0, 0, 0, 0);
 
@@ -60,7 +92,7 @@ const createReservation = async (req, res) => {
       });
     }
 
-    // Validate reservation time
+    // Validate reservation time.
     if (!reservationTime || !reservationTime.trim()) {
       return res.status(400).json({
         success: false,
@@ -68,7 +100,7 @@ const createReservation = async (req, res) => {
       });
     }
 
-    // Validate guests
+    // Validate guest count.
     const guestCount = Number(guests);
 
     if (!Number.isInteger(guestCount) || guestCount < 1) {
@@ -85,38 +117,48 @@ const createReservation = async (req, res) => {
       });
     }
 
-    // Create reservation data
+    // Validate special request length.
+    const normalizedSpecialRequest = specialRequest
+      ? specialRequest.trim()
+      : "";
+
+    if (normalizedSpecialRequest.length > 500) {
+      return res.status(400).json({
+        success: false,
+        message: "Special request cannot exceed 500 characters.",
+      });
+    }
+
     const reservationData = {
       customer: {
         name: name.trim(),
         mobile: mobile.trim(),
-        email: email ? email.trim().toLowerCase() : "",
+        email: normalizedEmail,
       },
-
       reservationDate: parsedDate,
-
       reservationTime: reservationTime.trim(),
-
       guests: guestCount,
-
-      specialRequest: specialRequest
-        ? specialRequest.trim()
-        : "",
+      specialRequest: normalizedSpecialRequest,
     };
 
-    // Attach logged-in customer if customer authentication exists
+    // Attach the authenticated customer when available.
     if (req.customer?.id) {
       reservationData.customerId = req.customer.id;
     }
 
-    const reservation = await Reservation.create(
-      reservationData
-    );
+    const reservation = await Reservation.create(reservationData);
+
+    // Email notification is best-effort and does not block the response.
+    if (reservation.customer.email) {
+      void sendEmailSafely(
+        sendReservationCreatedEmail,
+        reservation
+      );
+    }
 
     return res.status(201).json({
       success: true,
-      message:
-        "Table reservation request submitted successfully.",
+      message: "Table reservation request submitted successfully.",
       data: reservation,
     });
   } catch (error) {
@@ -153,10 +195,7 @@ const getCustomerReservations = async (req, res) => {
       data: reservations,
     });
   } catch (error) {
-    console.error(
-      "Get customer reservations error:",
-      error
-    );
+    console.error("Get customer reservations error:", error);
 
     return res.status(500).json({
       success: false,
@@ -167,20 +206,28 @@ const getCustomerReservations = async (req, res) => {
 
 const getReservations = async (req, res) => {
   try {
-    const {
-      status,
-      date,
-      search,
-    } = req.query;
-
+    const { status, date, search } = req.query;
     const filter = {};
 
-    // Filter by status
+    const allowedStatuses = [
+      "Pending",
+      "Confirmed",
+      "Rejected",
+      "Completed",
+      "Cancelled",
+    ];
+
     if (status) {
+      if (!allowedStatuses.includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid reservation status filter.",
+        });
+      }
+
       filter.status = status;
     }
 
-    // Filter by reservation date
     if (date) {
       const startDate = new Date(date);
 
@@ -202,26 +249,31 @@ const getReservations = async (req, res) => {
       };
     }
 
-    // Search by customer name, mobile or email
     if (search && search.trim()) {
       const searchValue = search.trim();
+
+      // Escape regex special characters in the search value.
+      const escapedSearch = searchValue.replace(
+        /[.*+?^${}()|[\]\\]/g,
+        "\\$&"
+      );
 
       filter.$or = [
         {
           "customer.name": {
-            $regex: searchValue,
+            $regex: escapedSearch,
             $options: "i",
           },
         },
         {
           "customer.mobile": {
-            $regex: searchValue,
+            $regex: escapedSearch,
             $options: "i",
           },
         },
         {
           "customer.email": {
-            $regex: searchValue,
+            $regex: escapedSearch,
             $options: "i",
           },
         },
@@ -279,10 +331,7 @@ const getReservationById = async (req, res) => {
       data: reservation,
     });
   } catch (error) {
-    console.error(
-      "Get reservation by ID error:",
-      error
-    );
+    console.error("Get reservation by ID error:", error);
 
     return res.status(500).json({
       success: false,
@@ -327,15 +376,39 @@ const updateReservationStatus = async (req, res) => {
       });
     }
 
+    const previousStatus = reservation.status;
+
     reservation.status = status;
 
     if (adminNote !== undefined) {
-      reservation.adminNote = adminNote
+      const normalizedAdminNote = adminNote
         ? adminNote.trim()
         : "";
+
+      if (normalizedAdminNote.length > 500) {
+        return res.status(400).json({
+          success: false,
+          message: "Admin note cannot exceed 500 characters.",
+        });
+      }
+
+      reservation.adminNote = normalizedAdminNote;
     }
 
     await reservation.save();
+
+    // Send status email only when the status actually changes.
+    if (
+      previousStatus !== status &&
+      ["Confirmed", "Rejected", "Cancelled", "Completed"].includes(status) &&
+      reservation.customer?.email
+    ) {
+      void sendEmailSafely(
+        sendReservationStatusEmail,
+        reservation,
+        status
+      );
+    }
 
     return res.status(200).json({
       success: true,
@@ -343,10 +416,7 @@ const updateReservationStatus = async (req, res) => {
       data: reservation,
     });
   } catch (error) {
-    console.error(
-      "Update reservation status error:",
-      error
-    );
+    console.error("Update reservation status error:", error);
 
     return res.status(500).json({
       success: false,
@@ -366,9 +436,7 @@ const deleteReservation = async (req, res) => {
       });
     }
 
-    const reservation = await Reservation.findByIdAndDelete(
-      id
-    );
+    const reservation = await Reservation.findByIdAndDelete(id);
 
     if (!reservation) {
       return res.status(404).json({
@@ -382,10 +450,7 @@ const deleteReservation = async (req, res) => {
       message: "Reservation deleted successfully.",
     });
   } catch (error) {
-    console.error(
-      "Delete reservation error:",
-      error
-    );
+    console.error("Delete reservation error:", error);
 
     return res.status(500).json({
       success: false,
