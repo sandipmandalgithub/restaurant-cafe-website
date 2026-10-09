@@ -2,6 +2,9 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const Customer = require("../models/Customer");
+const {
+  sendCustomerWelcomeEmail,
+} = require("../config/emailService");
 
 // Generate Customer JWT
 const generateCustomerToken = (customer) => {
@@ -71,7 +74,15 @@ const registerCustomer = async (req, res) => {
 
     const token = generateCustomerToken(customer);
 
-    res.status(201).json({
+    // Send welcome email without blocking customer registration.
+    sendCustomerWelcomeEmail(customer).catch((error) => {
+      console.error(
+        "Customer welcome email error:",
+        error.message
+      );
+    });
+
+    return res.status(201).json({
       success: true,
       message: "Customer registered successfully!",
       data: {
@@ -88,7 +99,7 @@ const registerCustomer = async (req, res) => {
   } catch (error) {
     console.error("Customer registration error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to register customer.",
     });
@@ -150,7 +161,7 @@ const loginCustomer = async (req, res) => {
 
     const token = generateCustomerToken(customer);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Customer login successful!",
       data: {
@@ -167,7 +178,7 @@ const loginCustomer = async (req, res) => {
   } catch (error) {
     console.error("Customer login error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to login customer.",
     });
@@ -188,14 +199,14 @@ const getCurrentCustomer = async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: customer,
     });
   } catch (error) {
     console.error("Get current customer error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to fetch customer details.",
     });
@@ -237,7 +248,7 @@ const updateCustomerProfile = async (req, res) => {
 
     await customer.save();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Customer profile updated successfully!",
       data: {
@@ -251,7 +262,7 @@ const updateCustomerProfile = async (req, res) => {
   } catch (error) {
     console.error("Update customer profile error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to update customer profile.",
     });
