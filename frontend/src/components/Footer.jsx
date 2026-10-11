@@ -3,6 +3,33 @@ import { Link } from "react-router-dom";
 
 const API_URL = `${import.meta.env.VITE_API_URL}/api/business-settings`;
 
+const WHATSAPP_MESSAGE =
+  "Hi CaféNest!\n\n" +
+  "I visited your website and would like to know more about your menu, " +
+  "food items, and services.\n\n" +
+  "Could you please assist me?";
+
+function FooterBrand({ businessName }) {
+  const normalizedName = businessName.trim();
+  const brandName = "CaféNest";
+
+  if (normalizedName.toLowerCase().startsWith(brandName.toLowerCase())) {
+    const remainingName = normalizedName.slice(brandName.length);
+
+    return (
+      <>
+        <span className="text-white">Café</span>
+        <span className="text-orange-600">Nest</span>
+        {remainingName && (
+          <span className="text-white">{remainingName}</span>
+        )}
+      </>
+    );
+  }
+
+  return <span className="text-white">{normalizedName}</span>;
+}
+
 function Footer() {
   const [settings, setSettings] = useState({
     businessName: "CaféNest",
@@ -27,6 +54,11 @@ function Footer() {
 
   useEffect(() => {
     const loadBusinessSettings = async () => {
+      if (!import.meta.env.VITE_API_URL) {
+        setLoading(false);
+        return;
+      }
+
       try {
         const response = await fetch(API_URL);
         const result = await response.json();
@@ -57,10 +89,15 @@ function Footer() {
     settings.whatsappNumber || settings.phone
   );
 
-  const formattedPhone =
-    settings.phone || "+91 98765 43210";
+  const whatsappUrl = whatsappNumber
+    ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+        WHATSAPP_MESSAGE
+      )}`
+    : "#";
 
-  const businessName = settings.businessName || "CaféNest";
+  const formattedPhone = settings.phone || "+91 98765 43210";
+
+  const businessName = settings.businessName?.trim() || "CaféNest";
 
   return (
     <footer className="bg-gray-950 text-white">
@@ -73,12 +110,7 @@ function Footer() {
               to="/"
               className="inline-block text-2xl font-bold tracking-tight transition hover:opacity-80"
             >
-              {businessName.split(" ")[0] || "Café"}
-              {businessName.split(" ").length > 1 && (
-                <span className="text-orange-500">
-                  {" " + businessName.split(" ").slice(1).join(" ")}
-                </span>
-              )}
+              <FooterBrand businessName={businessName} />
             </Link>
 
             <p className="mt-4 max-w-md text-sm leading-7 text-gray-400">
@@ -98,11 +130,7 @@ function Footer() {
               </a>
 
               <a
-                href={
-                  whatsappNumber
-                    ? `https://wa.me/${whatsappNumber}`
-                    : "#"
-                }
+                href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700"
@@ -114,7 +142,7 @@ function Footer() {
                   className="h-5 w-5"
                   aria-hidden="true"
                 >
-                  <path d="M20.52 3.48A11.84 11.84 0 0 0 12.07 0C5.54 0 .23 5.31.23 11.84c0 2.09.55 4.13 1.6 5.93L.13 24l6.38-1.67a11.82 11.82 0 0 0 5.56 1.42h.01c6.53 0 11.84-5.31 11.84-11.84 0-3.17-1.23-6.15-3.4-8.43ZM12.08 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.79.99 1.01-3.69-.23-.38a9.85 9.85 0 0 1-1.51-5.29C2.16 6.4 6.61 1.96 12.08 1.96c2.65 0 5.14 1.03 7.01 2.91a9.85 9.85 0 0 1 2.9 7.02c0 5.47-4.45 9.91-9.91 9.91Zm5.43-7.42c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.65.07-.3-.15-1.27-.47-2.42-1.49-.9-.8-1.5-1.78-1.67-2.08-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.05 1.02-1.05 2.49s1.07 2.89 1.22 3.09c.15.2 2.1 3.2 5.08 4.49.71.31 1.27.5 1.7.64.71.23 1.35.2 1.86.12.57-.08 1.76-.72 2.01-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35Z" />
+                  <path d="M20.52 3.48A11.84 11.84 0 0 0 12.07 0C5.54 0 .23 5.31.23 11.84c0 2.09.55 4.13 1.6 5.93L.13 24l6.38-1.67a11.82 11.82 0 0 0 5.56 1.42h.01c6.53 0 11.84-5.31 11.84-11.84 0-3.17-1.23-6.15-3.4-8.43ZM12.08 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.79.99 1.01-3.69-.23-.38a9.85 9.85 0 0 1-1.51-5.29C2.16 6.4 6.61 1.96 12.08 1.96c2.65 0 5.14 1.03 7.01 2.91a9.85 9.85 0 0 1 2.9 7.02c0 5.47-4.45 9.91-9.91 9.91Zm5.43-7.42c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.65.07-.3-.15-1.27-.47-2.42-1.49-.9-.8-1.5-1.78-1.67-2.08-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.05 1.02-1.05 2.49s1.07 2.89 1.22 3.09c.15.2 2.1 3.2 5.08 4.49.71.31 1.27.5 1.7.64.71.23 1.35.2 1.86.12.57-.08 1.76-.72 2.01-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35Z" />
                 </svg>
                 WhatsApp
               </a>
@@ -151,10 +179,7 @@ function Footer() {
             <div className="mt-5 space-y-4 text-sm">
               {/* Address */}
               <div className="flex items-start gap-3">
-                <span
-                  className="mt-0.5 text-base"
-                  aria-hidden="true"
-                >
+                <span className="mt-0.5 text-base" aria-hidden="true">
                   📍
                 </span>
 
@@ -167,10 +192,7 @@ function Footer() {
 
               {/* Phone */}
               <div className="flex items-start gap-3">
-                <span
-                  className="mt-0.5 text-base"
-                  aria-hidden="true"
-                >
+                <span className="mt-0.5 text-base" aria-hidden="true">
                   📞
                 </span>
 
@@ -184,10 +206,7 @@ function Footer() {
 
               {/* Email */}
               <div className="flex items-start gap-3">
-                <span
-                  className="mt-0.5 text-base"
-                  aria-hidden="true"
-                >
+                <span className="mt-0.5 text-base" aria-hidden="true">
                   ✉️
                 </span>
 
@@ -201,10 +220,7 @@ function Footer() {
 
               {/* Opening Hours */}
               <div className="flex items-start gap-3">
-                <span
-                  className="mt-0.5 text-base"
-                  aria-hidden="true"
-                >
+                <span className="mt-0.5 text-base" aria-hidden="true">
                   🕒
                 </span>
 

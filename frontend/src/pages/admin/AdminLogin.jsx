@@ -63,8 +63,9 @@ function AdminLogin() {
               ☕
             </div>
 
-            <h1 className="mt-4 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
-              Café<span className="text-orange-600">Nest</span>
+            <h1 className="mt-4 text-2xl font-bold tracking-tight sm:text-3xl">
+              <span className="text-gray-950">Café</span>
+              <span className="text-orange-700">Nest</span>
             </h1>
 
             <p className="mt-1.5 text-sm font-medium text-gray-500 sm:text-base">
@@ -82,7 +83,7 @@ function AdminLogin() {
             {errorMessage && (
               <div
                 role="alert"
-                className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-5 font-medium text-red-700"
+                className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium leading-5 text-red-700"
               >
                 <div className="flex items-start gap-2">
                   <span className="mt-0.5 shrink-0">⚠️</span>
@@ -158,7 +159,9 @@ function AdminLogin() {
           {/* Footer */}
           <div className="border-t border-gray-100 bg-gray-50 px-5 py-4 text-center">
             <p className="text-xs text-gray-400 sm:text-sm">
-              CaféNest Admin Panel
+              <span className="text-gray-950">Café</span>
+              <span className="text-orange-700">Nest</span>
+              <span className="text-gray-400"> Admin Panel</span>
             </p>
           </div>
         </div>

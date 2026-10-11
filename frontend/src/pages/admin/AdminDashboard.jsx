@@ -453,8 +453,10 @@ function AdminDashboard() {
         {/* Header */}
         <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
-            <p className="text-xs font-bold uppercase tracking-wider text-amber-600 sm:text-sm">
-              CaféNest Admin
+            <p className="text-xs font-bold uppercase tracking-wider sm:text-sm">
+              <span className="text-gray-950">Café</span>
+              <span className="text-orange-700">Nest</span>
+              <span className="text-amber-600"> Admin</span>
             </p>
 
             <h1 className="mt-1 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">

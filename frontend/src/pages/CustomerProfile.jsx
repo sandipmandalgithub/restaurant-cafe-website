@@ -1,22 +1,16 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import useCustomerAuth from "../context/useCustomerAuth";
 
-function CustomerProfile() {
+function CustomerProfileForm({ customer, updateProfile, logout }) {
   const navigate = useNavigate();
 
-  const {
-    customer,
-    updateProfile,
-    logout,
-  } = useCustomerAuth();
-
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState(() => ({
     name: customer?.name || "",
     phone: customer?.phone || "",
     address: customer?.address || "",
-  });
+  }));
 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -29,6 +23,9 @@ function CustomerProfile() {
       ...previousData,
       [name]: value,
     }));
+
+    setMessage("");
+    setError("");
   };
 
   const handleSubmit = async (event) => {
@@ -37,7 +34,9 @@ function CustomerProfile() {
     setMessage("");
     setError("");
 
-    if (!formData.name.trim()) {
+    const trimmedName = formData.name.trim();
+
+    if (!trimmedName) {
       setError("Name cannot be empty.");
       return;
     }
@@ -46,9 +45,9 @@ function CustomerProfile() {
       setLoading(true);
 
       const response = await updateProfile({
-        name: formData.name,
-        phone: formData.phone,
-        address: formData.address,
+        name: trimmedName,
+        phone: formData.phone.trim(),
+        address: formData.address.trim(),
       });
 
       if (response.success) {
@@ -72,35 +71,49 @@ function CustomerProfile() {
     navigate("/customer/login");
   };
 
-  if (!customer) {
-    return null;
-  }
-
   return (
     <div className="min-h-[calc(100vh-160px)] bg-gray-50 px-4 py-10 sm:py-14">
       <div className="mx-auto w-full max-w-2xl">
-        <div className="rounded-2xl bg-white p-6 shadow-lg sm:p-8">
+        <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-lg sm:p-8">
+          {/* CaféNest Brand */}
+          <div className="mb-7">
+            <Link
+              to="/"
+              aria-label="CaféNest Home"
+              className="inline-block text-2xl font-bold tracking-tight transition-opacity hover:opacity-80"
+            >
+              <span className="text-gray-900">Café</span>
+              <span className="text-orange-600">Nest</span>
+            </Link>
+          </div>
+
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
               My Profile
             </h1>
 
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-2 text-sm leading-6 text-gray-600 sm:text-base">
               Manage your CaféNest customer account information.
             </p>
           </div>
 
           {/* Success Message */}
           {message && (
-            <div className="mb-5 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+            <div
+              role="status"
+              className="mb-5 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm leading-6 text-green-700"
+            >
               {message}
             </div>
           )}
 
           {/* Error Message */}
           {error && (
-            <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div
+              role="alert"
+              className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700"
+            >
               {error}
             </div>
           )}
@@ -124,7 +137,9 @@ function CustomerProfile() {
                 onChange={handleChange}
                 placeholder="Enter your full name"
                 autoComplete="name"
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                required
+                maxLength={100}
+                className="min-h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
               />
             </div>
 
@@ -141,13 +156,14 @@ function CustomerProfile() {
                 id="email"
                 name="email"
                 type="email"
-                value={customer.email}
+                value={customer.email || ""}
                 disabled
-                className="w-full cursor-not-allowed rounded-lg border border-gray-200 bg-gray-100 px-4 py-3 text-sm text-gray-500"
+                autoComplete="email"
+                className="min-h-11 w-full cursor-not-allowed rounded-lg border border-gray-200 bg-gray-100 px-4 py-3 text-sm text-gray-500"
               />
 
-              <p className="mt-1 text-xs text-gray-500">
-                Email address cannot be changed.
+              <p className="mt-1 text-xs leading-5 text-gray-500">
+                Your email address cannot be changed here.
               </p>
             </div>
 
@@ -168,7 +184,8 @@ function CustomerProfile() {
                 onChange={handleChange}
                 placeholder="Enter your phone number"
                 autoComplete="tel"
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                maxLength={20}
+                className="min-h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
               />
             </div>
 
@@ -187,9 +204,10 @@ function CustomerProfile() {
                 value={formData.address}
                 onChange={handleChange}
                 placeholder="Enter your address"
-                rows="4"
+                rows={4}
+                maxLength={500}
                 autoComplete="street-address"
-                className="w-full resize-none rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                className="w-full resize-y rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm leading-6 text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
               />
             </div>
 
@@ -197,7 +215,7 @@ function CustomerProfile() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg bg-orange-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-orange-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? "Updating Profile..." : "Update Profile"}
             </button>
@@ -205,10 +223,18 @@ function CustomerProfile() {
 
           {/* Logout Section */}
           <div className="mt-8 border-t border-gray-200 pt-6">
+            <h2 className="text-base font-semibold text-gray-900">
+              Account Actions
+            </h2>
+
+            <p className="mt-1 text-sm leading-6 text-gray-600">
+              Log out of your CaféNest customer account on this device.
+            </p>
+
             <button
               type="button"
               onClick={handleLogout}
-              className="w-full rounded-lg border border-red-300 px-4 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+              className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-red-300 px-4 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
             >
               Logout
             </button>
@@ -216,6 +242,42 @@ function CustomerProfile() {
         </div>
       </div>
     </div>
+  );
+}
+
+function CustomerProfile() {
+  const { customer, updateProfile, logout } = useCustomerAuth();
+
+  if (!customer) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center bg-gray-50 px-4">
+        <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center shadow-sm">
+          <h1 className="text-xl font-bold text-gray-900">
+            Please log in
+          </h1>
+
+          <p className="mt-2 text-sm leading-6 text-gray-600">
+            Log in to view and manage your CaféNest customer profile.
+          </p>
+
+          <Link
+            to="/customer/login"
+            className="mt-6 inline-flex min-h-11 items-center justify-center rounded-lg bg-orange-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+          >
+            Customer Login
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <CustomerProfileForm
+      key={customer._id || customer.email}
+      customer={customer}
+      updateProfile={updateProfile}
+      logout={logout}
+    />
   );
 }
 

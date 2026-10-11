@@ -5,28 +5,8 @@ import { getGallery } from "../services/galleryService";
 function Gallery() {
   const [galleryItems, setGalleryItems] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  const fetchGallery = async () => {
-    try {
-      setLoading(true);
-      setError("");
-
-      const data = await getGallery();
-
-      setGalleryItems(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error("Failed to fetch gallery items:", error);
-
-      setError(
-        "Unable to load gallery. Please check your connection and try again."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
     let cancelled = false;
@@ -81,20 +61,34 @@ function Gallery() {
     }
 
     return galleryItems.filter(
-      (item) => item.category === selectedCategory
+      (item) => item.category?.trim() === selectedCategory
     );
   }, [galleryItems, selectedCategory]);
 
   const handleImageError = (event) => {
     event.currentTarget.onerror = null;
-
     event.currentTarget.src =
       "https://placehold.co/800x600?text=Image+Unavailable";
   };
 
   const handleRetry = async () => {
-    setSelectedCategory("All");
-    await fetchGallery();
+    try {
+      setLoading(true);
+      setError("");
+      setSelectedCategory("All");
+
+      const data = await getGallery();
+
+      setGalleryItems(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Failed to fetch gallery items:", error);
+
+      setError(
+        "Unable to load gallery. Please check your connection and try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -107,7 +101,9 @@ function Gallery() {
           </p>
 
           <h1 className="mt-2 text-3xl font-bold leading-tight tracking-tight sm:mt-3 sm:text-5xl">
-            A Taste of CaféNest
+            A Taste of{" "}
+            <span className="text-white">Café</span>
+            <span className="text-orange-400">Nest</span>
           </h1>
 
           <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-gray-300 sm:mt-5 sm:text-lg sm:leading-7">
@@ -118,7 +114,7 @@ function Gallery() {
 
       {/* Gallery Section */}
       <section className="bg-white px-3 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
-        <div className="mx-auto w-full max-w-7xl min-w-0">
+        <div className="mx-auto w-full min-w-0 max-w-7xl">
           {/* Loading State */}
           {loading && (
             <div className="py-12 text-center sm:py-16">
@@ -308,7 +304,12 @@ function Gallery() {
 
           <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-gray-600 sm:mt-4 sm:text-base sm:leading-7">
             Enjoy delicious food, a welcoming atmosphere, and a memorable
-            experience at CaféNest.
+            experience at{" "}
+            <span className="font-semibold">
+              <span className="text-gray-950">Café</span>
+              <span className="text-orange-700">Nest</span>
+            </span>
+            .
           </p>
 
           <div className="mt-6 flex flex-col justify-center gap-3 sm:mt-8 sm:flex-row sm:gap-4">

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { validateCoupon } from "../services/couponService";
@@ -6,15 +6,64 @@ import { validateCoupon } from "../services/couponService";
 const CART_STORAGE_KEY = "cafeNestCart";
 const CART_UPDATED_EVENT = "cafeNestCartUpdated";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/api/orders`;
-
-// Replace with your CaféNest WhatsApp number.
-// Example: 9876543210 -> 919876543210
-const WHATSAPP_NUMBER = "919XXXXXXXXX";
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+const API_URL = `${API_BASE_URL}/api/orders`;
 
 function Checkout() {
   const navigate = useNavigate();
 
+  // ======================================================
+  // Business Settings / WhatsApp Number
+  // ======================================================
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+
+  useEffect(() => {
+    if (!API_BASE_URL) {
+      return;
+    }
+
+    const controller = new AbortController();
+
+    async function loadBusinessSettings() {
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/business-settings`,
+          { signal: controller.signal }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to load business settings.");
+        }
+
+        const result = await response.json();
+
+        const settings =
+          result?.data ?? result?.businessSettings ?? result;
+
+        const number =
+          settings?.whatsappNumber ??
+          settings?.whatsapp ??
+          settings?.phone ??
+          "";
+
+        setWhatsappNumber(String(number).replace(/\D/g, ""));
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          console.error("Unable to load WhatsApp number:", error);
+        }
+      }
+    }
+
+    loadBusinessSettings();
+
+    return () => {
+      controller.abort();
+    };
+  }, []);
+
+  // ======================================================
+  // Cart
+  // ======================================================
   const [cart] = useState(() => {
     try {
       const savedCart = localStorage.getItem(CART_STORAGE_KEY);
@@ -26,9 +75,13 @@ function Checkout() {
     }
   });
 
+  // ======================================================
+  // Checkout Form
+  // ======================================================
   const [formData, setFormData] = useState({
     name: "",
     mobile: "",
+    email: "",
     orderType: "Delivery",
     address: "",
     note: "",
@@ -49,6 +102,9 @@ function Checkout() {
   const [couponError, setCouponError] = useState("");
   const [couponSuccess, setCouponSuccess] = useState("");
 
+  // ======================================================
+  // Cart Calculations
+  // ======================================================
   const cartItemCount = useMemo(() => {
     return cart.reduce(
       (total, item) => total + Number(item.quantity || 0),
@@ -90,6 +146,9 @@ function Checkout() {
     );
   };
 
+  // ======================================================
+  // Handle Form Changes
+  // ======================================================
   const handleChange = (event) => {
     const { name, value } = event.target;
 
@@ -121,9 +180,7 @@ function Checkout() {
     }
 
     if (subtotal <= 0) {
-      setCouponError(
-        "Your cart total must be greater than ₹0."
-      );
+      setCouponError("Your cart total must be greater than ₹0.");
       return;
     }
 
@@ -137,14 +194,11 @@ function Checkout() {
 
       if (!response.success) {
         setAppliedCoupon(null);
-        setCouponError(
-          response.message || "Invalid coupon code."
-        );
+        setCouponError(response.message || "Invalid coupon code.");
         return;
       }
 
       setAppliedCoupon(response.data);
-
       setCouponCode(response.data.code || code);
 
       setCouponSuccess(
@@ -176,6 +230,9 @@ function Checkout() {
     setCouponSuccess("");
   };
 
+  // ======================================================
+  // Validate Checkout Form
+  // ======================================================
   const validateForm = () => {
     const newErrors = {};
 
@@ -190,12 +247,22 @@ function Checkout() {
         "Please enter a valid 10-digit mobile number.";
     }
 
+    const normalizedEmail = formData.email.trim().toLowerCase();
+
+    if (!normalizedEmail) {
+      newErrors.email =
+        "Please enter your email address for order confirmation.";
+    } else if (
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)
+    ) {
+      newErrors.email = "Please enter a valid email address.";
+    }
+
     if (
       formData.orderType === "Delivery" &&
       !formData.address.trim()
     ) {
-      newErrors.address =
-        "Please enter your delivery address.";
+      newErrors.address = "Please enter your delivery address.";
     }
 
     setErrors(newErrors);
@@ -203,6 +270,9 @@ function Checkout() {
     return Object.keys(newErrors).length === 0;
   };
 
+  // ======================================================
+  // Clear Cart
+  // ======================================================
   const clearCart = () => {
     try {
       localStorage.removeItem(CART_STORAGE_KEY);
@@ -219,6 +289,9 @@ function Checkout() {
     }
   };
 
+  // ======================================================
+  // Track Order
+  // ======================================================
   const handleTrackOrder = () => {
     if (!orderSuccess?._id || !trackingMobile) {
       return;
@@ -237,6 +310,13 @@ function Checkout() {
   // ======================================================
   const handleWhatsAppOrder = () => {
     if (!orderSuccess) {
+      return;
+    }
+
+    if (!whatsappNumber) {
+      setSubmitError(
+        "The restaurant WhatsApp number is not configured. Please contact the restaurant directly."
+      );
       return;
     }
 
@@ -284,6 +364,7 @@ Order ID: ${orderSuccess._id}
 
 Customer Name: ${orderSuccess.customer?.name || ""}
 Mobile: ${orderSuccess.customer?.mobile || ""}
+Email: ${orderSuccess.customer?.email || ""}
 Order Type: ${orderSuccess.orderType || ""}${addressText}${noteText}${couponText}${discountText}
 
 Order Items:
@@ -292,13 +373,9 @@ ${itemsText}
 Subtotal: ₹${formatPrice(
       Number(orderSuccess.subtotal || 0)
     )}
-Discount: ${
-      Number(orderSuccess.discountAmount || 0) > 0
-        ? `₹${formatPrice(
-            Number(orderSuccess.discountAmount || 0)
-          )}`
-        : "₹0"
-    }
+Discount: ₹${formatPrice(
+      Number(orderSuccess.discountAmount || 0)
+    )}
 Delivery Charge: ${
       Number(orderSuccess.deliveryCharge || 0) === 0
         ? "Free"
@@ -312,15 +389,11 @@ Total Amount: ₹${formatPrice(
 
 Thank you!`;
 
-    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
       message
     )}`;
 
-    window.open(
-      whatsappUrl,
-      "_blank",
-      "noopener,noreferrer"
-    );
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
   };
 
   // ======================================================
@@ -342,14 +415,23 @@ Thank you!`;
       return;
     }
 
+    if (!API_BASE_URL) {
+      setSubmitError(
+        "The order service is not configured. Please try again later."
+      );
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const customerMobile = formData.mobile.trim();
+      const customerEmail = formData.email.trim().toLowerCase();
 
       const orderData = {
         name: formData.name.trim(),
         mobile: customerMobile,
+        email: customerEmail,
         orderType: formData.orderType,
         address:
           formData.orderType === "Delivery"
@@ -364,7 +446,6 @@ Thank you!`;
           quantity: Number(item.quantity),
         })),
 
-        // Coupon information
         couponCode: appliedCoupon?.code || "",
         discountAmount,
         deliveryCharge,
@@ -400,12 +481,12 @@ Thank you!`;
       clearCart();
 
       setOrderSuccess(result.data);
-
       setTrackingMobile(customerMobile);
 
       setFormData({
         name: "",
         mobile: "",
+        email: "",
         orderType: "Delivery",
         address: "",
         note: "",
@@ -444,8 +525,7 @@ Thank you!`;
           </h1>
 
           <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-gray-600 sm:text-base">
-            Please add some delicious items before proceeding to
-            checkout.
+            Please add some delicious items before proceeding to checkout.
           </p>
 
           <Link
@@ -479,36 +559,42 @@ Thank you!`;
           </h1>
 
           <p className="mx-auto mt-4 max-w-lg text-sm leading-6 text-gray-600 sm:text-base sm:leading-7">
-            Your order has been placed successfully. Our team will
-            process your order shortly.
+            Your order has been placed successfully. Our team will process
+            your order shortly.
           </p>
 
           {/* Order Information */}
           <div className="mt-8 rounded-xl border border-gray-200 bg-gray-50 p-4 text-left sm:p-5">
             <div className="flex flex-col gap-2 border-b border-gray-200 pb-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-              <span className="text-sm text-gray-600">
-                Order ID
-              </span>
+              <span className="text-sm text-gray-600">Order ID</span>
 
               <span className="break-all text-sm font-semibold text-gray-900 sm:text-right">
                 {orderSuccess._id}
               </span>
             </div>
 
-            <div className="flex items-center justify-between gap-4 py-4">
-              <span className="text-sm text-gray-600">
-                Order Type
-              </span>
+            <div className="flex items-center justify-between gap-4 border-b border-gray-200 py-4">
+              <span className="text-sm text-gray-600">Order Type</span>
 
               <span className="text-right text-sm font-semibold text-gray-900">
                 {orderSuccess.orderType}
               </span>
             </div>
 
-            <div className="flex items-center justify-between gap-4 border-t border-gray-200 py-4">
-              <span className="text-sm text-gray-600">
-                Status
-              </span>
+            {orderSuccess.customer?.email && (
+              <div className="flex flex-col gap-1 border-b border-gray-200 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                <span className="text-sm text-gray-600">
+                  Confirmation Email
+                </span>
+
+                <span className="break-all text-sm font-medium text-gray-900 sm:text-right">
+                  {orderSuccess.customer.email}
+                </span>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between gap-4 border-b border-gray-200 py-4">
+              <span className="text-sm text-gray-600">Status</span>
 
               <span className="shrink-0 rounded-full bg-yellow-100 px-3 py-1 text-xs font-bold text-yellow-800">
                 {orderSuccess.status}
@@ -516,10 +602,8 @@ Thank you!`;
             </div>
 
             {Number(orderSuccess.discountAmount || 0) > 0 && (
-              <div className="flex items-center justify-between gap-4 border-t border-gray-200 py-4">
-                <span className="text-sm text-gray-600">
-                  Discount
-                </span>
+              <div className="flex items-center justify-between gap-4 border-b border-gray-200 py-4">
+                <span className="text-sm text-gray-600">Discount</span>
 
                 <span className="shrink-0 text-sm font-bold text-green-600">
                   -₹
@@ -530,10 +614,8 @@ Thank you!`;
               </div>
             )}
 
-            <div className="flex items-center justify-between gap-4 border-t border-gray-200 pt-4">
-              <span className="text-sm text-gray-600">
-                Total Amount
-              </span>
+            <div className="flex items-center justify-between gap-4 pt-4">
+              <span className="text-sm text-gray-600">Total Amount</span>
 
               <span className="shrink-0 text-lg font-bold text-amber-600">
                 ₹{formatPrice(orderSuccess.totalAmount)}
@@ -551,7 +633,7 @@ Thank you!`;
                 className="h-8 w-8"
                 aria-hidden="true"
               >
-                <path d="M20.52 3.48A11.82 11.82 0 0 0 12.06 0C5.52 0 .2 5.31.2 11.86c0 2.09.55 4.13 1.59 5.93L.1 24l6.36-1.67a11.85 11.85 0 0 0 5.6 1.43h.01c6.54 0 11.86-5.32 11.86-11.86 0-3.17-1.23-6.14-3.41-8.42ZM12.07 21.72h-.01a9.84 9.84 0 0 1-5.02-1.38l-.36-.21-3.77.99 1.01-3.67-.23-.38a9.85 9.85 0 0 1-1.51-5.21c0-5.43 4.42-9.85 9.86-9.85 2.63 0 5.1 1.03 6.96 2.89a9.79 9.79 0 0 1 2.89 6.97c0 5.43-4.42 9.85-9.82 9.85Zm5.4-7.38c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.47-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.2-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.05 1.02-1.05 2.49s1.07 2.89 1.22 3.09c.15.2 2.1 3.2 5.09 4.49.71.31 1.27.49 1.7.63.71.23 1.35.2 1.86.12.57-.08 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35Z" />
+                <path d="M20.52 3.48A11.82 11.82 0 0 0 12.06 0C5.52 0 .2 5.31.2 11.86c0 2.09.55 4.13 1.59 5.93L.1 24l6.36-1.67a11.85 11.85 0 0 0 5.6 1.43h.01c6.54 0 11.86-5.32 11.86-11.86 0-3.17-1.23-6.14-3.41-8.42ZM12.07 21.72h-.01a9.84 9.84 0 0 1-5.02-1.38l-.36-.21-3.77.99 1.01-3.67-.23-.38a9.85 9.85 0 0 1-1.51-5.21c0-5.43 4.42-9.85 9.86-9.85 2.63 0 5.1 1.03 6.96 2.89a9.79 9.79 0 0 1 2.89 6.97c0 5.43-4.42 9.85-9.82 9.85Zm5.4-7.38c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.47-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.05 1.02-1.05 2.49s1.07 2.89 1.22 3.09c.15.2 2.1 3.2 5.09 4.49.71.31 1.27.49 1.7.63.71.23 1.35.2 1.86.12.57-.08 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35Z" />
               </svg>
             </div>
 
@@ -560,8 +642,8 @@ Thank you!`;
             </h2>
 
             <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-600">
-              Send your order details directly to CaféNest on
-              WhatsApp for easy communication.
+              Send your order details directly to CaféNest on WhatsApp for
+              easy communication.
             </p>
 
             <button
@@ -576,7 +658,7 @@ Thank you!`;
                 className="h-5 w-5"
                 aria-hidden="true"
               >
-                <path d="M20.52 3.48A11.82 11.82 0 0 0 12.06 0C5.52 0 .2 5.31.2 11.86c0 2.09.55 4.13 1.59 5.93L.1 24l6.36-1.67a11.85 11.85 0 0 0 5.6 1.43h.01c6.54 0 11.86-5.32 11.86-11.86 0-3.17-1.23-6.14-3.41-8.42Zm-8.45 18.24h-.01a9.84 9.84 0 0 1-5.02-1.38l-.36-.21-3.77.99 1.01-3.67-.23-.38a9.85 9.85 0 0 1-1.51-5.21c0-5.43 4.42-9.85 9.86-9.85 2.63 0 5.1 1.03 6.96 2.89a9.79 9.79 0 0 1 2.89 6.97c0 5.43-4.42 9.85-9.82 9.85Zm5.4-7.38c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.47-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.2-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.05 1.02-1.05 2.49s1.07 2.89 1.22 3.09c.15.2 2.1 3.2 5.09 4.49.71.31 1.27.49 1.7.63.71.23 1.35.2 1.86.12.57-.08 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35Z" />
+                <path d="M20.52 3.48A11.82 11.82 0 0 0 12.06 0C5.52 0 .2 5.31.2 11.86c0 2.09.55 4.13 1.59 5.93L.1 24l6.36-1.67a11.85 11.85 0 0 0 5.6 1.43h.01c6.54 0 11.86-5.32 11.86-11.86 0-3.17-1.23-6.14-3.41-8.42Zm-8.45 18.24h-.01a9.84 9.84 0 0 1-5.02-1.38l-.36-.21-3.77.99 1.01-3.67-.23-.38a9.85 9.85 0 0 1-1.51-5.21c0-5.43 4.42-9.85 9.86-9.85 2.63 0 5.1 1.03 6.96 2.89a9.79 9.79 0 0 1 2.89 6.97c0 5.43-4.42 9.85-9.82 9.85Zm5.4-7.38c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.47-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.05 1.02-1.05 2.49s1.07 2.89 1.22 3.09c.15.2 2.1 3.2 5.09 4.49.71.31 1.27.49 1.7.63.71.23 1.35.2 1.86.12.57-.08 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35Z" />
               </svg>
 
               Send Order on WhatsApp
@@ -594,8 +676,8 @@ Thank you!`;
             </h2>
 
             <p className="mt-2 text-sm leading-6 text-gray-600">
-              You can track the current status of your order using
-              your Order ID and mobile number.
+              You can track the current status of your order using your Order
+              ID and mobile number.
             </p>
 
             <button
@@ -648,8 +730,7 @@ Thank you!`;
           </h1>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
-            Enter your details and review your order before placing
-            it.
+            Enter your details and review your order before placing it.
           </p>
         </div>
 
@@ -668,7 +749,6 @@ Thank you!`;
                 Please provide your contact and order details.
               </p>
 
-              {/* Submit Error */}
               {submitError && (
                 <div className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
                   <p className="text-sm font-medium leading-5 text-red-700">
@@ -695,6 +775,7 @@ Thank you!`;
                   placeholder="Enter your full name"
                   disabled={isSubmitting}
                   autoComplete="name"
+                  required
                   className={`min-h-11 w-full rounded-lg border px-4 py-3 text-sm outline-none transition focus:ring-2 ${
                     errors.name
                       ? "border-red-400 focus:ring-red-100"
@@ -715,8 +796,7 @@ Thank you!`;
                   htmlFor="mobile"
                   className="mb-2 block text-sm font-semibold text-gray-700"
                 >
-                  Mobile Number{" "}
-                  <span className="text-red-500">*</span>
+                  Mobile Number <span className="text-red-500">*</span>
                 </label>
 
                 <input
@@ -724,12 +804,13 @@ Thank you!`;
                   name="mobile"
                   type="tel"
                   inputMode="numeric"
-                  maxLength="10"
+                  maxLength={10}
                   value={formData.mobile}
                   onChange={handleChange}
                   placeholder="Enter 10-digit mobile number"
                   disabled={isSubmitting}
                   autoComplete="tel"
+                  required
                   className={`min-h-11 w-full rounded-lg border px-4 py-3 text-sm outline-none transition focus:ring-2 ${
                     errors.mobile
                       ? "border-red-400 focus:ring-red-100"
@@ -740,6 +821,53 @@ Thank you!`;
                 {errors.mobile && (
                   <p className="mt-1.5 text-xs leading-5 text-red-500">
                     {errors.mobile}
+                  </p>
+                )}
+              </div>
+
+              {/* Email Address */}
+              <div className="mt-5">
+                <label
+                  htmlFor="email"
+                  className="mb-2 block text-sm font-semibold text-gray-700"
+                >
+                  Email Address <span className="text-red-500">*</span>
+                </label>
+
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Enter your email address"
+                  disabled={isSubmitting}
+                  autoComplete="email"
+                  inputMode="email"
+                  maxLength={254}
+                  required
+                  aria-invalid={Boolean(errors.email)}
+                  aria-describedby={errors.email ? "email-error" : "email-help"}
+                  className={`min-h-11 w-full rounded-lg border px-4 py-3 text-sm outline-none transition focus:ring-2 ${
+                    errors.email
+                      ? "border-red-400 focus:ring-red-100"
+                      : "border-gray-300 focus:border-amber-500 focus:ring-amber-100"
+                  } disabled:cursor-not-allowed disabled:bg-gray-100`}
+                />
+
+                {errors.email ? (
+                  <p
+                    id="email-error"
+                    className="mt-1.5 text-xs leading-5 text-red-500"
+                  >
+                    {errors.email}
+                  </p>
+                ) : (
+                  <p
+                    id="email-help"
+                    className="mt-1.5 text-xs leading-5 text-gray-500"
+                  >
+                    We will send your order confirmation to this email.
                   </p>
                 )}
               </div>
@@ -769,9 +897,7 @@ Thank you!`;
                     />
 
                     <div className="min-w-0">
-                      <p className="font-semibold text-gray-900">
-                        Delivery
-                      </p>
+                      <p className="font-semibold text-gray-900">Delivery</p>
 
                       <p className="mt-0.5 text-xs leading-5 text-gray-500">
                         Delivered to your address
@@ -797,9 +923,7 @@ Thank you!`;
                     />
 
                     <div className="min-w-0">
-                      <p className="font-semibold text-gray-900">
-                        Pickup
-                      </p>
+                      <p className="font-semibold text-gray-900">Pickup</p>
 
                       <p className="mt-0.5 text-xs leading-5 text-gray-500">
                         Collect from the cafe
@@ -816,19 +940,19 @@ Thank you!`;
                     htmlFor="address"
                     className="mb-2 block text-sm font-semibold text-gray-700"
                   >
-                    Delivery Address{" "}
-                    <span className="text-red-500">*</span>
+                    Delivery Address <span className="text-red-500">*</span>
                   </label>
 
                   <textarea
                     id="address"
                     name="address"
-                    rows="4"
+                    rows={4}
                     value={formData.address}
                     onChange={handleChange}
                     placeholder="Enter your complete delivery address"
                     disabled={isSubmitting}
                     autoComplete="street-address"
+                    required
                     className={`min-h-28 w-full resize-none rounded-lg border px-4 py-3 text-sm leading-6 outline-none transition focus:ring-2 ${
                       errors.address
                         ? "border-red-400 focus:ring-red-100"
@@ -851,15 +975,13 @@ Thank you!`;
                   className="mb-2 block text-sm font-semibold text-gray-700"
                 >
                   Order Note{" "}
-                  <span className="font-normal text-gray-400">
-                    (Optional)
-                  </span>
+                  <span className="font-normal text-gray-400">(Optional)</span>
                 </label>
 
                 <textarea
                   id="note"
                   name="note"
-                  rows="3"
+                  rows={3}
                   value={formData.note}
                   onChange={handleChange}
                   placeholder="Any special instructions?"
@@ -874,9 +996,7 @@ Thank you!`;
                 disabled={isSubmitting}
                 className="mt-7 flex min-h-12 w-full items-center justify-center rounded-lg bg-amber-600 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isSubmitting
-                  ? "Placing Order..."
-                  : "Continue to Place Order"}
+                {isSubmitting ? "Placing Order..." : "Continue to Place Order"}
               </button>
             </form>
           </div>
@@ -890,8 +1010,7 @@ Thank you!`;
                 </h2>
 
                 <span className="shrink-0 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
-                  {cartItemCount}{" "}
-                  {cartItemCount === 1 ? "item" : "items"}
+                  {cartItemCount} {cartItemCount === 1 ? "item" : "items"}
                 </span>
               </div>
 
@@ -899,8 +1018,7 @@ Thank you!`;
               <div className="mt-6 space-y-4">
                 {cart.map((item) => {
                   const itemTotal =
-                    Number(item.price || 0) *
-                    Number(item.quantity || 0);
+                    Number(item.price || 0) * Number(item.quantity || 0);
 
                   return (
                     <div
@@ -960,9 +1078,7 @@ Thank you!`;
                   </div>
 
                   {appliedCoupon && (
-                    <span className="shrink-0 text-lg">
-                      🎟️
-                    </span>
+                    <span className="shrink-0 text-lg">🎟️</span>
                   )}
                 </div>
 
@@ -972,9 +1088,7 @@ Thank you!`;
                       type="text"
                       value={couponCode}
                       onChange={(event) => {
-                        setCouponCode(
-                          event.target.value.toUpperCase()
-                        );
+                        setCouponCode(event.target.value.toUpperCase());
                         setCouponError("");
                         setCouponSuccess("");
                       }}
@@ -1016,8 +1130,7 @@ Thank you!`;
                         </p>
 
                         <p className="mt-2 text-sm font-bold text-green-700">
-                          You save ₹
-                          {formatPrice(discountAmount)}
+                          You save ₹{formatPrice(discountAmount)}
                         </p>
                       </div>
 
@@ -1051,18 +1164,14 @@ Thank you!`;
                 <div className="flex items-center justify-between gap-4 text-gray-600">
                   <span>Subtotal</span>
 
-                  <span className="shrink-0">
-                    ₹{formatPrice(subtotal)}
-                  </span>
+                  <span className="shrink-0">₹{formatPrice(subtotal)}</span>
                 </div>
 
                 {discountAmount > 0 && (
                   <div className="flex items-center justify-between gap-4 text-green-600">
                     <span>
                       Discount
-                      {appliedCoupon?.code
-                        ? ` (${appliedCoupon.code})`
-                        : ""}
+                      {appliedCoupon?.code ? ` (${appliedCoupon.code})` : ""}
                     </span>
 
                     <span className="shrink-0 font-semibold">

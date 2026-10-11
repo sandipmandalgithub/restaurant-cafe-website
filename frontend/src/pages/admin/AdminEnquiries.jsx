@@ -143,9 +143,7 @@ function AdminEnquiries() {
     }
   };
 
-  // ======================================================
   // Reply to Customer on WhatsApp
-  // ======================================================
   const handleWhatsAppReply = (enquiry) => {
     if (!enquiry.phone) {
       setErrorMessage(
@@ -277,8 +275,10 @@ CaféNest Team`;
       <main className="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         {/* Page Header */}
         <div className="mb-6 sm:mb-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-green-600 sm:text-sm sm:tracking-widest">
-            Admin Panel
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] sm:text-sm sm:tracking-widest">
+            <span className="text-gray-950">Café</span>
+            <span className="text-orange-700">Nest</span>
+            <span className="text-amber-600"> Admin Panel</span>
           </p>
 
           <div className="mt-2 flex flex-col justify-between gap-4 lg:flex-row lg:items-end">

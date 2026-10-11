@@ -2,6 +2,10 @@ const mongoose = require("mongoose");
 
 const Order = require("../models/Order");
 const Coupon = require("../models/Coupon");
+const Customer = require("../models/Customer");
+const {
+  sendOrderConfirmationEmail,
+} = require("../config/emailService");
 
 // ======================================================
 // Create Order - Public / Optional Customer Authentication
@@ -11,6 +15,7 @@ const createOrder = async (req, res) => {
     const {
       name,
       mobile,
+      email,
       orderType,
       address,
       note,
@@ -19,7 +24,7 @@ const createOrder = async (req, res) => {
     } = req.body;
 
     // Validate customer name
-    if (!name || !name.trim()) {
+    if (typeof name !== "string" || !name.trim()) {
       return res.status(400).json({
         success: false,
         message: "Customer name is required.",
@@ -27,17 +32,34 @@ const createOrder = async (req, res) => {
     }
 
     // Validate mobile number
-    if (!mobile || !mobile.trim()) {
+    if (typeof mobile !== "string" || !mobile.trim()) {
       return res.status(400).json({
         success: false,
         message: "Mobile number is required.",
       });
     }
 
-    if (!/^[6-9]\d{9}$/.test(mobile.trim())) {
+    const normalizedMobile = mobile.trim();
+
+    if (!/^[6-9]\d{9}$/.test(normalizedMobile)) {
       return res.status(400).json({
         success: false,
         message: "Please enter a valid 10-digit mobile number.",
+      });
+    }
+
+    // Validate guest email format when provided.
+    // The frontend checkout will collect an email for confirmation.
+    let customerEmail =
+      typeof email === "string" ? email.trim().toLowerCase() : "";
+
+    if (
+      customerEmail &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter a valid email address.",
       });
     }
 
@@ -50,7 +72,10 @@ const createOrder = async (req, res) => {
     }
 
     // Delivery address required
-    if (orderType === "Delivery" && (!address || !address.trim())) {
+    if (
+      orderType === "Delivery" &&
+      (typeof address !== "string" || !address.trim())
+    ) {
       return res.status(400).json({
         success: false,
         message: "Delivery address is required.",
@@ -66,19 +91,53 @@ const createOrder = async (req, res) => {
     }
 
     // ======================================================
+    // Resolve Logged-in Customer
+    // Use the account email for authenticated customers.
+    // Do not trust an email submitted by the frontend.
+    // ======================================================
+    let authenticatedCustomerId = null;
+
+    if (
+      req.customer &&
+      req.customer.id &&
+      mongoose.Types.ObjectId.isValid(req.customer.id)
+    ) {
+      const authenticatedCustomer = await Customer.findById(
+        req.customer.id
+      ).select("email isActive");
+
+      if (authenticatedCustomer && authenticatedCustomer.isActive) {
+        authenticatedCustomerId = authenticatedCustomer._id;
+        customerEmail = authenticatedCustomer.email;
+      } else {
+        return res.status(401).json({
+          success: false,
+          message:
+            "Your customer account could not be verified. Please log in again.",
+        });
+      }
+    }
+
+    // ======================================================
     // Prepare Order Items
     // ======================================================
     const orderItems = [];
 
     for (const item of items) {
-      if (!mongoose.Types.ObjectId.isValid(item.menuItemId)) {
+      if (
+        !item ||
+        !mongoose.Types.ObjectId.isValid(item.menuItemId)
+      ) {
         return res.status(400).json({
           success: false,
           message: "Invalid menu item ID.",
         });
       }
 
-      if (!item.name || !item.name.trim()) {
+      if (
+        typeof item.name !== "string" ||
+        !item.name.trim()
+      ) {
         return res.status(400).json({
           success: false,
           message: "Menu item name is required.",
@@ -134,7 +193,10 @@ const createOrder = async (req, res) => {
     let appliedCouponCode = "";
     let discountAmount = 0;
 
-    if (couponCode && couponCode.trim()) {
+    if (
+      typeof couponCode === "string" &&
+      couponCode.trim()
+    ) {
       const normalizedCouponCode = couponCode.trim().toUpperCase();
 
       const coupon = await Coupon.findOne({
@@ -220,7 +282,8 @@ const createOrder = async (req, res) => {
     const orderData = {
       customer: {
         name: name.trim(),
-        mobile: mobile.trim(),
+        mobile: normalizedMobile,
+        email: customerEmail,
       },
 
       orderType,
@@ -230,7 +293,7 @@ const createOrder = async (req, res) => {
           ? address.trim()
           : "",
 
-      note: note ? note.trim() : "",
+      note: typeof note === "string" ? note.trim() : "",
 
       items: orderItems,
 
@@ -247,16 +310,10 @@ const createOrder = async (req, res) => {
       status: "Pending",
     };
 
-    // ======================================================
-    // Attach Logged-in Customer ID When Available
+    // Attach verified logged-in Customer ID when available.
     // Guest orders will not have customerId.
-    // ======================================================
-    if (
-      req.customer &&
-      req.customer.id &&
-      mongoose.Types.ObjectId.isValid(req.customer.id)
-    ) {
-      orderData.customerId = req.customer.id;
+    if (authenticatedCustomerId) {
+      orderData.customerId = authenticatedCustomerId;
     }
 
     // ======================================================
@@ -264,7 +321,23 @@ const createOrder = async (req, res) => {
     // ======================================================
     const order = await Order.create(orderData);
 
-    res.status(201).json({
+    // ======================================================
+    // Send Order Confirmation Email
+    // Non-blocking: email failure must not fail the order.
+    // ======================================================
+    if (order.customer && order.customer.email) {
+      Promise.resolve()
+        .then(() => sendOrderConfirmationEmail(order))
+        .catch((error) => {
+          console.error(
+            "Order confirmation email error:",
+            error.message
+          );
+        });
+    }
+
+    // Return success immediately after order creation.
+    return res.status(201).json({
       success: true,
       message: "Order placed successfully!",
       data: order,
@@ -272,7 +345,7 @@ const createOrder = async (req, res) => {
   } catch (error) {
     console.error("Create order error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to create order.",
     });
@@ -304,7 +377,7 @@ const getCustomerOrderHistory = async (req, res) => {
       createdAt: -1,
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count: orders.length,
       data: orders,
@@ -312,7 +385,7 @@ const getCustomerOrderHistory = async (req, res) => {
   } catch (error) {
     console.error("Get customer order history error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to fetch customer order history.",
     });
@@ -326,7 +399,7 @@ const getOrders = async (req, res) => {
   try {
     const orders = await Order.find().sort({ createdAt: -1 });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count: orders.length,
       data: orders,
@@ -334,7 +407,7 @@ const getOrders = async (req, res) => {
   } catch (error) {
     console.error("Get orders error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to fetch orders.",
     });
@@ -364,14 +437,14 @@ const getOrderById = async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: order,
     });
   } catch (error) {
     console.error("Get order error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to fetch order.",
     });
@@ -395,7 +468,7 @@ const trackOrder = async (req, res) => {
     }
 
     // Validate mobile number
-    if (!mobile || !mobile.trim()) {
+    if (typeof mobile !== "string" || !mobile.trim()) {
       return res.status(400).json({
         success: false,
         message: "Mobile number is required.",
@@ -425,7 +498,7 @@ const trackOrder = async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Order found successfully.",
       data: order,
@@ -433,7 +506,7 @@ const trackOrder = async (req, res) => {
   } catch (error) {
     console.error("Track order error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to track order.",
     });
@@ -489,7 +562,7 @@ const updateOrderStatus = async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Order status updated successfully!",
       data: updatedOrder,
@@ -497,7 +570,7 @@ const updateOrderStatus = async (req, res) => {
   } catch (error) {
     console.error("Update order status error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to update order status.",
     });
@@ -527,7 +600,7 @@ const deleteOrder = async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Order deleted successfully!",
       data: deletedOrder,
@@ -535,7 +608,7 @@ const deleteOrder = async (req, res) => {
   } catch (error) {
     console.error("Delete order error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to delete order.",
     });
@@ -577,8 +650,7 @@ const getOrderStatistics = async (req, res) => {
       (order) => order.status === "Ready"
     ).length;
 
-    // Revenue
-    // Cancelled orders are excluded from revenue.
+    // Revenue: cancelled orders are excluded.
     const validOrders = orders.filter(
       (order) => order.status !== "Cancelled"
     );
@@ -682,9 +754,8 @@ const getOrderStatistics = async (req, res) => {
       (a, b) => a.date.localeCompare(b.date)
     );
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-
       data: {
         summary: {
           totalOrders,
@@ -704,16 +775,14 @@ const getOrderStatistics = async (req, res) => {
           deliveryOrders,
           pickupOrders,
         },
-
         bestSellingItems,
-
         revenueByDate,
       },
     });
   } catch (error) {
     console.error("Get order statistics error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to fetch order statistics.",
     });

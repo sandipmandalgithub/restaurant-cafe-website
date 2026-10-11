@@ -108,8 +108,12 @@ function Reviews() {
           </h1>
 
           <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
-            We would love to hear about your experience at CaféNest. Your
-            feedback helps us serve you better.
+            We would love to hear about your experience at{" "}
+            <span className="font-semibold">
+              <span className="text-gray-950">Café</span>
+              <span className="text-orange-700">Nest</span>
+            </span>
+            . Your feedback helps us serve you better.
           </p>
         </div>
 
@@ -212,7 +216,12 @@ function Reviews() {
               </h2>
 
               <p className="mt-2 text-sm leading-6 text-gray-600">
-                Tell us about your CaféNest experience.
+                Tell us about your{" "}
+                <span className="font-semibold">
+                  <span className="text-gray-950">Café</span>
+                  <span className="text-orange-700">Nest</span>
+                </span>{" "}
+                experience.
               </p>
             </div>
 

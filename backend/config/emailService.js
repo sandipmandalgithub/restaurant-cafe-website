@@ -1,4 +1,3 @@
-
 const { Resend } = require("resend");
 
 // Escape HTML to prevent unsafe user input in emails
@@ -64,6 +63,11 @@ const formatReservationDate = (date) => {
   });
 };
 
+// Format order amount
+const formatAmount = (amount) => {
+  return `₹${(Number(amount) || 0).toFixed(2)}`;
+};
+
 // Customer Registration Welcome Email
 const sendCustomerWelcomeEmail = async (customer) => {
   const customerName = customer?.name || "Customer";
@@ -108,6 +112,177 @@ const sendCustomerWelcomeEmail = async (customer) => {
     to: customer?.email,
     subject: "Welcome to CaféNest!",
     text: `Dear ${customerName}, your CaféNest customer account has been created successfully. Welcome to CaféNest! You can now log in to explore our menu, place orders, and manage your account.`,
+    html,
+  });
+};
+
+// Order Placed Confirmation Email
+const sendOrderConfirmationEmail = async (order) => {
+  if (!order) {
+    console.warn("Order confirmation email skipped: order is missing.");
+    return false;
+  }
+
+  const customer = order.customer || {};
+  const customerName = customer.name || "Customer";
+  const safeName = escapeHtml(customerName);
+  const orderId = String(order._id || "");
+  const shortOrderId = orderId
+    ? escapeHtml(orderId.slice(-8).toUpperCase())
+    : "Not available";
+
+  const orderType = order.orderType || "Delivery";
+  const status = order.status || "Pending";
+  const items = Array.isArray(order.items) ? order.items : [];
+
+  const itemsHtml = items
+    .map((item) => {
+      const itemName = escapeHtml(item.name || "Menu item");
+      const quantity = Math.max(0, Number(item.quantity) || 0);
+      const subtotal =
+        Number(item.subtotal) ||
+        (Number(item.price) || 0) * quantity;
+
+      return `
+        <tr>
+          <td style="padding:10px;border-bottom:1px solid #e7e5e4">
+            ${itemName}
+          </td>
+          <td style="padding:10px;border-bottom:1px solid #e7e5e4;text-align:center">
+            ${quantity}
+          </td>
+          <td style="padding:10px;border-bottom:1px solid #e7e5e4;text-align:right">
+            ${formatAmount(subtotal)}
+          </td>
+        </tr>
+      `;
+    })
+    .join("");
+
+  const addressHtml =
+    orderType === "Delivery" && order.address
+      ? `<p><strong>Delivery Address:</strong> ${escapeHtml(order.address)}</p>`
+      : "";
+
+  const subtotal = Number(order.subtotal) || 0;
+  const discountAmount = Number(order.discountAmount) || 0;
+  const deliveryCharge = Number(order.deliveryCharge) || 0;
+  const totalAmount = Number(order.totalAmount) || 0;
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:20px auto;color:#292524;line-height:1.6;border:1px solid #e7e5e4;border-radius:10px;overflow:hidden">
+      <div style="background:#292524;padding:20px">
+        <h2 style="color:#fbbf24;margin:0">CaféNest</h2>
+        <p style="color:#ffffff;margin:6px 0 0">Fresh food, made with care.</p>
+      </div>
+
+      <div style="padding:24px">
+        <h2 style="margin-top:0">Order Placed Successfully!</h2>
+
+        <p>Dear ${safeName},</p>
+
+        <p>
+          Thank you for ordering from CaféNest.
+          We have received your order and will process it shortly.
+        </p>
+
+        <div style="background:#fafaf9;padding:16px;border-radius:8px;margin:20px 0">
+          <p><strong>Order ID:</strong> #${shortOrderId}</p>
+          <p><strong>Order Type:</strong> ${escapeHtml(orderType)}</p>
+          <p><strong>Order Status:</strong> ${escapeHtml(status)}</p>
+          ${addressHtml}
+        </div>
+
+        <h3>Order Summary</h3>
+
+        <table style="width:100%;border-collapse:collapse;font-size:14px">
+          <thead>
+            <tr style="background:#f5f5f4">
+              <th style="padding:10px;text-align:left">Item</th>
+              <th style="padding:10px;text-align:center">Qty</th>
+              <th style="padding:10px;text-align:right">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsHtml}
+          </tbody>
+        </table>
+
+        <div style="margin-top:20px">
+          <p style="text-align:right">
+            Subtotal: ${formatAmount(subtotal)}
+          </p>
+          ${
+            discountAmount > 0
+              ? `<p style="text-align:right">Discount: -${formatAmount(discountAmount)}</p>`
+              : ""
+          }
+          <p style="text-align:right">
+            Delivery Charge: ${formatAmount(deliveryCharge)}
+          </p>
+          <p style="text-align:right;font-size:18px;font-weight:bold;border-top:1px solid #e7e5e4;padding-top:12px">
+            Total: ${formatAmount(totalAmount)}
+          </p>
+        </div>
+
+        <p>
+          We will keep you informed when your order status changes.
+        </p>
+
+        <p>
+          Thank you for choosing CaféNest!
+        </p>
+
+        <p>
+          Warm regards,<br />
+          <strong>CaféNest Team</strong>
+        </p>
+      </div>
+    </div>
+  `;
+
+  const itemsText = items
+    .map((item) => {
+      const quantity = Math.max(0, Number(item.quantity) || 0);
+      const itemSubtotal =
+        Number(item.subtotal) ||
+        (Number(item.price) || 0) * quantity;
+
+      return `- ${item.name || "Menu item"} x ${quantity}: ${formatAmount(itemSubtotal)}`;
+    })
+    .join("\n");
+
+  const text = [
+    `Dear ${customerName},`,
+    "",
+    "Thank you for ordering from CaféNest. Your order has been received successfully.",
+    "",
+    `Order ID: #${shortOrderId}`,
+    `Order Type: ${orderType}`,
+    `Order Status: ${status}`,
+    orderType === "Delivery" && order.address
+      ? `Delivery Address: ${order.address}`
+      : "",
+    "",
+    "Order Summary:",
+    itemsText,
+    "",
+    `Subtotal: ${formatAmount(subtotal)}`,
+    `Discount: ${formatAmount(discountAmount)}`,
+    `Delivery Charge: ${formatAmount(deliveryCharge)}`,
+    `Total: ${formatAmount(totalAmount)}`,
+    "",
+    "We will keep you informed when your order status changes.",
+    "Thank you for choosing CaféNest!",
+    "CaféNest Team",
+  ]
+    .filter((line) => line !== "")
+    .join("\n");
+
+  return sendEmail({
+    to: customer.email,
+    subject: `CaféNest - Order Confirmation #${shortOrderId}`,
+    text,
     html,
   });
 };
@@ -229,6 +404,7 @@ const sendReservationStatusEmail = async (reservation, newStatus) => {
 module.exports = {
   sendEmail,
   sendCustomerWelcomeEmail,
+  sendOrderConfirmationEmail,
   sendReservationCreatedEmail,
   sendReservationStatusEmail,
 };

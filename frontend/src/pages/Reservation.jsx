@@ -140,8 +140,13 @@ const Reservation = () => {
           </h1>
 
           <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
-            Plan your visit to CaféNest and reserve a table in advance.
-            Guests and registered customers can both make reservations.
+            Plan your visit to{" "}
+            <span className="font-semibold">
+              <span className="text-gray-950">Café</span>
+              <span className="text-orange-700">Nest</span>
+            </span>{" "}
+            and reserve a table in advance. Guests and registered customers
+            can both make reservations.
           </p>
         </div>
 

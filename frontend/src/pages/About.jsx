@@ -1,5 +1,14 @@
 import { Link } from "react-router-dom";
 
+function BrandName() {
+  return (
+    <>
+      <span className="text-gray-900">Café</span>
+      <span className="text-orange-600">Nest</span>
+    </>
+  );
+}
+
 function About() {
   return (
     <>
@@ -7,7 +16,7 @@ function About() {
       <section className="overflow-hidden bg-orange-50 px-4 py-14 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
         <div className="mx-auto max-w-7xl text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-orange-600 sm:text-sm sm:tracking-[0.2em]">
-            About CaféNest
+            About <BrandName />
           </p>
 
           <h1 className="mx-auto mt-3 max-w-4xl text-4xl font-bold leading-[1.1] tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
@@ -15,7 +24,7 @@ function About() {
           </h1>
 
           <p className="mx-auto mt-5 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base sm:leading-7 lg:text-lg">
-            We believe great food brings people together. At CaféNest, we
+            We believe great food brings people together. At <BrandName />, we
             combine fresh ingredients, delicious flavours, and a welcoming
             atmosphere to create memorable dining experiences.
           </p>
@@ -44,7 +53,7 @@ function About() {
             </h2>
 
             <p className="mt-5 text-sm leading-6 text-gray-600 sm:text-base sm:leading-7">
-              CaféNest started with a simple idea — create a place where
+              <BrandName /> started with a simple idea — create a place where
               delicious food and meaningful moments come together. From casual
               meals to special gatherings, we want every visit to feel
               comfortable and memorable.
@@ -57,9 +66,9 @@ function About() {
             </p>
 
             <p className="mt-4 text-sm leading-6 text-gray-600 sm:text-base sm:leading-7">
-              More than a restaurant, CaféNest is a place where friends meet,
-              families gather, and customers can simply relax and enjoy good
-              food.
+              More than a restaurant, <BrandName /> is a place where friends
+              meet, families gather, and customers can simply relax and enjoy
+              good food.
             </p>
           </div>
         </div>
@@ -137,7 +146,7 @@ function About() {
         <div className="mx-auto grid max-w-7xl items-center gap-8 md:grid-cols-2 md:gap-10 lg:gap-16">
           <div className="order-2 md:order-1">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-orange-600 sm:text-sm sm:tracking-[0.2em]">
-              Why CaféNest
+              Why <BrandName />
             </p>
 
             <h2 className="mt-3 text-3xl font-bold leading-tight text-gray-900 sm:text-4xl">
@@ -270,4 +279,3 @@ function About() {
 }
 
 export default About;
- 
