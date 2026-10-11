@@ -147,10 +147,8 @@ function AdminDashboard() {
 
   const loadDashboard = async () => {
     /*
-     * Important:
      * Wait for the current call stack to finish before updating state.
-     * This prevents React's "Calling setState synchronously within an effect"
-     * warning when this function is triggered from useEffect.
+     * This preserves the existing handling for the React effect warning.
      */
     await Promise.resolve();
 
@@ -224,16 +222,13 @@ function AdminDashboard() {
         ? ordersResult.data
         : [];
 
-      const fetchedEnquiries = Array.isArray(
-        enquiriesResult.data
-      )
+      const fetchedEnquiries = Array.isArray(enquiriesResult.data)
         ? enquiriesResult.data
         : [];
 
       const statisticsData = orderStatisticsResult?.data || {};
 
-      const statisticsSummary =
-        statisticsData?.summary || {};
+      const statisticsSummary = statisticsData?.summary || {};
 
       const fetchedBestSellingItems = Array.isArray(
         statisticsData?.bestSellingItems
@@ -278,13 +273,9 @@ function AdminDashboard() {
         .slice(0, 5);
 
       setStats({
-        totalMenus: Number(
-          dashboardResult?.totalMenus || 0
-        ),
+        totalMenus: Number(dashboardResult?.totalMenus || 0),
 
-        totalGallery: Number(
-          dashboardResult?.totalGallery || 0
-        ),
+        totalGallery: Number(dashboardResult?.totalGallery || 0),
 
         totalEnquiries: calculatedEnquiryStats.total,
 
@@ -294,13 +285,9 @@ function AdminDashboard() {
       setOrders(fetchedOrders);
 
       setOrderStats({
-        totalOrders: Number(
-          statisticsSummary.totalOrders || 0
-        ),
+        totalOrders: Number(statisticsSummary.totalOrders || 0),
 
-        pendingOrders: Number(
-          statisticsSummary.pendingOrders || 0
-        ),
+        pendingOrders: Number(statisticsSummary.pendingOrders || 0),
 
         confirmedOrders: Number(
           statisticsSummary.confirmedOrders || 0
@@ -310,9 +297,7 @@ function AdminDashboard() {
           statisticsSummary.preparingOrders || 0
         ),
 
-        readyOrders: Number(
-          statisticsSummary.readyOrders || 0
-        ),
+        readyOrders: Number(statisticsSummary.readyOrders || 0),
 
         completedOrders: Number(
           statisticsSummary.completedOrders || 0
@@ -322,9 +307,7 @@ function AdminDashboard() {
           statisticsSummary.cancelledOrders || 0
         ),
 
-        totalRevenue: Number(
-          statisticsSummary.totalRevenue || 0
-        ),
+        totalRevenue: Number(statisticsSummary.totalRevenue || 0),
 
         completedRevenue: Number(
           statisticsSummary.completedRevenue || 0
@@ -338,9 +321,7 @@ function AdminDashboard() {
           statisticsSummary.deliveryOrders || 0
         ),
 
-        pickupOrders: Number(
-          statisticsSummary.pickupOrders || 0
-        ),
+        pickupOrders: Number(statisticsSummary.pickupOrders || 0),
       });
 
       setBestSellingItems(fetchedBestSellingItems);
@@ -351,9 +332,7 @@ function AdminDashboard() {
     } catch (error) {
       console.error("Fetch dashboard data error:", error);
 
-      setError(
-        error.message || "Failed to load dashboard data."
-      );
+      setError(error.message || "Failed to load dashboard data.");
     } finally {
       setIsLoading(false);
     }
@@ -402,22 +381,17 @@ function AdminDashboard() {
     });
   }, [orders]);
 
-  const cancelledOrders = Number(
-    orderStats.cancelledOrders || 0
-  );
+  const cancelledOrders = Number(orderStats.cancelledOrders || 0);
 
   const nonCancelledOrders = Math.max(
-    Number(orderStats.totalOrders || 0) -
-      cancelledOrders,
+    Number(orderStats.totalOrders || 0) - cancelledOrders,
     0
   );
 
   const completionRate =
     nonCancelledOrders > 0
       ? Math.round(
-          (orderStats.completedOrders /
-            nonCancelledOrders) *
-            100
+          (orderStats.completedOrders / nonCancelledOrders) * 100
         )
       : 0;
 
@@ -427,9 +401,7 @@ function AdminDashboard() {
     }
 
     return Math.max(
-      ...revenueByDate.map((item) =>
-        Number(item.revenue || 0)
-      ),
+      ...revenueByDate.map((item) => Number(item.revenue || 0)),
       0
     );
   }, [revenueByDate]);
@@ -440,16 +412,14 @@ function AdminDashboard() {
     }
 
     return Math.max(
-      ...bestSellingItems.map((item) =>
-        Number(item.quantity || 0)
-      ),
+      ...bestSellingItems.map((item) => Number(item.quantity || 0)),
       0
     );
   }, [bestSellingItems]);
 
   return (
-    <div className="min-h-screen overflow-hidden bg-gray-50 px-3 py-5 sm:px-5 sm:py-6 lg:px-8 lg:py-8">
-      <div className="mx-auto w-full max-w-7xl min-w-0">
+    <div className="min-h-screen overflow-hidden bg-[#FFF8F0]">
+      <div className="mx-auto w-full max-w-7xl min-w-0 space-y-5 overflow-x-hidden px-4 py-6 sm:space-y-6 sm:px-6 sm:py-8 lg:px-8">
         {/* Header */}
         <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
@@ -464,8 +434,7 @@ function AdminDashboard() {
             </h1>
 
             <p className="mt-2 max-w-2xl break-words text-sm leading-6 text-gray-600">
-              Manage your cafe website, menu and customer
-              orders.
+              Manage your cafe website, menu and customer orders.
             </p>
           </div>
 
@@ -475,15 +444,13 @@ function AdminDashboard() {
             disabled={isLoading}
             className="min-h-11 w-full shrink-0 rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-800 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-4 focus:ring-amber-100 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
           >
-            {isLoading
-              ? "Refreshing..."
-              : "Refresh Dashboard"}
+            {isLoading ? "Refreshing..." : "Refresh Dashboard"}
           </button>
         </div>
 
         {/* Error */}
         {error && (
-          <div className="mt-6 flex min-w-0 flex-col gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 flex-col gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="min-w-0 break-words text-sm font-medium leading-5 text-red-700">
               {error}
             </p>
@@ -501,7 +468,7 @@ function AdminDashboard() {
 
         {/* Loading Skeleton */}
         {isLoading && orders.length === 0 ? (
-          <div className="mt-8 space-y-8">
+          <div className="space-y-8">
             <div>
               <div className="h-5 w-40 animate-pulse rounded bg-gray-200" />
 
@@ -538,8 +505,7 @@ function AdminDashboard() {
                 </h2>
 
                 <p className="mt-1 break-words text-sm leading-6 text-gray-500">
-                  Quickly manage important parts of your
-                  cafe website.
+                  Quickly manage important parts of your cafe website.
                 </p>
               </div>
 
@@ -550,7 +516,6 @@ function AdminDashboard() {
                 >
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-2xl">🍽️</span>
-
                     <span className="text-xl transition-transform group-hover:translate-x-1">
                       →
                     </span>
@@ -571,7 +536,6 @@ function AdminDashboard() {
                 >
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-2xl">📦</span>
-
                     <span className="text-xl transition-transform group-hover:translate-x-1">
                       →
                     </span>
@@ -592,7 +556,6 @@ function AdminDashboard() {
                 >
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-2xl">📩</span>
-
                     <span className="text-xl transition-transform group-hover:translate-x-1">
                       →
                     </span>
@@ -613,7 +576,6 @@ function AdminDashboard() {
                 >
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-2xl">🖼️</span>
-
                     <span className="text-xl transition-transform group-hover:translate-x-1">
                       →
                     </span>
@@ -746,9 +708,7 @@ function AdminDashboard() {
                   to="/admin/orders"
                   className="inline-flex min-h-10 w-fit items-center font-semibold text-amber-600 focus:outline-none focus:ring-4 focus:ring-amber-100"
                 >
-                  <span className="text-sm">
-                    View All Orders →
-                  </span>
+                  <span className="text-sm">View All Orders →</span>
                 </Link>
               </div>
 
@@ -761,9 +721,7 @@ function AdminDashboard() {
                     📦
                   </div>
 
-                  <p className="mt-5 text-sm text-gray-500">
-                    Total Orders
-                  </p>
+                  <p className="mt-5 text-sm text-gray-500">Total Orders</p>
 
                   <p className="mt-1 text-2xl font-bold text-gray-900">
                     {orderStats.totalOrders}
@@ -778,9 +736,7 @@ function AdminDashboard() {
                     ⏳
                   </div>
 
-                  <p className="mt-5 text-sm text-gray-500">
-                    Pending Orders
-                  </p>
+                  <p className="mt-5 text-sm text-gray-500">Pending Orders</p>
 
                   <p className="mt-1 text-2xl font-bold text-yellow-600">
                     {orderStats.pendingOrders}
@@ -795,9 +751,7 @@ function AdminDashboard() {
                     👨‍🍳
                   </div>
 
-                  <p className="mt-5 text-sm text-gray-500">
-                    Preparing
-                  </p>
+                  <p className="mt-5 text-sm text-gray-500">Preparing</p>
 
                   <p className="mt-1 text-2xl font-bold text-orange-600">
                     {orderStats.preparingOrders}
@@ -812,9 +766,7 @@ function AdminDashboard() {
                     ✅
                   </div>
 
-                  <p className="mt-5 text-sm text-gray-500">
-                    Completed
-                  </p>
+                  <p className="mt-5 text-sm text-gray-500">Completed</p>
 
                   <p className="mt-1 text-2xl font-bold text-green-600">
                     {orderStats.completedOrders}
@@ -826,9 +778,7 @@ function AdminDashboard() {
                     💰
                   </div>
 
-                  <p className="mt-5 text-sm text-gray-500">
-                    Total Revenue
-                  </p>
+                  <p className="mt-5 text-sm text-gray-500">Total Revenue</p>
 
                   <p className="mt-1 break-words text-2xl font-bold text-emerald-600">
                     ₹{formatPrice(orderStats.totalRevenue)}
@@ -845,8 +795,7 @@ function AdminDashboard() {
                 </h2>
 
                 <p className="mt-1 break-words text-sm leading-6 text-gray-500">
-                  Revenue trends and the most ordered menu
-                  items.
+                  Revenue trends and the most ordered menu items.
                 </p>
               </div>
 
@@ -879,8 +828,7 @@ function AdminDashboard() {
                         </p>
 
                         <p className="mt-1 text-sm leading-5 text-gray-500">
-                          Revenue data will appear here
-                          after orders are placed.
+                          Revenue data will appear here after orders are placed.
                         </p>
                       </div>
                     </div>
@@ -888,17 +836,11 @@ function AdminDashboard() {
                     <div className="mt-6 min-w-0 overflow-x-auto pb-2">
                       <div className="flex h-[280px] min-w-max items-end gap-3 px-1 sm:gap-4">
                         {revenueByDate.map((item) => {
-                          const revenue = Number(
-                            item.revenue || 0
-                          );
+                          const revenue = Number(item.revenue || 0);
 
                           const height =
                             maxRevenue > 0
-                              ? Math.max(
-                                  (revenue / maxRevenue) *
-                                    100,
-                                  4
-                                )
+                              ? Math.max((revenue / maxRevenue) * 100, 4)
                               : 4;
 
                           return (
@@ -915,14 +857,8 @@ function AdminDashboard() {
                               <div className="flex h-[190px] items-end justify-center">
                                 <div
                                   className="w-8 rounded-t-lg bg-emerald-500 transition-all duration-500 hover:bg-emerald-600 sm:w-10"
-                                  style={{
-                                    height: `${height}%`,
-                                  }}
-                                  title={`${formatShortDate(
-                                    item.date
-                                  )}: ₹${formatPrice(
-                                    revenue
-                                  )}`}
+                                  style={{ height: `${height}%` }}
+                                  title={`${formatShortDate(item.date)}: ₹${formatPrice(revenue)}`}
                                 />
                               </div>
 
@@ -932,9 +868,7 @@ function AdminDashboard() {
 
                               <p className="mt-1 text-center text-[10px] text-gray-400">
                                 {item.orders}{" "}
-                                {Number(item.orders) === 1
-                                  ? "order"
-                                  : "orders"}
+                                {Number(item.orders) === 1 ? "order" : "orders"}
                               </p>
                             </div>
                           );
@@ -965,81 +899,60 @@ function AdminDashboard() {
                       </p>
 
                       <p className="mt-1 text-sm leading-5 text-gray-500">
-                        Best-selling items will appear
-                        here.
+                        Best-selling items will appear here.
                       </p>
                     </div>
                   ) : (
                     <div className="mt-5 space-y-4">
-                      {bestSellingItems
-                        .slice(0, 5)
-                        .map((item, index) => {
-                          const quantity = Number(
-                            item.quantity || 0
-                          );
+                      {bestSellingItems.slice(0, 5).map((item, index) => {
+                        const quantity = Number(item.quantity || 0);
 
-                          const percentage =
-                            maxItemQuantity > 0
-                              ? Math.round(
-                                  (quantity /
-                                    maxItemQuantity) *
-                                    100
-                                )
-                              : 0;
+                        const percentage =
+                          maxItemQuantity > 0
+                            ? Math.round((quantity / maxItemQuantity) * 100)
+                            : 0;
 
-                          return (
-                            <div
-                              key={
-                                item.menuItemId ||
-                                `${item.name}-${index}`
-                              }
-                            >
-                              <div className="flex min-w-0 items-center gap-3">
-                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-sm font-bold text-amber-700">
-                                  {index + 1}
+                        return (
+                          <div
+                            key={item.menuItemId || `${item.name}-${index}`}
+                          >
+                            <div className="flex min-w-0 items-center gap-3">
+                              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-sm font-bold text-amber-700">
+                                {index + 1}
+                              </div>
+
+                              <div className="min-w-0 flex-1">
+                                <div className="flex min-w-0 items-start justify-between gap-3">
+                                  <p className="min-w-0 truncate text-sm font-semibold text-gray-800">
+                                    {item.name}
+                                  </p>
+
+                                  <p className="shrink-0 text-sm font-bold text-gray-900">
+                                    {quantity}
+                                  </p>
                                 </div>
 
-                                <div className="min-w-0 flex-1">
-                                  <div className="flex min-w-0 items-start justify-between gap-3">
-                                    <p className="min-w-0 truncate text-sm font-semibold text-gray-800">
-                                      {item.name}
-                                    </p>
+                                <div className="mt-2 h-2 overflow-hidden rounded-full bg-gray-100">
+                                  <div
+                                    className="h-full rounded-full bg-amber-500 transition-all duration-500"
+                                    style={{ width: `${percentage}%` }}
+                                  />
+                                </div>
 
-                                    <p className="shrink-0 text-sm font-bold text-gray-900">
-                                      {quantity}
-                                    </p>
-                                  </div>
+                                <div className="mt-1 flex items-center justify-between gap-2">
+                                  <span className="text-[10px] text-gray-400">
+                                    {quantity} {quantity === 1 ? "unit" : "units"} sold
+                                  </span>
 
-                                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-gray-100">
-                                    <div
-                                      className="h-full rounded-full bg-amber-500 transition-all duration-500"
-                                      style={{
-                                        width: `${percentage}%`,
-                                      }}
-                                    />
-                                  </div>
-
-                                  <div className="mt-1 flex items-center justify-between gap-2">
-                                    <span className="text-[10px] text-gray-400">
-                                      {quantity}{" "}
-                                      {quantity === 1
-                                        ? "unit"
-                                        : "units"}{" "}
-                                      sold
-                                    </span>
-
-                                    <span className="shrink-0 text-[10px] font-semibold text-gray-500">
-                                      ₹
-                                      {formatPrice(
-                                        item.revenue
-                                      )}
-                                    </span>
-                                  </div>
+                                  <span className="shrink-0 text-[10px] font-semibold text-gray-500">
+                                    ₹{formatPrice(item.revenue)}
+                                  </span>
                                 </div>
                               </div>
                             </div>
-                          );
-                        })}
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -1054,8 +967,7 @@ function AdminDashboard() {
                 </h2>
 
                 <p className="mt-1 break-words text-sm leading-6 text-gray-500">
-                  Current distribution of customer orders by
-                  status.
+                  Current distribution of customer orders by status.
                 </p>
               </div>
 
@@ -1080,8 +992,7 @@ function AdminDashboard() {
 
                   <div className="mt-6 space-y-5">
                     {statusAnalytics.map((item) => {
-                      const statusStyle =
-                        getStatusClasses(item.status);
+                      const statusStyle = getStatusClasses(item.status);
 
                       return (
                         <div key={item.status}>
@@ -1110,9 +1021,7 @@ function AdminDashboard() {
                           <div className="h-2.5 overflow-hidden rounded-full bg-gray-100">
                             <div
                               className={`h-full rounded-full transition-all duration-500 ${statusStyle.bar}`}
-                              style={{
-                                width: `${item.percentage}%`,
-                              }}
+                              style={{ width: `${item.percentage}%` }}
                             />
                           </div>
                         </div>
@@ -1147,9 +1056,7 @@ function AdminDashboard() {
                       <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-gray-100">
                         <div
                           className="h-full rounded-full bg-green-500 transition-all duration-500"
-                          style={{
-                            width: `${completionRate}%`,
-                          }}
+                          style={{ width: `${completionRate}%` }}
                         />
                       </div>
                     </div>
@@ -1191,10 +1098,7 @@ function AdminDashboard() {
                       </p>
 
                       <p className="mt-1 break-words text-2xl font-bold text-emerald-900">
-                        ₹
-                        {formatPrice(
-                          orderStats.averageOrderValue
-                        )}
+                        ₹{formatPrice(orderStats.averageOrderValue)}
                       </p>
 
                       <p className="mt-1 text-xs leading-5 text-emerald-700">
@@ -1246,9 +1150,7 @@ function AdminDashboard() {
                   to="/admin/enquiries"
                   className="inline-flex min-h-10 w-fit items-center font-semibold text-amber-600 focus:outline-none focus:ring-4 focus:ring-amber-100"
                 >
-                  <span className="text-sm">
-                    Manage Enquiries →
-                  </span>
+                  <span className="text-sm">Manage Enquiries →</span>
                 </Link>
               </div>
 
@@ -1261,9 +1163,7 @@ function AdminDashboard() {
                     📩
                   </div>
 
-                  <p className="mt-5 text-sm text-gray-500">
-                    Total
-                  </p>
+                  <p className="mt-5 text-sm text-gray-500">Total</p>
 
                   <p className="mt-1 text-2xl font-bold text-gray-900">
                     {enquiryStats.total}
@@ -1278,9 +1178,7 @@ function AdminDashboard() {
                     📨
                   </div>
 
-                  <p className="mt-5 text-sm text-gray-500">
-                    New
-                  </p>
+                  <p className="mt-5 text-sm text-gray-500">New</p>
 
                   <p className="mt-1 text-2xl font-bold text-yellow-600">
                     {enquiryStats.new}
@@ -1295,9 +1193,7 @@ function AdminDashboard() {
                     📞
                   </div>
 
-                  <p className="mt-5 text-sm text-gray-500">
-                    Contacted
-                  </p>
+                  <p className="mt-5 text-sm text-gray-500">Contacted</p>
 
                   <p className="mt-1 text-2xl font-bold text-blue-600">
                     {enquiryStats.contacted}
@@ -1312,9 +1208,7 @@ function AdminDashboard() {
                     ✅
                   </div>
 
-                  <p className="mt-5 text-sm text-gray-500">
-                    Resolved
-                  </p>
+                  <p className="mt-5 text-sm text-gray-500">Resolved</p>
 
                   <p className="mt-1 text-2xl font-bold text-green-600">
                     {enquiryStats.resolved}
@@ -1340,9 +1234,7 @@ function AdminDashboard() {
                   to="/admin/enquiries"
                   className="inline-flex min-h-10 w-fit items-center font-semibold text-amber-600 focus:outline-none focus:ring-4 focus:ring-amber-100"
                 >
-                  <span className="text-sm">
-                    Manage Enquiries →
-                  </span>
+                  <span className="text-sm">Manage Enquiries →</span>
                 </Link>
               </div>
 
@@ -1430,9 +1322,7 @@ function AdminDashboard() {
                   to="/admin/orders"
                   className="inline-flex min-h-10 w-fit items-center font-semibold text-amber-600 focus:outline-none focus:ring-4 focus:ring-amber-100"
                 >
-                  <span className="text-sm">
-                    Manage Orders →
-                  </span>
+                  <span className="text-sm">Manage Orders →</span>
                 </Link>
               </div>
 
@@ -1480,8 +1370,7 @@ function AdminDashboard() {
 
                       <tbody>
                         {recentOrders.map((order) => {
-                          const statusStyle =
-                            getStatusClasses(order.status);
+                          const statusStyle = getStatusClasses(order.status);
 
                           return (
                             <tr
@@ -1503,13 +1392,11 @@ function AdminDashboard() {
 
                               <td className="px-4 py-4 sm:px-5">
                                 <p className="font-medium text-gray-900">
-                                  {order.customer?.name ||
-                                    "-"}
+                                  {order.customer?.name || "-"}
                                 </p>
 
                                 <p className="mt-1 text-xs text-gray-500">
-                                  {order.customer?.mobile ||
-                                    "-"}
+                                  {order.customer?.mobile || "-"}
                                 </p>
                               </td>
 
@@ -1526,10 +1413,7 @@ function AdminDashboard() {
                               </td>
 
                               <td className="px-4 py-4 text-right font-semibold text-gray-900 sm:px-5">
-                                ₹
-                                {formatPrice(
-                                  order.totalAmount
-                                )}
+                                ₹{formatPrice(order.totalAmount)}
                               </td>
                             </tr>
                           );

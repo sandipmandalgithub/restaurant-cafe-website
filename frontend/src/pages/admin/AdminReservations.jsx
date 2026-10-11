@@ -126,10 +126,7 @@ function AdminReservations() {
 
       setReservations(result.data || []);
     } catch (error) {
-      console.error(
-        "Fetch reservations error:",
-        error
-      );
+      console.error("Fetch reservations error:", error);
 
       setError(
         error.message ||
@@ -159,8 +156,7 @@ function AdminReservations() {
 
         if (!response.ok) {
           throw new Error(
-            result.message ||
-              "Failed to fetch reservations."
+            result.message || "Failed to fetch reservations."
           );
         }
 
@@ -170,10 +166,7 @@ function AdminReservations() {
           setIsLoading(false);
         }
       } catch (error) {
-        console.error(
-          "Fetch reservations error:",
-          error
-        );
+        console.error("Fetch reservations error:", error);
 
         if (isMounted) {
           setError(
@@ -192,10 +185,7 @@ function AdminReservations() {
     };
   }, []);
 
-  const handleStatusChange = async (
-    reservationId,
-    status
-  ) => {
+  const handleStatusChange = async (reservationId, status) => {
     try {
       setUpdatingReservationId(reservationId);
       setError("");
@@ -215,8 +205,7 @@ function AdminReservations() {
 
       if (!response.ok) {
         throw new Error(
-          result.message ||
-            "Failed to update reservation status."
+          result.message || "Failed to update reservation status."
         );
       }
 
@@ -227,33 +216,25 @@ function AdminReservations() {
                 ...reservation,
                 status: result.data.status,
                 adminNote:
-                  result.data.adminNote ??
-                  reservation.adminNote,
+                  result.data.adminNote ?? reservation.adminNote,
                 updatedAt:
-                  result.data.updatedAt ??
-                  reservation.updatedAt,
+                  result.data.updatedAt ?? reservation.updatedAt,
               }
             : reservation
         )
       );
     } catch (error) {
-      console.error(
-        "Update reservation status error:",
-        error
-      );
+      console.error("Update reservation status error:", error);
 
       setError(
-        error.message ||
-          "Failed to update reservation status."
+        error.message || "Failed to update reservation status."
       );
     } finally {
       setUpdatingReservationId(null);
     }
   };
 
-  const handleDeleteReservation = async (
-    reservationId
-  ) => {
+  const handleDeleteReservation = async (reservationId) => {
     const shouldDelete = window.confirm(
       "Are you sure you want to delete this reservation?"
     );
@@ -278,27 +259,19 @@ function AdminReservations() {
 
       if (!response.ok) {
         throw new Error(
-          result.message ||
-            "Failed to delete reservation."
+          result.message || "Failed to delete reservation."
         );
       }
 
       setReservations((previousReservations) =>
         previousReservations.filter(
-          (reservation) =>
-            reservation._id !== reservationId
+          (reservation) => reservation._id !== reservationId
         )
       );
     } catch (error) {
-      console.error(
-        "Delete reservation error:",
-        error
-      );
+      console.error("Delete reservation error:", error);
 
-      setError(
-        error.message ||
-          "Failed to delete reservation."
-      );
+      setError(error.message || "Failed to delete reservation.");
     } finally {
       setDeletingReservationId(null);
     }
@@ -309,27 +282,22 @@ function AdminReservations() {
       total: reservations.length,
 
       pending: reservations.filter(
-        (reservation) =>
-          reservation.status === "Pending"
+        (reservation) => reservation.status === "Pending"
       ).length,
 
       confirmed: reservations.filter(
-        (reservation) =>
-          reservation.status === "Confirmed"
+        (reservation) => reservation.status === "Confirmed"
       ).length,
 
       completed: reservations.filter(
-        (reservation) =>
-          reservation.status === "Completed"
+        (reservation) => reservation.status === "Completed"
       ).length,
     };
   }, [reservations]);
 
   // Filtered reservations
   const filteredReservations = useMemo(() => {
-    const normalizedSearch = searchTerm
-      .trim()
-      .toLowerCase();
+    const normalizedSearch = searchTerm.trim().toLowerCase();
 
     return reservations.filter((reservation) => {
       const customerName =
@@ -370,19 +338,14 @@ function AdminReservations() {
             parsedDate.getDate()
           ).padStart(2, "0");
 
-          return `${year}-${month}-${day}` ===
-            reservationDate;
+          return `${year}-${month}-${day}` === reservationDate;
         })();
 
       const matchesStatus =
         statusFilter === "All" ||
         reservation.status === statusFilter;
 
-      return (
-        matchesSearch &&
-        matchesDate &&
-        matchesStatus
-      );
+      return matchesSearch && matchesDate && matchesStatus;
     });
   }, [
     reservations,
@@ -434,8 +397,8 @@ function AdminReservations() {
   ];
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-gray-50">
-      <main className="mx-auto w-full max-w-7xl px-3 py-5 sm:px-5 sm:py-7 lg:px-8 lg:py-9">
+    <div className="min-h-screen overflow-x-hidden bg-[#FFF8F0]">
+      <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         {/* Page Header */}
         <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6 lg:p-7">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
@@ -453,8 +416,8 @@ function AdminReservations() {
               </h1>
 
               <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
-                Manage table reservations, review customer
-                requests, and update reservation status.
+                Manage table reservations, review customer requests,
+                and update reservation status.
               </p>
             </div>
 
@@ -466,9 +429,7 @@ function AdminReservations() {
             >
               <span aria-hidden="true">↻</span>
 
-              {isLoading
-                ? "Refreshing..."
-                : "Refresh Reservations"}
+              {isLoading ? "Refreshing..." : "Refresh Reservations"}
             </button>
           </div>
         </section>
@@ -504,130 +465,119 @@ function AdminReservations() {
         </section>
 
         {/* Search & Filters */}
-        {!isLoading &&
-          !error &&
-          reservations.length > 0 && (
-            <section className="mt-5 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:mt-6 sm:p-5 lg:p-6">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
-                {/* Search */}
-                <div className="min-w-0 flex-1">
-                  <label
-                    htmlFor="reservation-search"
-                    className="mb-2 block text-sm font-semibold text-gray-700"
+        {!isLoading && !error && reservations.length > 0 && (
+          <section className="mt-5 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:mt-6 sm:p-5 lg:p-6">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
+              {/* Search */}
+              <div className="min-w-0 flex-1">
+                <label
+                  htmlFor="reservation-search"
+                  className="mb-2 block text-sm font-semibold text-gray-700"
+                >
+                  Search Customer
+                </label>
+
+                <div className="relative">
+                  <span
+                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                    aria-hidden="true"
                   >
-                    Search Customer
-                  </label>
-
-                  <div className="relative">
-                    <span
-                      className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                      aria-hidden="true"
-                    >
-                      🔍
-                    </span>
-
-                    <input
-                      id="reservation-search"
-                      type="search"
-                      value={searchTerm}
-                      onChange={(event) =>
-                        setSearchTerm(event.target.value)
-                      }
-                      placeholder="Name, mobile, or email..."
-                      className="min-h-11 w-full rounded-xl border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 hover:border-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
-                    />
-                  </div>
-                </div>
-
-                {/* Date */}
-                <div className="w-full lg:w-56">
-                  <label
-                    htmlFor="reservation-date"
-                    className="mb-2 block text-sm font-semibold text-gray-700"
-                  >
-                    Reservation Date
-                  </label>
+                    🔍
+                  </span>
 
                   <input
-                    id="reservation-date"
-                    type="date"
-                    value={reservationDate}
+                    id="reservation-search"
+                    type="search"
+                    value={searchTerm}
                     onChange={(event) =>
-                      setReservationDate(
-                        event.target.value
-                      )
+                      setSearchTerm(event.target.value)
                     }
-                    className="min-h-11 w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-800 outline-none transition hover:border-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
+                    placeholder="Name, mobile, or email..."
+                    className="min-h-11 w-full rounded-xl border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 hover:border-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
                   />
                 </div>
+              </div>
 
-                {/* Status */}
-                <div className="w-full lg:w-52">
-                  <label
-                    htmlFor="reservation-status"
-                    className="mb-2 block text-sm font-semibold text-gray-700"
-                  >
-                    Status
-                  </label>
+              {/* Date */}
+              <div className="w-full lg:w-56">
+                <label
+                  htmlFor="reservation-date"
+                  className="mb-2 block text-sm font-semibold text-gray-700"
+                >
+                  Reservation Date
+                </label>
 
-                  <select
-                    id="reservation-status"
-                    value={statusFilter}
-                    onChange={(event) =>
-                      setStatusFilter(
-                        event.target.value
-                      )
-                    }
-                    className="min-h-11 w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm font-medium text-gray-800 outline-none transition hover:border-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
-                  >
-                    <option value="All">
-                      All Statuses
+                <input
+                  id="reservation-date"
+                  type="date"
+                  value={reservationDate}
+                  onChange={(event) =>
+                    setReservationDate(event.target.value)
+                  }
+                  className="min-h-11 w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-800 outline-none transition hover:border-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
+                />
+              </div>
+
+              {/* Status */}
+              <div className="w-full lg:w-52">
+                <label
+                  htmlFor="reservation-status"
+                  className="mb-2 block text-sm font-semibold text-gray-700"
+                >
+                  Status
+                </label>
+
+                <select
+                  id="reservation-status"
+                  value={statusFilter}
+                  onChange={(event) =>
+                    setStatusFilter(event.target.value)
+                  }
+                  className="min-h-11 w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm font-medium text-gray-800 outline-none transition hover:border-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
+                >
+                  <option value="All">All Statuses</option>
+
+                  {STATUS_OPTIONS.map((status) => (
+                    <option key={status} value={status}>
+                      {status}
                     </option>
-
-                    {STATUS_OPTIONS.map((status) => (
-                      <option
-                        key={status}
-                        value={status}
-                      >
-                        {status}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Clear */}
-                {hasActiveFilters && (
-                  <button
-                    type="button"
-                    onClick={clearFilters}
-                    className="min-h-11 w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:border-gray-400 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-200 lg:w-auto"
-                  >
-                    Clear Filters
-                  </button>
-                )}
+                  ))}
+                </select>
               </div>
 
-              <div className="mt-4 flex flex-col gap-1 border-t border-gray-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm text-gray-600">
-                  Showing{" "}
-                  <span className="font-bold text-gray-900">
-                    {filteredReservations.length}
-                  </span>{" "}
-                  of{" "}
-                  <span className="font-bold text-gray-900">
-                    {reservations.length}
-                  </span>{" "}
-                  reservations
+              {/* Clear */}
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="min-h-11 w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:border-gray-400 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-200 lg:w-auto"
+                >
+                  Clear Filters
+                </button>
+              )}
+            </div>
+
+            <div className="mt-4 flex flex-col gap-1 border-t border-gray-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-gray-600">
+                Showing{" "}
+                <span className="font-bold text-gray-900">
+                  {filteredReservations.length}
+                </span>{" "}
+                of{" "}
+                <span className="font-bold text-gray-900">
+                  {reservations.length}
+                </span>{" "}
+                reservations
+              </p>
+
+              {hasActiveFilters && (
+                <p className="text-xs font-medium text-amber-600">
+                  Filters are active
                 </p>
-
-                {hasActiveFilters && (
-                  <p className="text-xs font-medium text-amber-600">
-                    Filters are active
-                  </p>
-                )}
-              </div>
-            </section>
-          )}
+              )}
+            </div>
+          </section>
+        )}
 
         {/* Error */}
         {error && (
@@ -670,39 +620,36 @@ function AdminReservations() {
             </p>
 
             <p className="mt-1 text-xs text-gray-500">
-              Please wait while we fetch the latest
-              reservations.
+              Please wait while we fetch the latest reservations.
             </p>
           </div>
         )}
 
         {/* Empty - No reservations */}
-        {!isLoading &&
-          !error &&
-          reservations.length === 0 && (
-            <div className="mt-5 rounded-2xl border border-gray-200 bg-white px-5 py-14 text-center shadow-sm sm:mt-6 sm:px-6 sm:py-16">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 text-3xl">
-                🍽️
-              </div>
-
-              <h2 className="mt-5 text-xl font-bold text-gray-900 sm:text-2xl">
-                No Reservations Yet
-              </h2>
-
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-600">
-                Customer table reservations will appear
-                here after they submit a reservation request.
-              </p>
-
-              <button
-                type="button"
-                onClick={fetchReservations}
-                className="mt-6 min-h-10 rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-800 transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-200"
-              >
-                Refresh Reservations
-              </button>
+        {!isLoading && !error && reservations.length === 0 && (
+          <div className="mt-5 rounded-2xl border border-gray-200 bg-white px-5 py-14 text-center shadow-sm sm:mt-6 sm:px-6 sm:py-16">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 text-3xl">
+              🍽️
             </div>
-          )}
+
+            <h2 className="mt-5 text-xl font-bold text-gray-900 sm:text-2xl">
+              No Reservations Yet
+            </h2>
+
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-600">
+              Customer table reservations will appear here after they
+              submit a reservation request.
+            </p>
+
+            <button
+              type="button"
+              onClick={fetchReservations}
+              className="mt-6 min-h-10 rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-800 transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-200"
+            >
+              Refresh Reservations
+            </button>
+          </div>
+        )}
 
         {/* No Filter Results */}
         {!isLoading &&
@@ -719,8 +666,8 @@ function AdminReservations() {
               </h2>
 
               <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-600">
-                No reservations match your current search
-                or filter criteria.
+                No reservations match your current search or filter
+                criteria.
               </p>
 
               <button
@@ -734,349 +681,291 @@ function AdminReservations() {
           )}
 
         {/* Reservations */}
-        {!isLoading &&
-          filteredReservations.length > 0 && (
-            <section className="mt-5 space-y-5 sm:mt-6 sm:space-y-6">
-              {filteredReservations.map(
-                (reservation) => (
-                  <article
-                    key={reservation._id}
-                    className="min-w-0 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md"
-                  >
-                    {/* Reservation Header */}
-                    <div className="border-b border-gray-200 bg-gray-50/80 px-4 py-5 sm:px-6 sm:py-6">
-                      <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
-                        <div className="min-w-0">
-                          <div className="flex flex-wrap items-center gap-2.5">
-                            <h2 className="break-words text-lg font-bold text-gray-900 sm:text-xl">
-                              Reservation #
-                              {reservation._id
-                                .slice(-6)
-                                .toUpperCase()}
-                            </h2>
+        {!isLoading && filteredReservations.length > 0 && (
+          <section className="mt-5 space-y-5 sm:mt-6 sm:space-y-6">
+            {filteredReservations.map((reservation) => (
+              <article
+                key={reservation._id}
+                className="min-w-0 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md"
+              >
+                {/* Reservation Header */}
+                <div className="border-b border-gray-200 bg-gray-50/80 px-4 py-5 sm:px-6 sm:py-6">
+                  <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <h2 className="break-words text-lg font-bold text-gray-900 sm:text-xl">
+                          Reservation #
+                          {reservation._id.slice(-6).toUpperCase()}
+                        </h2>
 
-                            <span
-                              className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold ${getStatusClasses(
-                                reservation.status
-                              )}`}
-                            >
-                              <span
-                                className={`h-1.5 w-1.5 rounded-full ${getStatusDotClasses(
-                                  reservation.status
-                                )}`}
-                              />
+                        <span
+                          className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold ${getStatusClasses(
+                            reservation.status
+                          )}`}
+                        >
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full ${getStatusDotClasses(
+                              reservation.status
+                            )}`}
+                          />
 
-                              {reservation.status}
-                            </span>
-                          </div>
+                          {reservation.status}
+                        </span>
+                      </div>
 
-                          <p className="mt-2 break-words text-xs leading-5 text-gray-500 sm:text-sm">
-                            Requested on{" "}
-                            {formatDateTime(
-                              reservation.createdAt
-                            )}
+                      <p className="mt-2 break-words text-xs leading-5 text-gray-500 sm:text-sm">
+                        Requested on{" "}
+                        {formatDateTime(reservation.createdAt)}
+                      </p>
+                    </div>
+
+                    <div className="grid w-full gap-2.5 sm:grid-cols-[minmax(0,1fr)_auto] xl:flex xl:w-auto">
+                      <div className="relative min-w-0">
+                        <select
+                          value={reservation.status}
+                          onChange={(event) =>
+                            handleStatusChange(
+                              reservation._id,
+                              event.target.value
+                            )
+                          }
+                          disabled={
+                            updatingReservationId === reservation._id
+                          }
+                          aria-label={`Update status for reservation ${reservation._id}`}
+                          className="min-h-11 w-full min-w-0 appearance-none rounded-xl border border-gray-300 bg-white px-3 py-2.5 pr-9 text-sm font-semibold text-gray-800 outline-none transition hover:border-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-100 disabled:cursor-not-allowed disabled:bg-gray-100 sm:min-w-[180px]"
+                        >
+                          {STATUS_OPTIONS.map((status) => (
+                            <option key={status} value={status}>
+                              {updatingReservationId ===
+                                reservation._id &&
+                              status === reservation.status
+                                ? "Updating..."
+                                : status}
+                            </option>
+                          ))}
+                        </select>
+
+                        <span
+                          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500"
+                          aria-hidden="true"
+                        >
+                          ▼
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleDeleteReservation(reservation._id)
+                        }
+                        disabled={
+                          deletingReservationId === reservation._id
+                        }
+                        className="min-h-11 w-full rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:border-red-300 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60 xl:w-auto"
+                      >
+                        {deletingReservationId === reservation._id
+                          ? "Deleting..."
+                          : "Delete Reservation"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Reservation Content */}
+                <div className="p-4 sm:p-6 lg:p-7">
+                  <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+                    {/* Customer */}
+                    <div className="min-w-0 rounded-xl border border-gray-100 bg-gray-50/70 p-4 sm:p-5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base" aria-hidden="true">
+                          👤
+                        </span>
+
+                        <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 sm:text-sm">
+                          Customer
+                        </h3>
+                      </div>
+
+                      <div className="mt-4 space-y-2.5">
+                        <p className="break-words font-semibold text-gray-900">
+                          {reservation.customer?.name || "-"}
+                        </p>
+
+                        <p className="break-words text-sm leading-6 text-gray-600">
+                          📞 {reservation.customer?.mobile || "-"}
+                        </p>
+
+                        {reservation.customer?.email && (
+                          <p className="break-words text-sm leading-6 text-gray-600">
+                            ✉️ {reservation.customer.email}
+                          </p>
+                        )}
+
+                        <p className="text-xs font-medium text-gray-500">
+                          {reservation.customerId
+                            ? "Registered Customer"
+                            : "Guest Reservation"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Reservation Details */}
+                    <div className="min-w-0 rounded-xl border border-gray-100 bg-gray-50/70 p-4 sm:p-5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base" aria-hidden="true">
+                          📅
+                        </span>
+
+                        <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 sm:text-sm">
+                          Reservation Details
+                        </h3>
+                      </div>
+
+                      <div className="mt-4 space-y-3">
+                        <div>
+                          <p className="text-xs text-gray-500">Date</p>
+
+                          <p className="mt-1 text-sm font-semibold text-gray-900">
+                            {formatDate(reservation.reservationDate)}
                           </p>
                         </div>
 
-                        <div className="grid w-full gap-2.5 sm:grid-cols-[minmax(0,1fr)_auto] xl:flex xl:w-auto">
-                          <div className="relative min-w-0">
-                            <select
-                              value={reservation.status}
-                              onChange={(event) =>
-                                handleStatusChange(
-                                  reservation._id,
-                                  event.target.value
-                                )
-                              }
-                              disabled={
-                                updatingReservationId ===
-                                reservation._id
-                              }
-                              aria-label={`Update status for reservation ${reservation._id}`}
-                              className="min-h-11 w-full min-w-0 appearance-none rounded-xl border border-gray-300 bg-white px-3 py-2.5 pr-9 text-sm font-semibold text-gray-800 outline-none transition hover:border-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-100 disabled:cursor-not-allowed disabled:bg-gray-100 sm:min-w-[180px]"
-                            >
-                              {STATUS_OPTIONS.map(
-                                (status) => (
-                                  <option
-                                    key={status}
-                                    value={status}
-                                  >
-                                    {updatingReservationId ===
-                                      reservation._id &&
-                                    status ===
-                                      reservation.status
-                                      ? "Updating..."
-                                      : status}
-                                  </option>
-                                )
-                              )}
-                            </select>
+                        <div>
+                          <p className="text-xs text-gray-500">Time</p>
 
-                            <span
-                              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500"
-                              aria-hidden="true"
-                            >
-                              ▼
-                            </span>
-                          </div>
+                          <p className="mt-1 text-sm font-semibold text-gray-900">
+                            {reservation.reservationTime || "-"}
+                          </p>
+                        </div>
 
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleDeleteReservation(
-                                reservation._id
-                              )
-                            }
-                            disabled={
-                              deletingReservationId ===
-                              reservation._id
-                            }
-                            className="min-h-11 w-full rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:border-red-300 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60 xl:w-auto"
-                          >
-                            {deletingReservationId ===
-                            reservation._id
-                              ? "Deleting..."
-                              : "Delete Reservation"}
-                          </button>
+                        <div>
+                          <p className="text-xs text-gray-500">Guests</p>
+
+                          <p className="mt-1 text-sm font-semibold text-gray-900">
+                            {reservation.guests || 0}{" "}
+                            {Number(reservation.guests) === 1
+                              ? "Guest"
+                              : "Guests"}
+                          </p>
                         </div>
                       </div>
                     </div>
 
-                    {/* Reservation Content */}
-                    <div className="p-4 sm:p-6 lg:p-7">
-                      <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
-                        {/* Customer */}
-                        <div className="min-w-0 rounded-xl border border-gray-100 bg-gray-50/70 p-4 sm:p-5">
-                          <div className="flex items-center gap-2">
-                            <span
-                              className="text-base"
-                              aria-hidden="true"
-                            >
-                              👤
-                            </span>
+                    {/* Status */}
+                    <div className="min-w-0 rounded-xl border border-gray-100 bg-gray-50/70 p-4 sm:p-5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base" aria-hidden="true">
+                          🔔
+                        </span>
 
-                            <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 sm:text-sm">
-                              Customer
-                            </h3>
-                          </div>
-
-                          <div className="mt-4 space-y-2.5">
-                            <p className="break-words font-semibold text-gray-900">
-                              {reservation.customer
-                                ?.name || "-"}
-                            </p>
-
-                            <p className="break-words text-sm leading-6 text-gray-600">
-                              📞{" "}
-                              {reservation.customer
-                                ?.mobile || "-"}
-                            </p>
-
-                            {reservation.customer
-                              ?.email && (
-                              <p className="break-words text-sm leading-6 text-gray-600">
-                                ✉️{" "}
-                                {
-                                  reservation.customer
-                                    .email
-                                }
-                              </p>
-                            )}
-
-                            <p className="text-xs font-medium text-gray-500">
-                              {reservation.customerId
-                                ? "Registered Customer"
-                                : "Guest Reservation"}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Reservation Details */}
-                        <div className="min-w-0 rounded-xl border border-gray-100 bg-gray-50/70 p-4 sm:p-5">
-                          <div className="flex items-center gap-2">
-                            <span
-                              className="text-base"
-                              aria-hidden="true"
-                            >
-                              📅
-                            </span>
-
-                            <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 sm:text-sm">
-                              Reservation Details
-                            </h3>
-                          </div>
-
-                          <div className="mt-4 space-y-3">
-                            <div>
-                              <p className="text-xs text-gray-500">
-                                Date
-                              </p>
-
-                              <p className="mt-1 text-sm font-semibold text-gray-900">
-                                {formatDate(
-                                  reservation.reservationDate
-                                )}
-                              </p>
-                            </div>
-
-                            <div>
-                              <p className="text-xs text-gray-500">
-                                Time
-                              </p>
-
-                              <p className="mt-1 text-sm font-semibold text-gray-900">
-                                {reservation.reservationTime ||
-                                  "-"}
-                              </p>
-                            </div>
-
-                            <div>
-                              <p className="text-xs text-gray-500">
-                                Guests
-                              </p>
-
-                              <p className="mt-1 text-sm font-semibold text-gray-900">
-                                {reservation.guests ||
-                                  0}{" "}
-                                {Number(
-                                  reservation.guests
-                                ) === 1
-                                  ? "Guest"
-                                  : "Guests"}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Status */}
-                        <div className="min-w-0 rounded-xl border border-gray-100 bg-gray-50/70 p-4 sm:p-5">
-                          <div className="flex items-center gap-2">
-                            <span
-                              className="text-base"
-                              aria-hidden="true"
-                            >
-                              🔔
-                            </span>
-
-                            <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 sm:text-sm">
-                              Reservation Status
-                            </h3>
-                          </div>
-
-                          <div className="mt-4">
-                            <span
-                              className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-bold ${getStatusClasses(
-                                reservation.status
-                              )}`}
-                            >
-                              <span
-                                className={`h-2 w-2 rounded-full ${getStatusDotClasses(
-                                  reservation.status
-                                )}`}
-                              />
-
-                              {reservation.status}
-                            </span>
-
-                            <p className="mt-4 text-sm leading-6 text-gray-600">
-                              Use the status selector above
-                              to confirm, reject, complete,
-                              or cancel this reservation.
-                            </p>
-                          </div>
-                        </div>
+                        <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 sm:text-sm">
+                          Reservation Status
+                        </h3>
                       </div>
 
-                      {/* Special Request */}
-                      <div className="mt-6 border-t border-gray-200 pt-6 sm:mt-7 sm:pt-7">
-                        <div className="flex items-center gap-2">
+                      <div className="mt-4">
+                        <span
+                          className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-bold ${getStatusClasses(
+                            reservation.status
+                          )}`}
+                        >
                           <span
-                            className="text-base"
-                            aria-hidden="true"
-                          >
-                            📝
-                          </span>
+                            className={`h-2 w-2 rounded-full ${getStatusDotClasses(
+                              reservation.status
+                            )}`}
+                          />
 
-                          <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 sm:text-sm">
-                            Special Request
-                          </h3>
-                        </div>
+                          {reservation.status}
+                        </span>
 
-                        <div className="mt-4 rounded-xl border border-gray-100 bg-gray-50/70 p-4 sm:p-5">
-                          {reservation.specialRequest ? (
-                            <p className="break-words text-sm leading-6 text-gray-700">
-                              {
-                                reservation.specialRequest
-                              }
-                            </p>
-                          ) : (
-                            <p className="text-sm leading-6 text-gray-400">
-                              No special request provided.
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Admin Note */}
-                      <div className="mt-6 border-t border-gray-200 pt-6 sm:mt-7 sm:pt-7">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className="text-base"
-                            aria-hidden="true"
-                          >
-                            💬
-                          </span>
-
-                          <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 sm:text-sm">
-                            Admin Note
-                          </h3>
-                        </div>
-
-                        <div className="mt-4 rounded-xl border border-amber-100 bg-amber-50 p-4 sm:p-5">
-                          {reservation.adminNote ? (
-                            <p className="break-words text-sm leading-6 text-amber-900">
-                              {reservation.adminNote}
-                            </p>
-                          ) : (
-                            <p className="text-sm leading-6 text-amber-700">
-                              No admin note added.
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Reservation Meta */}
-                      <div className="mt-6 border-t border-gray-200 pt-6 sm:mt-7 sm:pt-7">
-                        <div className="grid gap-4 sm:grid-cols-2">
-                          <div className="rounded-xl border border-gray-100 bg-gray-50/70 p-4">
-                            <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
-                              Reservation ID
-                            </p>
-
-                            <p className="mt-2 break-all text-sm font-semibold text-gray-900">
-                              {reservation._id}
-                            </p>
-                          </div>
-
-                          <div className="rounded-xl border border-gray-100 bg-gray-50/70 p-4">
-                            <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
-                              Last Updated
-                            </p>
-
-                            <p className="mt-2 text-sm font-semibold text-gray-900">
-                              {formatDateTime(
-                                reservation.updatedAt
-                              )}
-                            </p>
-                          </div>
-                        </div>
+                        <p className="mt-4 text-sm leading-6 text-gray-600">
+                          Use the status selector above to confirm,
+                          reject, complete, or cancel this reservation.
+                        </p>
                       </div>
                     </div>
-                  </article>
-                )
-              )}
-            </section>
-          )}
+                  </div>
+
+                  {/* Special Request */}
+                  <div className="mt-6 border-t border-gray-200 pt-6 sm:mt-7 sm:pt-7">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base" aria-hidden="true">
+                        📝
+                      </span>
+
+                      <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 sm:text-sm">
+                        Special Request
+                      </h3>
+                    </div>
+
+                    <div className="mt-4 rounded-xl border border-gray-100 bg-gray-50/70 p-4 sm:p-5">
+                      {reservation.specialRequest ? (
+                        <p className="break-words text-sm leading-6 text-gray-700">
+                          {reservation.specialRequest}
+                        </p>
+                      ) : (
+                        <p className="text-sm leading-6 text-gray-400">
+                          No special request provided.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Admin Note */}
+                  <div className="mt-6 border-t border-gray-200 pt-6 sm:mt-7 sm:pt-7">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base" aria-hidden="true">
+                        💬
+                      </span>
+
+                      <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 sm:text-sm">
+                        Admin Note
+                      </h3>
+                    </div>
+
+                    <div className="mt-4 rounded-xl border border-amber-100 bg-amber-50 p-4 sm:p-5">
+                      {reservation.adminNote ? (
+                        <p className="break-words text-sm leading-6 text-amber-900">
+                          {reservation.adminNote}
+                        </p>
+                      ) : (
+                        <p className="text-sm leading-6 text-amber-700">
+                          No admin note added.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Reservation Meta */}
+                  <div className="mt-6 border-t border-gray-200 pt-6 sm:mt-7 sm:pt-7">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="rounded-xl border border-gray-100 bg-gray-50/70 p-4">
+                        <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                          Reservation ID
+                        </p>
+
+                        <p className="mt-2 break-all text-sm font-semibold text-gray-900">
+                          {reservation._id}
+                        </p>
+                      </div>
+
+                      <div className="rounded-xl border border-gray-100 bg-gray-50/70 p-4">
+                        <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                          Last Updated
+                        </p>
+
+                        <p className="mt-2 text-sm font-semibold text-gray-900">
+                          {formatDateTime(reservation.updatedAt)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </section>
+        )}
       </main>
     </div>
   );

@@ -315,8 +315,8 @@ function AdminOrders() {
   ];
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-gray-50">
-      <main className="mx-auto w-full max-w-7xl px-3 py-5 sm:px-5 sm:py-7 lg:px-8 lg:py-9">
+    <div className="min-h-screen overflow-x-hidden bg-[#FFF8F0]">
+      <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         {/* Page Header */}
         <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6 lg:p-7">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">

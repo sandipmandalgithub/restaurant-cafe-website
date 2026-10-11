@@ -174,7 +174,7 @@ const AdminBusinessSettings = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-[420px] items-center justify-center px-4">
+      <div className="mx-auto flex min-h-[420px] w-full max-w-7xl items-center justify-center px-4 py-6 sm:px-6 lg:px-8">
         <div className="w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
           <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-amber-600" />
 
@@ -192,7 +192,7 @@ const AdminBusinessSettings = () => {
   }
 
   return (
-    <div className="min-w-0 space-y-5 overflow-x-hidden sm:space-y-6">
+    <div className="mx-auto w-full max-w-7xl min-w-0 space-y-5 overflow-x-hidden px-4 py-6 sm:space-y-6 sm:px-6 sm:py-8 lg:px-8">
       {/* Page Header */}
       <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6 lg:p-7">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -288,7 +288,6 @@ const AdminBusinessSettings = () => {
 
           <div className="p-4 sm:p-6">
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-              {/* Business Name */}
               <div>
                 <label
                   htmlFor="businessName"
@@ -309,7 +308,6 @@ const AdminBusinessSettings = () => {
                 />
               </div>
 
-              {/* Phone */}
               <div>
                 <label
                   htmlFor="phone"
@@ -329,7 +327,6 @@ const AdminBusinessSettings = () => {
                 />
               </div>
 
-              {/* Email */}
               <div>
                 <label
                   htmlFor="email"
@@ -349,7 +346,6 @@ const AdminBusinessSettings = () => {
                 />
               </div>
 
-              {/* Address */}
               <div>
                 <label
                   htmlFor="address"
@@ -395,7 +391,6 @@ const AdminBusinessSettings = () => {
 
           <div className="p-4 sm:p-6">
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              {/* Opening Time */}
               <div>
                 <label
                   htmlFor="openingTime"
@@ -415,7 +410,6 @@ const AdminBusinessSettings = () => {
                 />
               </div>
 
-              {/* Closing Time */}
               <div>
                 <label
                   htmlFor="closingTime"
@@ -461,7 +455,6 @@ const AdminBusinessSettings = () => {
 
           <div className="p-4 sm:p-6">
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-              {/* Delivery Charge */}
               <div>
                 <label
                   htmlFor="deliveryCharge"
@@ -483,7 +476,6 @@ const AdminBusinessSettings = () => {
                 />
               </div>
 
-              {/* WhatsApp */}
               <div>
                 <label
                   htmlFor="whatsappNumber"
@@ -509,7 +501,6 @@ const AdminBusinessSettings = () => {
               </div>
             </div>
 
-            {/* Availability */}
             <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
               <label className="flex min-w-0 cursor-pointer items-start gap-3 rounded-xl border border-gray-200 bg-white p-4 transition hover:border-gray-300 hover:bg-gray-50">
                 <input
@@ -554,7 +545,7 @@ const AdminBusinessSettings = () => {
           </div>
         </section>
 
-        {/* Social Media */}
+        {/* Social Media Links */}
         <section className={sectionClasses}>
           <div className="border-b border-gray-100 bg-gray-50/70 px-4 py-4 sm:px-6 sm:py-5">
             <div className="flex items-start gap-3">
@@ -576,7 +567,6 @@ const AdminBusinessSettings = () => {
 
           <div className="p-4 sm:p-6">
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-              {/* Facebook */}
               <div className="min-w-0">
                 <label
                   htmlFor="facebookUrl"
@@ -596,7 +586,6 @@ const AdminBusinessSettings = () => {
                 />
               </div>
 
-              {/* Instagram */}
               <div className="min-w-0">
                 <label
                   htmlFor="instagramUrl"
@@ -616,7 +605,6 @@ const AdminBusinessSettings = () => {
                 />
               </div>
 
-              {/* YouTube */}
               <div className="min-w-0 md:col-span-2">
                 <label
                   htmlFor="youtubeUrl"
@@ -661,10 +649,7 @@ const AdminBusinessSettings = () => {
           </div>
 
           <div className="p-4 sm:p-6">
-            <label
-              htmlFor="description"
-              className="sr-only"
-            >
+            <label htmlFor="description" className="sr-only">
               Business Description
             </label>
 
@@ -685,7 +670,7 @@ const AdminBusinessSettings = () => {
         </section>
 
         {/* Save Button */}
-        <div className="sticky bottom-0 z-10 -mx-3 border-t border-gray-200 bg-gray-50/95 px-3 py-3 backdrop-blur sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none">
+        <div className="sticky bottom-0 z-10 -mx-4 border-t border-gray-200 bg-[#FFF8F0]/95 px-4 py-3 backdrop-blur sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none">
           <button
             type="submit"
             disabled={saving}

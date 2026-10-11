@@ -271,8 +271,8 @@ CaféNest Team`;
     selectedStatus !== "All";
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-gray-100">
-      <main className="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+    <div className="min-h-screen overflow-x-hidden bg-[#FFF8F0]">
+      <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         {/* Page Header */}
         <div className="mb-6 sm:mb-8">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] sm:text-sm sm:tracking-widest">

@@ -53,10 +53,10 @@ function AdminLogin() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-orange-50 via-white to-amber-50 px-4 py-8 sm:px-6 sm:py-10">
+    <div className="flex min-h-screen items-center justify-center overflow-x-hidden bg-[#FFF8F0] px-4 py-6 sm:px-6 sm:py-8">
       <div className="w-full max-w-md">
         {/* Login Card */}
-        <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-xl shadow-gray-200/60">
+        <div className="overflow-hidden rounded-2xl border border-orange-100 bg-white shadow-lg shadow-orange-100/50 sm:rounded-3xl">
           {/* Top Branding Section */}
           <div className="border-b border-orange-100 bg-gradient-to-br from-orange-50 to-amber-50 px-5 py-7 text-center sm:px-8 sm:py-8">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-600 text-3xl shadow-md shadow-orange-200 sm:h-[72px] sm:w-[72px] sm:text-4xl">
@@ -68,11 +68,11 @@ function AdminLogin() {
               <span className="text-orange-700">Nest</span>
             </h1>
 
-            <p className="mt-1.5 text-sm font-medium text-gray-500 sm:text-base">
+            <p className="mt-1.5 text-sm font-medium text-gray-600 sm:text-base">
               Admin Panel
             </p>
 
-            <p className="mt-1 text-xs text-gray-400 sm:text-sm">
+            <p className="mt-1 text-xs text-gray-500 sm:text-sm">
               Sign in to manage your café
             </p>
           </div>
@@ -112,7 +112,7 @@ function AdminLogin() {
                   required
                   autoComplete="email"
                   placeholder="Enter admin email"
-                  className="min-h-12 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition duration-200 placeholder:text-gray-400 hover:border-gray-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                  className="min-h-12 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition duration-200 placeholder:text-gray-400 hover:border-orange-300 focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
                 />
               </div>
 
@@ -134,7 +134,7 @@ function AdminLogin() {
                   required
                   autoComplete="current-password"
                   placeholder="Enter admin password"
-                  className="min-h-12 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition duration-200 placeholder:text-gray-400 hover:border-gray-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                  className="min-h-12 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition duration-200 placeholder:text-gray-400 hover:border-orange-300 focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
                 />
               </div>
 
@@ -157,17 +157,17 @@ function AdminLogin() {
           </div>
 
           {/* Footer */}
-          <div className="border-t border-gray-100 bg-gray-50 px-5 py-4 text-center">
-            <p className="text-xs text-gray-400 sm:text-sm">
-              <span className="text-gray-950">Café</span>
-              <span className="text-orange-700">Nest</span>
-              <span className="text-gray-400"> Admin Panel</span>
+          <div className="border-t border-orange-100 bg-orange-50/50 px-5 py-4 text-center">
+            <p className="text-xs text-gray-500 sm:text-sm">
+              <span className="font-medium text-gray-950">Café</span>
+              <span className="font-medium text-orange-700">Nest</span>
+              <span className="text-gray-500"> Admin Panel</span>
             </p>
           </div>
         </div>
 
         {/* Bottom Note */}
-        <p className="mt-5 px-4 text-center text-xs leading-5 text-gray-400">
+        <p className="mt-5 px-4 text-center text-xs leading-5 text-gray-500">
           Secure access for authorized administrators only.
         </p>
       </div>
