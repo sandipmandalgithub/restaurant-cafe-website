@@ -1,19 +1,11 @@
 import { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 import useCustomerAuth from "../context/useCustomerAuth";
 
 const CART_STORAGE_KEY = "cafeNestCart";
 const CART_UPDATED_EVENT = "cafeNestCartUpdated";
 const BUSINESS_SETTINGS_API = `${import.meta.env.VITE_API_URL}/api/business-settings`;
-
-const DEFAULT_WHATSAPP_NUMBER = "919093826511";
-
-const WHATSAPP_MESSAGE =
-  "Hi CaféNest!\n\n" +
-  "I visited your website and would like to know more about your menu, " +
-  "food items, and services.\n\n" +
-  "Could you please assist me?";
 
 function CartIcon() {
   return (
@@ -35,16 +27,62 @@ function CartIcon() {
   );
 }
 
-function WhatsAppIcon() {
+function AccountIcon() {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
+      fill="none"
       viewBox="0 0 24 24"
-      fill="currentColor"
+      strokeWidth="1.8"
+      stroke="currentColor"
       className="h-5 w-5 shrink-0"
       aria-hidden="true"
     >
-      <path d="M20.52 3.48A11.84 11.84 0 0 0 12.07 0C5.54 0 .23 5.31.23 11.84c0 2.09.55 4.13 1.6 5.93L.13 24l6.38-1.67a11.82 11.82 0 0 0 5.56 1.42h.01c6.53 0 11.84-5.31 11.84-11.84 0-3.17-1.23-6.15-3.4-8.43ZM12.08 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.79.99 1.01-3.69-.23-.38a9.85 9.85 0 0 1-1.51-5.29C2.16 6.4 6.61 1.96 12.08 1.96c2.65 0 5.14 1.03 7.01 2.91a9.85 9.85 0 0 1 2.9 7.02c0 5.47-4.45 9.91-9.91 9.91Zm5.43-7.42c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.65.07-.3-.15-1.27-.47-2.42-1.49-.9-.8-1.5-1.78-1.67-2.08-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.2-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.05 1.02-1.05 2.49s1.07 2.89 1.22 3.09c.15.2 2.1 3.2 5.08 4.49.71.31 1.27.5 1.7.64.71.23 1.35.2 1.86.12.57-.08 1.76-.72 2.01-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35Z" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.5 20.25a7.5 7.5 0 0 1 15 0"
+      />
+    </svg>
+  );
+}
+
+function ChevronDownIcon({ className = "" }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth="2"
+      stroke="currentColor"
+      className={`h-4 w-4 shrink-0 transition-transform ${className}`}
+      aria-hidden="true"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="m6 9 6 6 6-6"
+      />
+    </svg>
+  );
+}
+
+function LogoutIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth="1.8"
+      stroke="currentColor"
+      className="h-4 w-4 shrink-0"
+      aria-hidden="true"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m-4.5-3h10.5m0 0-3-3m3 3-3 3"
+      />
     </svg>
   );
 }
@@ -68,8 +106,7 @@ function getCartItemCount() {
   }
 }
 
-// Render CaféNest with the same colours as the Admin Login page.
-// Keep other business names dynamic and unchanged.
+// Keep CaféNest colours consistent with the Admin Login page.
 function BusinessLogo({ businessName }) {
   const normalizedName = businessName.trim();
   const brandName = "CaféNest";
@@ -92,9 +129,12 @@ function BusinessLogo({ businessName }) {
 }
 
 function Navbar() {
-  const { isAuthenticated } = useCustomerAuth();
+  const navigate = useNavigate();
+
+  const { customer, isAuthenticated, logout } = useCustomerAuth();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
 
   const [cartItemCount, setCartItemCount] = useState(() =>
     getCartItemCount()
@@ -102,7 +142,6 @@ function Navbar() {
 
   const [businessSettings, setBusinessSettings] = useState({
     businessName: "CaféNest Restaurant",
-    whatsappNumber: DEFAULT_WHATSAPP_NUMBER,
   });
 
   const navLinks = [
@@ -115,11 +154,24 @@ function Navbar() {
     { name: "Location", path: "/location" },
   ];
 
+  const accountLinks = [
+    { name: "My Profile", path: "/customer/profile" },
+    { name: "My Orders", path: "/customer/orders" },
+    { name: "My Reservations", path: "/customer/reservations" },
+  ];
+
   const handleLinkClick = () => {
     setIsMenuOpen(false);
+    setIsAccountMenuOpen(false);
   };
 
-  // Load business settings
+  const handleLogout = () => {
+    logout();
+    handleLinkClick();
+    navigate("/customer/login");
+  };
+
+  // Load business settings.
   useEffect(() => {
     const loadBusinessSettings = async () => {
       if (!import.meta.env.VITE_API_URL) {
@@ -141,9 +193,6 @@ function Navbar() {
             businessName:
               result.data.businessName?.trim() ||
               previousSettings.businessName,
-            whatsappNumber:
-              result.data.whatsappNumber ||
-              previousSettings.whatsappNumber,
           }));
         }
       } catch (error) {
@@ -154,7 +203,7 @@ function Navbar() {
     loadBusinessSettings();
   }, []);
 
-  // Listen for cart updates
+  // Listen for cart updates.
   useEffect(() => {
     const handleCartUpdate = (event) => {
       const updatedCount =
@@ -180,7 +229,7 @@ function Navbar() {
     };
   }, []);
 
-  // Close mobile menu when desktop navigation becomes visible
+  // Close mobile menu when desktop navigation becomes visible.
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1280) {
@@ -195,20 +244,40 @@ function Navbar() {
     };
   }, []);
 
-  const cleanWhatsAppNumber = (
-    businessSettings.whatsappNumber || DEFAULT_WHATSAPP_NUMBER
-  ).replace(/\D/g, "");
+  // Close the account dropdown when clicking outside it.
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (
+        isAccountMenuOpen &&
+        !event.target.closest("[data-account-menu]")
+      ) {
+        setIsAccountMenuOpen(false);
+      }
+    };
 
-  // Open the WhatsApp chat with a pre-filled message.
-  // The customer must press Send to deliver the message.
-  const whatsappUrl = cleanWhatsAppNumber
-    ? `https://wa.me/${cleanWhatsAppNumber}?text=${encodeURIComponent(
-        WHATSAPP_MESSAGE
-      )}`
-    : "#";
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        setIsAccountMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [isAccountMenuOpen]);
 
   const businessName =
     businessSettings.businessName?.trim() || "CaféNest Restaurant";
+
+  const customerName =
+    customer?.name?.trim() ||
+    customer?.fullName?.trim() ||
+    customer?.email?.trim() ||
+    "My Account";
 
   const desktopLinkClass = ({ isActive }) =>
     `relative whitespace-nowrap rounded-lg px-2 py-2 text-xs font-semibold transition xl:px-2.5 xl:text-sm ${
@@ -217,18 +286,18 @@ function Navbar() {
         : "text-gray-700 hover:bg-gray-50 hover:text-orange-600"
     }`;
 
-  const desktopActionClass = ({ isActive }) =>
-    `inline-flex shrink-0 items-center whitespace-nowrap rounded-lg px-2 py-2.5 text-xs font-semibold transition ${
-      isActive
-        ? "bg-orange-50 text-orange-600"
-        : "text-gray-700 hover:bg-gray-50 hover:text-orange-600"
-    }`;
-
   const mobileLinkClass = ({ isActive }) =>
     `block rounded-lg px-4 py-3 text-sm font-semibold transition ${
       isActive
         ? "bg-orange-50 text-orange-600"
         : "text-gray-700 hover:bg-gray-50 hover:text-orange-600"
+    }`;
+
+  const accountMenuLinkClass = ({ isActive }) =>
+    `flex w-full items-center rounded-lg px-3 py-2.5 text-sm font-medium transition ${
+      isActive
+        ? "bg-orange-50 text-orange-700"
+        : "text-gray-700 hover:bg-orange-50 hover:text-orange-700"
     }`;
 
   return (
@@ -269,8 +338,9 @@ function Navbar() {
           ))}
         </div>
 
-        {/* Desktop Actions */}
+        {/* Desktop Actions: Reservation → Cart → Account */}
         <div className="hidden shrink-0 items-center gap-1 xl:flex">
+          {/* Reserve a Table */}
           <NavLink
             to="/reservation"
             className={({ isActive }) =>
@@ -284,24 +354,7 @@ function Navbar() {
             Reserve a Table
           </NavLink>
 
-          {isAuthenticated && (
-            <NavLink
-              to="/customer/orders"
-              className={desktopActionClass}
-            >
-              My Orders
-            </NavLink>
-          )}
-
-          {isAuthenticated && (
-            <NavLink
-              to="/customer/reservations"
-              className={desktopActionClass}
-            >
-              My Reservations
-            </NavLink>
-          )}
-
+          {/* Cart */}
           <NavLink
             to="/cart"
             className={({ isActive }) =>
@@ -323,19 +376,78 @@ function Navbar() {
             )}
           </NavLink>
 
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-green-600 px-2 py-2.5 text-xs font-semibold text-white transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-          >
-            <WhatsAppIcon />
-            <span>WhatsApp</span>
-          </a>
+          {/* Customer Account Dropdown */}
+          {isAuthenticated && (
+            <div className="relative" data-account-menu>
+              <button
+                type="button"
+                onClick={() =>
+                  setIsAccountMenuOpen((previousState) => !previousState)
+                }
+                className={`inline-flex max-w-40 items-center gap-1.5 rounded-lg px-2 py-2.5 text-xs font-semibold transition ${
+                  isAccountMenuOpen
+                    ? "bg-orange-50 text-orange-700"
+                    : "text-gray-700 hover:bg-gray-50 hover:text-orange-600"
+                }`}
+                aria-expanded={isAccountMenuOpen}
+                aria-haspopup="menu"
+              >
+                <AccountIcon />
+                <span className="max-w-24 truncate">{customerName}</span>
+                <ChevronDownIcon
+                  className={isAccountMenuOpen ? "rotate-180" : ""}
+                />
+              </button>
+
+              {isAccountMenuOpen && (
+                <div
+                  className="absolute right-0 top-full z-[60] mt-2 w-64 overflow-hidden rounded-xl border border-gray-200 bg-white p-2 shadow-xl"
+                  role="menu"
+                >
+                  <div className="border-b border-gray-100 px-3 py-3">
+                    <p className="truncate text-sm font-semibold text-gray-900">
+                      {customerName}
+                    </p>
+                    <p className="mt-1 flex items-center gap-1.5 text-xs text-green-700">
+                      <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                      Customer logged in
+                    </p>
+                  </div>
+
+                  <div className="space-y-1 py-2">
+                    {accountLinks.map((link) => (
+                      <NavLink
+                        key={link.path}
+                        to={link.path}
+                        role="menuitem"
+                        onClick={() => setIsAccountMenuOpen(false)}
+                        className={accountMenuLinkClass}
+                      >
+                        {link.name}
+                      </NavLink>
+                    ))}
+                  </div>
+
+                  <div className="border-t border-gray-100 pt-2">
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={handleLogout}
+                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                    >
+                      <LogoutIcon />
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Tablet / Mobile Actions */}
+        {/* Tablet / Mobile Actions: Cart → Account → Menu */}
         <div className="flex shrink-0 items-center gap-1.5 xl:hidden">
+          {/* Cart */}
           <NavLink
             to="/cart"
             onClick={handleLinkClick}
@@ -357,6 +469,20 @@ function Navbar() {
             )}
           </NavLink>
 
+          {/* Account shortcut for logged-in customers */}
+          {isAuthenticated && (
+            <NavLink
+              to="/customer/profile"
+              onClick={handleLinkClick}
+              className="inline-flex h-10 max-w-28 items-center gap-1.5 rounded-lg px-2 text-xs font-semibold text-gray-700 transition hover:bg-orange-50 hover:text-orange-600 sm:max-w-36"
+              aria-label="My Account"
+            >
+              <AccountIcon />
+              <span className="truncate">My Account</span>
+            </NavLink>
+          )}
+
+          {/* Mobile menu toggle */}
           <button
             type="button"
             onClick={() =>
@@ -407,7 +533,7 @@ function Navbar() {
           </button>
         </div>
 
-        {/* Tablet / Mobile Dropdown */}
+        {/* Tablet / Mobile Navigation */}
         <div
           id="mobile-navigation"
           className={`absolute left-0 right-0 top-full z-50 overflow-y-auto border-t border-gray-200 bg-white shadow-lg transition-all duration-300 xl:hidden ${
@@ -430,6 +556,7 @@ function Navbar() {
                 </NavLink>
               ))}
 
+              {/* Reserve a Table */}
               <NavLink
                 to="/reservation"
                 onClick={handleLinkClick}
@@ -444,26 +571,7 @@ function Navbar() {
                 Reserve a Table
               </NavLink>
 
-              {isAuthenticated && (
-                <NavLink
-                  to="/customer/orders"
-                  onClick={handleLinkClick}
-                  className={mobileLinkClass}
-                >
-                  My Orders
-                </NavLink>
-              )}
-
-              {isAuthenticated && (
-                <NavLink
-                  to="/customer/reservations"
-                  onClick={handleLinkClick}
-                  className={mobileLinkClass}
-                >
-                  My Reservations
-                </NavLink>
-              )}
-
+              {/* Mobile Cart */}
               <NavLink
                 to="/cart"
                 onClick={handleLinkClick}
@@ -491,16 +599,48 @@ function Navbar() {
                 </span>
               </NavLink>
 
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={handleLinkClick}
-                className="mt-2 inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-              >
-                <WhatsAppIcon />
-                WhatsApp Us
-              </a>
+              {/* Mobile Customer Account */}
+              {isAuthenticated && (
+                <div className="mt-2 rounded-xl border border-gray-200 bg-gray-50 p-3">
+                  <div className="flex items-center gap-3 px-2 py-2">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-100 text-orange-700">
+                      <AccountIcon />
+                    </span>
+
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-gray-900">
+                        {customerName}
+                      </p>
+                      <p className="mt-0.5 flex items-center gap-1.5 text-xs text-green-700">
+                        <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                        Customer logged in
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-2 space-y-1">
+                    {accountLinks.map((link) => (
+                      <NavLink
+                        key={link.path}
+                        to={link.path}
+                        onClick={handleLinkClick}
+                        className={mobileLinkClass}
+                      >
+                        {link.name}
+                      </NavLink>
+                    ))}
+
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="flex w-full items-center gap-2 rounded-lg px-4 py-3 text-left text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                    >
+                      <LogoutIcon />
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
