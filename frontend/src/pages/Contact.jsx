@@ -1,9 +1,23 @@
+
 import { useState } from "react";
 import { createEnquiry } from "../services/enquiryService";
 
-// Replace with your actual CaféNest WhatsApp number.
-// Example: 9876543210 -> 919876543210
-const WHATSAPP_NUMBER = "919876543210";
+// CaféNest contact and WhatsApp number
+const WHATSAPP_NUMBER = "919093826511";
+const PHONE_NUMBER = "+919093826511";
+
+const CONTACT_WHATSAPP_MESSAGE =
+  "Hi CaféNest!\n\n" +
+  "I would like to know more about your menu, table reservations, " +
+  "café ambience, and services.\n\n" +
+  "Could you please assist me?\n\n" +
+  "Thank you!";
+
+const QUICK_WHATSAPP_MESSAGE =
+  "Hi CaféNest!\n\n" +
+  "I would like to make an enquiry.\n\n" +
+  "Could you please assist me?\n\n" +
+  "Thank you!";
 
 const initialFormData = {
   name: "",
@@ -108,18 +122,15 @@ function Contact() {
       return;
     }
 
-    const message = `Hello CaféNest,
-
-I have submitted an enquiry through your website.
-
-Name: ${submittedEnquiry.name}
-Email: ${submittedEnquiry.email}
-Phone: ${submittedEnquiry.phone}
-
-Message:
-${submittedEnquiry.message}
-
-Thank you!`;
+    const message =
+      "Hello CaféNest!\n\n" +
+      "I have submitted an enquiry through your website.\n\n" +
+      `Name: ${submittedEnquiry.name}\n` +
+      `Email: ${submittedEnquiry.email}\n` +
+      `Phone: ${submittedEnquiry.phone}\n\n` +
+      "Message:\n" +
+      `${submittedEnquiry.message}\n\n` +
+      "Thank you!";
 
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
       message
@@ -128,7 +139,13 @@ Thank you!`;
     window.open(whatsappUrl, "_blank", "noopener,noreferrer");
   };
 
-  const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}`;
+  const contactWhatsAppUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+    CONTACT_WHATSAPP_MESSAGE
+  )}`;
+
+  const quickWhatsAppUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+    QUICK_WHATSAPP_MESSAGE
+  )}`;
 
   return (
     <div className="overflow-hidden">
@@ -205,10 +222,10 @@ Thank you!`;
                     <h3 className="font-semibold text-gray-900">Phone</h3>
 
                     <a
-                      href="tel:+919876543210"
+                      href={`tel:${PHONE_NUMBER}`}
                       className="mt-2 inline-flex min-h-10 max-w-full items-center break-all text-sm font-medium text-orange-600 transition hover:text-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
                     >
-                      +91 98765 43210
+                      +91 90938 26511
                     </a>
                   </div>
                 </div>
@@ -265,14 +282,14 @@ Thank you!`;
             {/* Quick Actions */}
             <div className="mt-7 grid gap-3 sm:mt-8 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
               <a
-                href="tel:+919876543210"
+                href={`tel:${PHONE_NUMBER}`}
                 className="inline-flex min-h-11 items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-3 text-sm font-semibold text-gray-800 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
               >
                 📞 Call Us
               </a>
 
               <a
-                href={whatsappUrl}
+                href={contactWhatsAppUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-green-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
@@ -486,7 +503,7 @@ Thank you!`;
           </p>
 
           <a
-            href={whatsappUrl}
+            href={quickWhatsAppUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-7 inline-flex min-h-11 w-full max-w-xs items-center justify-center gap-2 rounded-lg bg-green-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 sm:mt-8 sm:w-auto"

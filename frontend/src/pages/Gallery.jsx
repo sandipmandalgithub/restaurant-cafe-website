@@ -2,6 +2,15 @@ import { useEffect, useMemo, useState } from "react";
 
 import { getGallery } from "../services/galleryService";
 
+const WHATSAPP_NUMBER = "919093826511";
+
+const WHATSAPP_MESSAGE =
+  "Hi CaféNest!\n\n" +
+  "I visited your gallery and would love to know more about your food, " +
+  "café ambience, and overall dining experience.\n\n" +
+  "Could you please share more details about your menu and services?\n\n" +
+  "Thank you!";
+
 function Gallery() {
   const [galleryItems, setGalleryItems] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -90,6 +99,10 @@ function Gallery() {
       setLoading(false);
     }
   };
+
+  const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+    WHATSAPP_MESSAGE
+  )}`;
 
   return (
     <div className="overflow-hidden">
@@ -314,7 +327,7 @@ function Gallery() {
 
           <div className="mt-6 flex flex-col justify-center gap-3 sm:mt-8 sm:flex-row sm:gap-4">
             <a
-              href="https://wa.me/919876543210"
+              href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-green-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 sm:w-auto"

@@ -5,6 +5,14 @@ import { getMenus } from "../services/menuService";
 const CART_STORAGE_KEY = "cafeNestCart";
 const CART_UPDATED_EVENT = "cafeNestCartUpdated";
 
+const WHATSAPP_NUMBER = "919093826511";
+
+const WHATSAPP_MESSAGE =
+  "Hi CaféNest!\n\n" +
+  "I visited your website and would like to know more about your menu, " +
+  "food items, and services.\n\n" +
+  "Could you please assist me?";
+
 function Menu() {
   const [menuItems, setMenuItems] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -145,11 +153,16 @@ function Menu() {
     });
   };
 
-  // WhatsApp enquiry
+  // WhatsApp enquiry for a specific menu item
   const handleEnquiry = (itemName) => {
-    const message = `Hi CaféNest, I would like to enquire about ${itemName}.`;
+    const message =
+      "Hi CaféNest!\n\n" +
+      `I would like to enquire about *${itemName}* from your menu.\n\n` +
+      "Could you please share more details about this item, " +
+      "including its availability?\n\n" +
+      "Thank you!";
 
-    const whatsappUrl = `https://wa.me/919876543210?text=${encodeURIComponent(
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
       message
     )}`;
 
@@ -168,6 +181,11 @@ function Menu() {
   const formatPrice = (price) => {
     return new Intl.NumberFormat("en-IN").format(price);
   };
+
+  // General WhatsApp enquiry
+  const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+    WHATSAPP_MESSAGE
+  )}`;
 
   return (
     <div className="overflow-hidden">
@@ -340,9 +358,7 @@ function Menu() {
                               : "bg-red-100 text-red-700"
                           }`}
                         >
-                          {isAvailable
-                            ? "Available"
-                            : "Out of Stock"}
+                          {isAvailable ? "Available" : "Out of Stock"}
                         </span>
                       </div>
 
@@ -462,7 +478,7 @@ function Menu() {
 
           <div className="mx-auto mt-7 flex w-full max-w-md flex-col justify-center gap-3 sm:mt-8 sm:max-w-none sm:flex-row">
             <a
-              href="https://wa.me/919876543210"
+              href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex min-h-11 items-center justify-center rounded-lg bg-green-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2"
@@ -471,7 +487,7 @@ function Menu() {
             </a>
 
             <a
-              href="tel:+919876543210"
+              href={`tel:+${WHATSAPP_NUMBER}`}
               className="inline-flex min-h-11 items-center justify-center rounded-lg border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-gray-800 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
             >
               Call Us
