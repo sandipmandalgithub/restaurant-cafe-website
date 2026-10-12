@@ -148,7 +148,7 @@ const updateBusinessSettings = async (req, res) => {
         settings._id,
         settingsData,
         {
-          new: true,
+          returnDocument: "after",
           runValidators: true,
         }
       );

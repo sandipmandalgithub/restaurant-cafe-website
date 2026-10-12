@@ -86,7 +86,7 @@ const updateGallery = async (req, res) => {
         category,
       },
       {
-        new: true,
+        returnDocument: "after",
         runValidators: true,
       }
     );

@@ -138,7 +138,7 @@ const updateMenu = async (req, res) => {
       id,
       updateData,
       {
-        new: true,
+        returnDocument: "after",
         runValidators: true,
       }
     );
