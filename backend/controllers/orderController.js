@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const Order = require("../models/Order");
 const Coupon = require("../models/Coupon");
 const Customer = require("../models/Customer");
+const Menu = require("../models/Menu");
 const {
   sendOrderConfirmationEmail,
 } = require("../config/emailService");
@@ -49,7 +50,6 @@ const createOrder = async (req, res) => {
     }
 
     // Validate guest email format when provided.
-    // The frontend checkout will collect an email for confirmation.
     let customerEmail =
       typeof email === "string" ? email.trim().toLowerCase() : "";
 
@@ -92,8 +92,6 @@ const createOrder = async (req, res) => {
 
     // ======================================================
     // Resolve Logged-in Customer
-    // Use the account email for authenticated customers.
-    // Do not trust an email submitted by the frontend.
     // ======================================================
     let authenticatedCustomerId = null;
 
@@ -120,12 +118,15 @@ const createOrder = async (req, res) => {
 
     // ======================================================
     // Prepare Order Items
+    // Use the actual menu data from the database.
+    // Never trust the client-provided name or price.
     // ======================================================
     const orderItems = [];
 
     for (const item of items) {
       if (
         !item ||
+        typeof item.menuItemId !== "string" ||
         !mongoose.Types.ObjectId.isValid(item.menuItemId)
       ) {
         return res.status(400).json({
@@ -134,39 +135,48 @@ const createOrder = async (req, res) => {
         });
       }
 
-      if (
-        typeof item.name !== "string" ||
-        !item.name.trim()
-      ) {
-        return res.status(400).json({
-          success: false,
-          message: "Menu item name is required.",
-        });
-      }
-
-      const price = Number(item.price);
       const quantity = Number(item.quantity);
-
-      if (!Number.isFinite(price) || price < 0) {
-        return res.status(400).json({
-          success: false,
-          message: `Invalid price for ${item.name}.`,
-        });
-      }
 
       if (!Number.isInteger(quantity) || quantity < 1) {
         return res.status(400).json({
           success: false,
-          message: `Invalid quantity for ${item.name}.`,
+          message: "Invalid item quantity.",
         });
       }
 
-      // Server-side item subtotal
+      const menuItem = await Menu.findById(item.menuItemId).select(
+        "name price isAvailable"
+      );
+
+      if (!menuItem) {
+        return res.status(400).json({
+          success: false,
+          message: "One or more menu items no longer exist.",
+        });
+      }
+
+      if (menuItem.isAvailable !== true) {
+        return res.status(400).json({
+          success: false,
+          message: `${menuItem.name} is currently unavailable.`,
+        });
+      }
+
+      const price = Number(menuItem.price);
+
+      if (!Number.isFinite(price) || price < 0) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid database price for ${menuItem.name}.`,
+        });
+      }
+
+      // Calculate item subtotal using the database price.
       const itemSubtotal = Number((price * quantity).toFixed(2));
 
       orderItems.push({
-        menuItemId: item.menuItemId,
-        name: item.name.trim(),
+        menuItemId: menuItem._id,
+        name: menuItem.name,
         price,
         quantity,
         subtotal: itemSubtotal,
@@ -193,10 +203,7 @@ const createOrder = async (req, res) => {
     let appliedCouponCode = "";
     let discountAmount = 0;
 
-    if (
-      typeof couponCode === "string" &&
-      couponCode.trim()
-    ) {
+    if (typeof couponCode === "string" && couponCode.trim()) {
       const normalizedCouponCode = couponCode.trim().toUpperCase();
 
       const coupon = await Coupon.findOne({
@@ -244,6 +251,11 @@ const createOrder = async (req, res) => {
           subtotal * (Number(coupon.discountValue) / 100);
       } else if (coupon.discountType === "fixed") {
         discountAmount = Number(coupon.discountValue);
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid coupon discount type.",
+        });
       }
 
       // Maximum discount limit
@@ -296,22 +308,15 @@ const createOrder = async (req, res) => {
       note: typeof note === "string" ? note.trim() : "",
 
       items: orderItems,
-
       subtotal,
-
       couponCode: appliedCouponCode,
-
       discountAmount,
-
       deliveryCharge,
-
       totalAmount,
-
       status: "Pending",
     };
 
     // Attach verified logged-in Customer ID when available.
-    // Guest orders will not have customerId.
     if (authenticatedCustomerId) {
       orderData.customerId = authenticatedCustomerId;
     }
@@ -336,7 +341,6 @@ const createOrder = async (req, res) => {
         });
     }
 
-    // Return success immediately after order creation.
     return res.status(201).json({
       success: true,
       message: "Order placed successfully!",
@@ -459,7 +463,6 @@ const trackOrder = async (req, res) => {
     const { id } = req.params;
     const { mobile } = req.query;
 
-    // Validate order ID
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
         success: false,
@@ -467,7 +470,6 @@ const trackOrder = async (req, res) => {
       });
     }
 
-    // Validate mobile number
     if (typeof mobile !== "string" || !mobile.trim()) {
       return res.status(400).json({
         success: false,
@@ -484,7 +486,6 @@ const trackOrder = async (req, res) => {
       });
     }
 
-    // Find order using both Order ID and customer mobile
     const order = await Order.findOne({
       _id: id,
       "customer.mobile": normalizedMobile,
@@ -546,9 +547,7 @@ const updateOrderStatus = async (req, res) => {
 
     const updatedOrder = await Order.findByIdAndUpdate(
       id,
-      {
-        status,
-      },
+      { status },
       {
         new: true,
         runValidators: true,
@@ -620,10 +619,8 @@ const deleteOrder = async (req, res) => {
 // ======================================================
 const getOrderStatistics = async (req, res) => {
   try {
-    // Get all orders
     const orders = await Order.find().lean();
 
-    // Basic order statistics
     const totalOrders = orders.length;
 
     const completedOrders = orders.filter(
@@ -660,7 +657,6 @@ const getOrderStatistics = async (req, res) => {
       0
     );
 
-    // Completed revenue
     const completedRevenue = orders
       .filter((order) => order.status === "Completed")
       .reduce(
@@ -668,13 +664,11 @@ const getOrderStatistics = async (req, res) => {
         0
       );
 
-    // Average order value
     const averageOrderValue =
       validOrders.length > 0
         ? totalRevenue / validOrders.length
         : 0;
 
-    // Delivery vs Pickup
     const deliveryOrders = orders.filter(
       (order) => order.orderType === "Delivery"
     ).length;
