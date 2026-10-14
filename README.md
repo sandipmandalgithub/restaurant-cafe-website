@@ -1,1232 +1,786 @@
-# ☕ CaféNest - Full-Stack Restaurant & Café Website
+# ☕ CaféNest — Full-Stack Restaurant & Café Website
 
-CaféNest is a modern, responsive, full-stack restaurant and café website built with React.js, Node.js, Express.js, and MongoDB.
+CaféNest is a modern, responsive, full-stack restaurant and café management website built with React.js, Node.js, Express.js, and MongoDB.
 
-The project includes a customer-facing restaurant website and a secure admin panel for managing menu items, orders, gallery images, customer enquiries, reviews, and business settings.
-
-
+The application provides a customer-facing restaurant website and an admin panel for managing menus, orders, customers, coupons, table reservations, gallery images, enquiries, reviews, and business settings.
 
 ## 🌐 Live Demo
 
-The CaféNest restaurant website is deployed and available online.
-
-**Customer Website:**
-
-https://restaurant-cafe-website-nine.vercel.app/
-
-**Admin Panel:**
-
-https://restaurant-cafe-website-nine.vercel.app/admin/login
-
-
+- **Customer Website:** https://restaurant-cafe-website-nine.vercel.app/
+- **Admin Panel:** https://restaurant-cafe-website-nine.vercel.app/admin/login
+- **GitHub Repository:** https://github.com/sandipmandalgithub/restaurant-cafe-website
 
 ## 📌 Project Overview
 
-CaféNest is designed as a complete digital solution for restaurants, cafés, cloud kitchens, and food businesses.
+CaféNest is designed as a digital solution for restaurants, cafés, cloud kitchens, and food businesses.
 
-Customers can browse the restaurant website, view the menu, add food items to a cart, place orders, track order status, submit enquiries, view the gallery, read reviews, and contact the business through WhatsApp or phone.
+Customers can explore the menu, create an account, place orders, apply coupons, view their order history, track order status, reserve tables, submit reviews, and contact the business.
 
-The admin can securely log in and manage the restaurant's menu, orders, gallery, enquiries, reviews, and business settings.
+Administrators can manage restaurant operations through a protected dashboard, including menu items, customer orders, coupons, table reservations, enquiries, gallery content, reviews, and business settings.
 
+## ✨ Features
 
-# ✨ Features
+### 👤 Customer Features
 
-## 👤 Customer Features
+#### 🏠 Home, About & Location
 
-### 🏠 Home
+- Restaurant introduction and featured content
+- Business and brand information
+- Restaurant location and contact information
+- Responsive page layouts
 
-* Restaurant introduction
-* Hero section
-* Featured content
-* Call-to-action sections
-* Responsive design
+#### 🍽️ Menu
 
-### 📖 About
+- Browse food items and categories
+- View food images, descriptions, and prices
+- Filter menu items by category
+- Check item availability
+- Add available items to the cart
 
-* Restaurant information
-* Business introduction
-* Brand information
-* Responsive layout
+Example categories include beverages, burgers, pizza, main course, desserts, sides, and sandwiches.
 
-### 🍽️ Menu
+#### 🛒 Shopping Cart
 
-Customers can:
+- Add and remove food items
+- Increase or decrease quantities
+- View subtotal and total amount
+- Continue shopping
+- Proceed to checkout
+- Persist cart data using browser local storage
 
-* Browse food items
-* View food images
-* View prices
-* View descriptions
-* Filter items by category
-* Check item availability
-* Add available items to cart
+#### 🔐 Customer Registration & Authentication
 
-Example categories:
+- Customer registration
+- Customer login and logout
+- JWT-based authentication
+- Password hashing on the backend
+- Protected customer account features
+- Authenticated access to customer-specific information
 
-* Beverages
-* Burgers
-* Pizza
-* Main Course
-* Desserts
-* Sides
-* Sandwiches
+#### 🧾 Checkout & Order Placement
 
-### 🛒 Shopping Cart
+- Enter required customer and order information
+- Apply eligible coupon codes
+- Validate coupon eligibility
+- Calculate discounts and final order totals
+- Submit orders through the backend API
+- Store order information in MongoDB
 
-Customers can:
+#### 📦 Customer Order History
 
-* Add food items
-* Increase quantity
-* Decrease quantity
-* Remove items
-* View cart subtotal
-* View total amount
-* Continue shopping
-* Proceed to checkout
+- View previous orders in the My Orders section
+- View individual order details
+- Check order IDs, ordered items, and order totals
+- View the current status of an order
+- Access order history associated with the customer account
 
-Cart data is stored using browser local storage.
+#### 🚚 Order Tracking
 
-### 🧾 Checkout
+- Track an order using its Order ID
+- View the current order status
+- Follow order progress as the administrator updates it
+- View applicable cancellation information
 
-Customers can provide their required information and place an order.
+Typical order statuses:
 
-The checkout process connects with the backend order API and stores the order in MongoDB.
+- Pending
+- Confirmed
+- Preparing
+- Ready
+- Completed
+- Cancelled
 
-### 📦 Order Tracking
+#### 📧 Email Notifications
 
-After placing an order, the customer receives an Order ID.
+The email notification system supports:
 
-The customer can use the Order ID to check the current order status.
+- Order confirmation emails
+- Order status update emails
+- Customer communication related to order progress
 
-Order status flow:
+Email delivery requires the relevant backend email-service configuration and valid environment variables.
 
+#### 🎟️ Coupon & Discount System
 
-Pending
-   ↓
-Confirmed
-   ↓
-Preparing
-   ↓
-Ready
-   ↓
-Completed
+Customers can apply eligible coupons during checkout.
 
+- Enter a coupon code
+- Apply percentage-based discounts
+- Apply fixed-amount discounts
+- Validate minimum order requirements
+- Validate coupon expiry dates
+- Reject invalid, expired, or inactive coupons
+- Calculate the applicable discount and final payable amount
 
-Orders can also be cancelled when applicable.
+Coupon eligibility and discount calculations are handled by the application’s coupon logic.
 
-### 🖼️ Gallery
+#### 🪑 Table Reservation System
 
-Customers can:
+Customers can submit table reservation requests with:
 
-* View restaurant images
-* Browse food images
-* View interior images
-* View kitchen and ingredient images
-* Explore different gallery categories
+- Reservation date and time
+- Number of guests
+- Customer name and contact information
+- Reservation confirmation and status information
 
-### 📞 Contact & Enquiry
+Reservation requests can be managed from the admin panel.
 
-Customers can:
+Typical reservation statuses:
 
-* Submit enquiries
-* Provide name and contact information
-* Send messages to the restaurant
-* Contact the business through phone
-* Contact the business through WhatsApp
+- Pending
+- Confirmed
+- Cancelled
+- Completed
 
-Submitted enquiries are available in the admin panel.
+#### 🖼️ Gallery
 
-### ⭐ Reviews & Testimonials
+- Browse restaurant and food images
+- Explore interior and ambience images
+- View images by gallery category
 
-Customers can:
+#### 📞 Contact & Enquiries
 
-* View customer reviews
-* View ratings
-* Read testimonials
-* Submit reviews through the review system
+- Submit customer enquiries
+- Provide contact details and messages
+- Contact the business by phone
+- Contact the business through WhatsApp
+- Manage submitted enquiries through the admin panel
 
-### 📍 Location
+#### ⭐ Reviews & Testimonials
 
-The website provides restaurant location information and contact information for customers.
+- View customer reviews and ratings
+- Read testimonials
+- Submit customer feedback through the review system
 
-### 📱 Responsive Design
+#### 📱 Responsive Design
 
-The website is designed for:
+The website is designed for mobile phones, tablets, laptops, and desktop screens.
 
-* Small mobile phones
-* Large mobile phones
-* Tablets
-* Laptops
-* Desktop computers
+Responsive design targets include:
 
-Responsive layouts were tested for common screen sizes including:
+- 320px — Small mobile
+- 375px — Mobile
+- 768px — Tablet
+- 1024px — Laptop
+- Desktop and larger screens
 
-* 320px
-* 375px
-* 768px
-* 1024px
-* Desktop screens
+The goal is to provide a consistent experience without unnecessary horizontal scrolling.
 
-The website is designed to avoid unnecessary horizontal scrolling.
+## 🔐 Admin Panel Features
 
+### 🔑 Admin Authentication
 
+- Admin login using email and password
+- JWT-based authentication
+- Protected admin routes
+- Authentication token handling on the frontend
 
-# 🔐 Admin Panel Features
+### 📊 Admin Dashboard
 
-The admin panel is protected using authentication.
+- Overview of menu items and orders
+- Pending, preparing, and completed order summaries
+- Revenue information
+- Best-selling menu item information
+- Business overview and charts
 
-## 🔑 Admin Login
+### 🍽️ Menu Management
 
-Admin can log in using:
+- Create, view, edit, and delete menu items
+- Search and filter menu items
+- Sort items by price
+- Manage categories, descriptions, prices, and images
+- Change item availability
+- Mark items as Available or Out of Stock
 
-* Email
-* Password
+### 📦 Order Management
 
-After successful authentication, an authentication token is stored in browser local storage.
+- View customer orders
+- Review customer and delivery information
+- View ordered items, quantities, prices, and totals
+- Update order statuses
+- Manage order progress from the admin panel
 
-Protected admin routes require valid authentication.
+### 👥 Customer Account & Order History
 
+- Customer authentication supports account-specific order information
+- Customers can access their own order history
+- Customer-specific data must be protected by appropriate backend authorization
 
+### 🎟️ Coupon Management
 
-## 📊 Admin Dashboard
+- Create, edit, and delete coupons
+- Configure coupon codes
+- Set percentage or fixed-amount discounts
+- Configure minimum order amounts
+- Set expiry dates
+- Activate or deactivate coupons
+- Validate coupon eligibility during checkout
 
-The dashboard provides an overview of the restaurant business.
+### 🪑 Table Reservation Management
 
-It includes:
+- View submitted reservation requests
+- Review reservation date, time, guest count, and customer information
+- Update reservation status
+- Manage pending, confirmed, cancelled, and completed reservations
 
-* Total menu items
-* Total orders
-* Pending orders
-* Preparing orders
-* Completed orders
-* Revenue information
-* Best-selling item information
-* Business overview
+### 📧 Email Notification Configuration
 
-Charts are used to visualize relevant order and revenue information.
+- Support order confirmation emails
+- Support order status update emails
+- Configure the required email service through backend environment variables
 
+### 🖼️ Gallery Management
 
+- Add, edit, and delete gallery items
+- Manage image titles, URLs, and categories
 
-## 🍽️ Admin Menu Management
+### 📩 Enquiry Management
 
-Admin can:
+- View customer enquiries
+- Review customer contact information and messages
+- Manage enquiry information and status where supported
 
-* Add menu items
-* Edit menu items
-* Delete menu items
-* Search menu items
-* Filter by category
-* Sort by price
-* Change item availability
-* Manage food image
-* Manage item description
-* Manage item price
+### ⭐ Review Management
 
-Menu availability can be changed between:
+- Review customer ratings and feedback
+- Manage review information through the available review functionality
 
-* Available
-* Out of Stock
+### ⚙️ Business Settings
 
-Changes made by the admin are reflected on the customer-facing menu.
+Manage business information through the admin panel, including supported settings such as:
 
+- Business name and description
+- Phone number and email address
+- Business address
+- Opening and closing times
+- Delivery charge and availability
+- Pickup availability
+- WhatsApp contact number
+- Social media links
 
+## 🛠️ Tech Stack
 
-## 📦 Admin Order Management
+### Frontend
 
-Admin can view and manage customer orders.
+- React.js
+- JavaScript and JSX
+- React Router
+- Tailwind CSS
+- CSS
+- Vite
+- Axios
 
-Order information includes:
+### Backend
 
-* Order ID
-* Customer information
-* Contact information
-* Delivery address
-* Ordered items
-* Quantity
-* Price
-* Total amount
-* Payment information
-* Order status
-* Order date
+- Node.js
+- Express.js
+- REST APIs
+- JWT authentication
+- Password hashing
 
-Admin can update order status.
+### Database
 
-Available order statuses include:
+- MongoDB
+- MongoDB Atlas
+- Mongoose
 
+### Development Tools
 
-Pending
-Confirmed
-Preparing
-Ready
-Completed
-Cancelled
+- Visual Studio Code
+- Git and GitHub
+- Postman
+- npm
 
+## 🏗️ Application Architecture
 
-Order status changes are reflected in the customer order tracking page.
+CaféNest follows a full-stack client-server architecture.
 
-
-
-## 🖼️ Admin Gallery Management
-
-Admin can manage restaurant gallery content.
-
-Admin can:
-
-* Add gallery images
-* Edit gallery items
-* Delete gallery items
-* Set image title
-* Set image category
-* Manage image URLs
-
-Example categories:
-
-* Interior
-* Food
-* Kitchen
-* Ambience
-
-
-
-## 📩 Admin Enquiry Management
-
-Admin can view customer enquiries submitted through the public Contact page.
-
-Admin can view:
-
-* Customer name
-* Email
-* Phone
-* Message
-* Enquiry date
-* Enquiry status
-
-This allows the restaurant to manage customer communication from the admin panel.
-
-
-
-## ⭐ Admin Reviews
-
-The review system allows the business to manage customer feedback.
-
-The system can store:
-
-* Customer name
-* Rating
-* Review message
-* Review information
-
-Reviews can be displayed on the customer-facing website.
-
-
-
-## ⚙️ Business Settings
-
-Admin can manage important business information from the admin panel.
-
-Settings include:
-
-* Business name
-* Phone number
-* Email address
-* Business address
-* Opening time
-* Closing time
-* Delivery charge
-* Delivery availability
-* Pickup availability
-* WhatsApp number
-* Facebook URL
-* Instagram URL
-* YouTube URL
-* Business description
-
-This allows the business information to be managed without changing frontend source code.
-
-
-
-# 🛠️ Tech Stack
-
-## Frontend
-
-* React.js
-* JavaScript
-* JSX
-* React Router
-* Tailwind CSS
-* CSS
-* Vite
-
-## Backend
-
-* Node.js
-* Express.js
-* REST API
-* JWT Authentication
-
-## Database
-
-* MongoDB
-* MongoDB Atlas
-* Mongoose
-
-## Development Tools
-
-* Visual Studio Code
-* Git
-* GitHub
-* Postman
-* npm
-
-
-
-# 🏗️ Application Architecture
-
-The project follows a full-stack architecture.
-
-
-Customer
-   |
-   v
-React Frontend
-   |
-   v
-REST API
-   |
-   v
-Node.js + Express.js
-   |
-   v
-MongoDB Atlas
-
-
-Admin architecture:
-
-
-Admin
-   |
-   v
-Admin Login
-   |
-   v
-JWT Authentication
-   |
-   v
-Protected Admin Routes
-   |
-   v
+```text
+Customer / Admin
+       |
+       v
+React + Vite Frontend
+       |
+       v
 Express REST API
-   |
-   v
+       |
+       v
+Node.js Backend
+       |
+       v
 MongoDB Atlas
+```
 
+The backend handles API requests, authentication, data validation, business logic, and database operations. Protected features require appropriate authentication and authorization.
 
+## 🔄 Customer Workflow
 
-
-# 🔄 Customer Flow
-
-The main customer flow is:
-
-
-Home
-  ↓
-Menu
-  ↓
-Select Food
-  ↓
+```text
+Visit Website
+      |
+      v
+Browse Menu
+      |
+      v
+Register / Login
+      |
+      v
+Select Food Items
+      |
+      v
 Add to Cart
-  ↓
-Cart
-  ↓
+      |
+      v
+Apply Coupon (Optional)
+      |
+      v
 Checkout
-  ↓
+      |
+      v
 Place Order
-  ↓
-Order ID
-  ↓
-Track Order
-  ↓
-Order Status
+      |
+      v
+Receive Order ID
+      |
+      v
+Order History / Order Tracking
+```
 
+Customers can also submit table reservation requests, contact the business, and interact with the review system.
 
+## 🔄 Admin Workflow
 
-# 🔄 Admin Flow
-
-The main admin flow is:
-
-
+```text
 Admin Login
-     ↓
+     |
+     v
 Admin Dashboard
-     ↓
-Manage Menu
-     ↓
-Manage Orders
-     ↓
-Manage Gallery
-     ↓
-Manage Enquiries
-     ↓
-Manage Reviews
-     ↓
-Business Settings
+     |
+     +--> Menu Management
+     |
+     +--> Order Management
+     |
+     +--> Coupon Management
+     |
+     +--> Table Reservations
+     |
+     +--> Gallery Management
+     |
+     +--> Enquiry Management
+     |
+     +--> Review Management
+     |
+     +--> Business Settings
+```
 
+## 📁 Project Structure
 
+The project is organized into separate frontend and backend applications.
 
-
-# 📁 Project Structure
-
-
+```text
 restaurant-cafe-website/
-│
 ├── backend/
-│   │
 │   ├── config/
-│   │   └── db.js
-│   │
 │   ├── controllers/
-│   │   ├── adminController.js
-│   │   ├── businessSettingsController.js
-│   │   ├── enquiryController.js
-│   │   ├── galleryController.js
-│   │   ├── menuController.js
-│   │   ├── orderController.js
-│   │   └── reviewController.js
-│   │
 │   ├── middleware/
-│   │   └── authMiddleware.js
-│   │
 │   ├── models/
-│   │   ├── Admin.js
-│   │   ├── BusinessSettings.js
-│   │   ├── Enquiry.js
-│   │   ├── Gallery.js
-│   │   ├── Menu.js
-│   │   ├── Order.js
-│   │   └── Review.js
-│   │
 │   ├── routes/
-│   │   ├── adminRoutes.js
-│   │   ├── businessSettingsRoutes.js
-│   │   ├── enquiryRoutes.js
-│   │   ├── galleryRoutes.js
-│   │   ├── menuRoutes.js
-│   │   ├── orderRoutes.js
-│   │   └── reviewRoutes.js
-│   │
-│   ├── package-lock.json
+│   ├── .env
 │   ├── package.json
 │   └── server.js
 │
 ├── frontend/
-│   │
 │   ├── public/
-│   │   ├── favicon.svg
-│   │   └── icons.svg
-│   │
 │   ├── src/
-│   │   │
 │   │   ├── assets/
-│   │   │   ├── hero.png
-│   │   │   ├── react.svg
-│   │   │   └── vite.svg
-│   │   │
 │   │   ├── components/
-│   │   │   ├── Footer.jsx
-│   │   │   ├── Navbar.jsx
-│   │   │   └── admin/
-│   │   │       └── AdminProtectedRoute.jsx
-│   │   │
 │   │   ├── data/
-│   │   │   └── menuData.jsx
-│   │   │
 │   │   ├── layouts/
-│   │   │   ├── AdminLayout.jsx
-│   │   │   └── MainLayout.jsx
-│   │   │
 │   │   ├── pages/
-│   │   │   ├── About.jsx
-│   │   │   ├── Cart.jsx
-│   │   │   ├── Checkout.jsx
-│   │   │   ├── Contact.jsx
-│   │   │   ├── Gallery.jsx
-│   │   │   ├── Home.jsx
-│   │   │   ├── Location.jsx
-│   │   │   ├── Menu.jsx
-│   │   │   ├── OrderTracking.jsx
-│   │   │   ├── Reviews.jsx
-│   │   │   │
-│   │   │   └── admin/
-│   │   │       ├── AdminBusinessSettings.jsx
-│   │   │       ├── AdminDashboard.jsx
-│   │   │       ├── AdminEnquiries.jsx
-│   │   │       ├── AdminGallery.jsx
-│   │   │       ├── AdminLogin.jsx
-│   │   │       ├── AdminMenu.jsx
-│   │   │       └── AdminOrders.jsx
-│   │   │
 │   │   ├── services/
-│   │   │   ├── adminAuthService.js
-│   │   │   ├── adminDashboardService.js
-│   │   │   ├── enquiryService.js
-│   │   │   ├── galleryService.js
-│   │   │   ├── menuService.js
-│   │   │   └── reviewService.js
-│   │   │
-│   │   ├── App.css
 │   │   ├── App.jsx
+│   │   ├── App.css
 │   │   ├── index.css
 │   │   └── main.jsx
-│   │
-│   ├── .gitignore
-│   ├── eslint.config.js
-│   ├── index.html
-│   ├── package-lock.json
 │   ├── package.json
-│   ├── README.md
 │   └── vite.config.js
 │
 ├── .gitignore
-├── package-lock.json
 ├── package.json
 └── README.md
+```
 
+The folders above provide a high-level overview. Actual files may vary as the project evolves.
 
+## ⚙️ Installation & Setup
 
+### Prerequisites
 
-# ⚙️ Installation & Setup
+- Node.js and npm
+- Git
+- MongoDB Atlas account or another configured MongoDB instance
 
-## 1. Clone the Repository
+### 1. Clone the Repository
 
-
+```bash
 git clone https://github.com/sandipmandalgithub/restaurant-cafe-website.git
-
-
-Move into the project directory:
-
-
 cd restaurant-cafe-website
+```
 
+### 2. Configure the Backend
 
+Open a terminal in the project root:
 
-
-# 🔧 Backend Setup
-
-Move into the backend folder:
-
-
+```bash
 cd backend
-
-
-Install dependencies:
-
-
 npm install
+```
 
+Create a `.env` file inside the `backend` directory with the required configuration:
 
-Create a `.env` file inside the `backend` folder.
-
-
+```env
 PORT=5000
 MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
+JWT_SECRET=your_strong_jwt_secret
+```
 
+Configure any additional environment variables required by the email service and other integrations used by your implementation.
 
-Replace the values with your own credentials.
+Never commit actual credentials or secret values to GitHub.
 
-Start the backend:
+### 3. Start the Backend
 
-
+```bash
 npm run dev
+```
 
+The backend is expected to run locally at:
 
-The backend will run on:
+`http://localhost:5000`
 
+Use the actual port configured in your environment if it differs.
 
-http://localhost:5000
+### 4. Configure and Start the Frontend
 
+Open a second terminal from the project root:
 
-
-
-# 💻 Frontend Setup
-
-Open another terminal.
-
-Move into the frontend folder:
-
-
+```bash
 cd frontend
-
-
-Install dependencies:
-
-
 npm install
-
-
-Start the frontend development server:
-
-
 npm run dev
+```
 
+Vite will display the local frontend URL, typically:
 
-The frontend will normally run on:
+`http://localhost:5173`
 
+Configure the frontend API URL using the environment variable expected by your existing frontend code.
 
-http://localhost:5173
+### 5. Local URLs
 
+- **Customer Website:** http://localhost:5173
+- **Admin Login:** http://localhost:5173/admin/login
+- **Backend:** http://localhost:5000
 
+## 🔌 Backend API Modules
 
+The backend is organized around REST API modules for the application's main features.
 
-# 🌐 Local URLs
+- **Admin API:** Admin authentication and protected operations
+- **Customer Authentication API:** Customer registration, login, and authentication
+- **Menu API:** Menu retrieval and menu management
+- **Order API:** Order creation, retrieval, and status management
+- **Customer Order History:** Customer-specific order retrieval
+- **Coupon API:** Coupon management and coupon validation
+- **Reservation API:** Table reservation requests and administration
+- **Email Notifications:** Order confirmation and order status email handling
+- **Gallery API:** Gallery content management
+- **Enquiry API:** Customer enquiry handling
+- **Review API:** Review submission and retrieval
+- **Business Settings API:** Business information management
 
-## Customer Website
+Actual endpoint URLs, HTTP methods, and authorization requirements are defined by the backend implementation.
 
+## 🔐 Authentication & Security
 
-http://localhost:5173
+The application uses JWT-based authentication for protected operations.
 
+### Admin Authentication
 
-## Admin Login
-
-
-http://localhost:5173/admin/login
-
-
-## Backend API
-
-
-http://localhost:5000
-
-
-
-
-# 🔌 API Modules
-
-The backend provides REST API modules for different application features.
-
-## Admin API
-
-Used for:
-
-* Admin login
-* Admin authentication
-* Protected admin operations
-
-## Menu API
-
-Used for:
-
-* Create menu items
-* Read menu items
-* Update menu items
-* Delete menu items
-* Manage availability
-* Search and filter menu data
-
-## Order API
-
-Used for:
-
-* Create customer orders
-* Get orders
-* Get order by ID
-* Update order status
-* Delete orders
-
-## Gallery API
-
-Used for:
-
-* Create gallery items
-* Read gallery items
-* Update gallery items
-* Delete gallery items
-
-## Enquiry API
-
-Used for:
-
-* Submit customer enquiries
-* Read enquiries
-* Update enquiry information
-* Delete enquiries
-
-## Review API
-
-Used for:
-
-* Submit reviews
-* Retrieve reviews
-* Manage review information
-
-## Business Settings API
-
-Used for:
-
-* Retrieve business information
-* Update restaurant settings
-* Manage contact details
-* Manage delivery and pickup settings
-* Manage social media links
-
-
-
-# 🔐 Authentication
-
-The admin panel uses JWT-based authentication.
-
-Authentication flow:
-
-
+```text
 Admin Login
-     ↓
-Backend verifies credentials
-     ↓
-JWT Token Generated
-     ↓
-Token returned to frontend
-     ↓
-Token stored in localStorage
-     ↓
-Protected API requests
+     |
+     v
+Backend Verifies Credentials
+     |
+     v
+JWT Token Returned
+     |
+     v
+Token Used for Protected Requests
+```
 
+### Customer Authentication
 
-The frontend stores the authentication token using:
+```text
+Customer Registration / Login
+            |
+            v
+Backend Validates Credentials
+            |
+            v
+Password Stored as a Hash
+            |
+            v
+JWT Authentication
+            |
+            v
+Protected Customer Features
+```
+
+Security considerations:
+
+- Hash passwords before storing them.
+- Never expose JWT secrets or database credentials.
+- Validate customer input on the backend.
+- Protect customer-specific order information from unauthorized access.
+- Enforce authorization for administrative operations.
+- Configure CORS for the intended frontend origin.
+- Use HTTPS in production.
+
+## 🗄️ Database
+
+CaféNest uses MongoDB with Mongoose for database operations.
+
+The application's data includes records for relevant entities such as:
+
+- Admin accounts
+- Customer accounts
+- Menu items
+- Orders
+- Coupons
+- Table reservations
+- Gallery items
+- Customer enquiries
+- Reviews
+- Business settings
+
+The actual collection and model names depend on the implemented backend schema.
+
+## 🛒 Cart Storage
+
+The frontend stores cart information in browser local storage using:
+
+`cafeNestCart`
+
+The application also uses the browser event:
+
+`cafeNestCartUpdated`
+
+to synchronize cart updates across relevant frontend components.
+
+## 📧 Email Configuration
 
+Email notifications require a configured email provider or SMTP service.
 
-adminToken
+Before using the email functionality in production:
 
+- Configure the email provider using environment variables.
+- Keep credentials and API keys on the backend.
+- Configure the sender address as required by the provider.
+- Test order confirmation emails.
+- Test order status update emails.
+- Handle delivery failures appropriately.
 
-Protected routes require a valid authentication token.
+The exact configuration depends on the email service used by the project.
 
+## 🔒 Environment Variables & GitHub Security
 
+Keep sensitive values in environment variables and ensure they are excluded by `.gitignore`.
 
-# 🗄️ Database
+Never commit:
 
-The project uses MongoDB Atlas as the cloud database.
+- `.env` files containing secrets
+- MongoDB connection strings
+- JWT secrets
+- Email-service credentials
+- Database passwords
+- Admin passwords
+- Private API keys
 
-Main MongoDB collections/models include:
+Example environment values in documentation should always be placeholders, not real credentials.
 
+## 🧪 Testing Checklist
 
-Admin
-BusinessSettings
-Enquiry
-Gallery
-Menu
-Order
-Review
+Use this checklist to verify the application's current behavior before a release.
 
+### Customer Testing
 
-MongoDB is connected through Mongoose.
+- [ ] Home, About, Menu, Gallery, Contact, and Location pages
+- [ ] Menu filtering and availability
+- [ ] Add, remove, and update cart quantities
+- [ ] Customer registration and login
+- [ ] Customer logout and protected account access
+- [ ] Checkout and order placement
+- [ ] Coupon validation and discount calculation
+- [ ] Customer order history and order details
+- [ ] Order tracking and status display
+- [ ] Order confirmation email delivery
+- [ ] Order status update email delivery
+- [ ] Table reservation submission
+- [ ] Reviews and enquiries
+- [ ] WhatsApp and phone contact actions
+- [ ] Responsive layouts
 
+### Admin Testing
 
+- [ ] Admin login and protected routes
+- [ ] Dashboard information and charts
+- [ ] Menu CRUD, search, filtering, and availability
+- [ ] Order management and status updates
+- [ ] Coupon creation, editing, deletion, and activation
+- [ ] Reservation management and status updates
+- [ ] Gallery management
+- [ ] Enquiry management
+- [ ] Review management
+- [ ] Business settings
+- [ ] Revenue and best-selling item information
 
-# 🛒 Cart Storage
+### Security & Integration Testing
 
-Customer cart data is stored in browser local storage.
+- [ ] Invalid login attempts
+- [ ] Unauthorized access to protected APIs
+- [ ] Customer access restricted to their own orders
+- [ ] Invalid, inactive, and expired coupon codes
+- [ ] Minimum order amount validation
+- [ ] Email-service failure handling
+- [ ] Production frontend-to-backend connectivity
 
-The cart uses:
+## 📱 Responsive Design
 
+The website is designed for mobile, tablet, laptop, and desktop screens.
 
-cafeNestCart
+Responsive design goals include:
 
+- Mobile-friendly navigation
+- Responsive cards and forms
+- Responsive admin dashboard
+- Usable tables on smaller screens
+- Mobile-friendly checkout and order tracking
+- No unnecessary horizontal overflow
 
-The frontend also uses a custom browser event to synchronize cart updates across relevant components:
+## 💬 WhatsApp Integration
 
+CaféNest provides WhatsApp contact functionality so customers can contact the restaurant about general enquiries, food, delivery, and customer support.
 
-cafeNestCartUpdated
+The configured business WhatsApp number can be managed through the supported Business Settings functionality.
 
+This integration provides customer-initiated communication; automated WhatsApp order notifications are not included unless separately implemented.
 
+## 📊 Dashboard Analytics
 
+The admin dashboard presents business-related information, such as order summaries, order statuses, revenue information, and best-selling menu items.
 
-# 🔒 Environment Variables
+The displayed figures depend on the available order data and the implemented analytics logic.
 
-Sensitive information should never be committed to GitHub.
+## 🚀 Deployment
 
-Backend `.env` example:
+The project uses a cloud deployment architecture.
 
+- **Frontend:** Vercel
+- **Backend:** Render
+- **Database:** MongoDB Atlas
 
-PORT=5000
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
+### Production URLs
 
+- **Customer Website:** https://restaurant-cafe-website-nine.vercel.app/
+- **Admin Panel:** https://restaurant-cafe-website-nine.vercel.app/admin/login
+- **Backend Base URL:** https://restaurant-cafe-backend.onrender.com
 
-The `.env` file is ignored using `.gitignore`.
+### Deployment Checklist
 
-Never upload:
-
-* MongoDB connection strings
-* JWT secrets
-* Database passwords
-* Private API keys
-* Admin passwords
-* Other sensitive credentials
-
-
-
-# 🧪 Testing
-
-The following major application flows were tested during development.
-
-## Customer Testing
-
-* Home page
-* About page
-* Menu page
-* Category filtering
-* Menu availability
-* Add to cart
-* Increase quantity
-* Decrease quantity
-* Remove item
-* Checkout
-* Place order
-* Order ID generation
-* Order tracking
-* Contact form
-* Gallery
-* Reviews
-* Location
-* WhatsApp/contact actions
-* Responsive layouts
-
-## Admin Testing
-
-* Admin login
-* Dashboard
-* Menu management
-* Menu search
-* Menu category filtering
-* Menu price sorting
-* Menu availability
-* Gallery management
-* Enquiry management
-* Order management
-* Order status updates
-* Business settings
-* Revenue information
-* Best-selling information
-
-
-
-# 📱 Responsive Design
-
-The website is designed with responsive layouts for different devices.
-
-Supported screen sizes include:
-
-
-320px   → Small Mobile
-375px   → Mobile
-768px   → Tablet
-1024px  → Laptop
-Desktop → Large Screens
-
-
-The main responsive goals are:
-
-* No unnecessary horizontal overflow
-* Mobile-friendly navigation
-* Responsive cards
-* Responsive admin dashboard
-* Responsive forms
-* Responsive tables
-* Responsive buttons
-* Mobile-friendly checkout
-* Mobile-friendly order tracking
-
-
-
-# 🖥️ Admin & Customer Architecture
-
-The application separates the customer-facing website and admin panel.
-
-
-                    CaféNest
-                       |
-          +------------+------------+
-          |                         |
-          v                         v
-     Customer Site              Admin Panel
-          |                         |
-          v                         v
-     React Pages              Admin Login
-          |                         |
-          v                         v
-      Menu / Cart              Dashboard
-      Checkout                 Menu
-      Orders                   Orders
-      Gallery                  Gallery
-      Contact                  Enquiries
-      Reviews                  Reviews
-      Location                 Settings
-          |                         |
-          +------------+------------+
-                       |
-                       v
-                Express REST API
-                       |
-                       v
-                  MongoDB Atlas
-
-
-
-
-# 📈 Business Workflow
-
-The application supports the following business workflow:
-
-
-Customer visits website
-        ↓
-Browses menu
-        ↓
-Selects food
-        ↓
-Adds food to cart
-        ↓
-Checkout
-        ↓
-Places order
-        ↓
-Order saved in MongoDB
-        ↓
-Admin receives order
-        ↓
-Admin updates order status
-        ↓
-Customer tracks order
-
-
-
-
-# 💬 WhatsApp Integration
-
-The website provides WhatsApp contact functionality so customers can quickly contact the restaurant.
-
-This can be useful for:
-
-* General enquiries
-* Food enquiries
-* Delivery questions
-* Quick communication
-* Customer support
-
-The WhatsApp number can be managed through Business Settings.
-
-
-
-# 📊 Dashboard Analytics
-
-The admin dashboard provides business-related information such as:
-
-* Total orders
-* Pending orders
-* Preparing orders
-* Completed orders
-* Revenue information
-* Best-selling menu items
-
-Charts and summary cards are used to make the information easier to understand.
-
-
-
-# 🚀 Deployment
-
-The project can be deployed using modern cloud hosting platforms.
-
-Possible deployment architecture:
-
-
-Frontend
-   ↓
-Frontend Hosting Platform
-   ↓
-React/Vite Application
-
-
-Backend
-   ↓
-Backend Hosting Platform
-   ↓
-Node.js + Express API
-
-
-Database
-   ↓
-MongoDB Atlas
-
-
-Before deployment:
-
-1. Configure production MongoDB connection.
-2. Configure production JWT secret.
-3. Configure backend environment variables.
-4. Configure frontend API URL.
-5. Configure backend CORS.
-6. Build the React frontend.
-7. Deploy the frontend.
+1. Configure production environment variables.
+2. Configure the MongoDB Atlas connection.
+3. Configure the production JWT secret.
+4. Configure the frontend API URL.
+5. Configure backend CORS for the deployed frontend.
+6. Configure the email service and sender details.
+7. Build and deploy the frontend.
 8. Deploy the backend.
-9. Test all API endpoints.
-10. Test customer order flow.
-11. Test admin login.
-12. Test admin order management.
-13. Test order tracking.
-14. Test responsive design on the live website.
+9. Verify API connectivity.
+10. Test customer registration, login, and logout.
+11. Test order placement and order history.
+12. Test coupons and table reservations.
+13. Verify email notifications.
+14. Test admin operations and authorization.
+15. Test the live website on different screen sizes.
 
-After deployment, replace the placeholder URLs in this README with the actual live URLs.
+## 🔄 Git & GitHub Workflow
 
+Check the current repository state:
 
-
-# 🔄 Git & GitHub Workflow
-
-The project is maintained using Git and GitHub.
-
-Typical workflow:
-
-
+```bash
 git status
+```
 
+Stage the intended changes, commit, and push:
 
-Add changes:
-
-
-git add .
-
-
-Commit changes:
-
-
-git commit -m "Update project"
-
-
-Push changes:
-
-
+```bash
+git add README.md
+git commit -m "Update CaféNest project documentation"
 git push origin main
-
+```
 
 Repository:
 
 https://github.com/sandipmandalgithub/restaurant-cafe-website
 
+## 🔮 Future Improvements
 
+Potential future enhancements include:
 
-# 🧹 GitHub Security
+- Online payment gateway integration
+- Cloud-based image storage
+- Advanced inventory management
+- Restaurant delivery management
+- Multi-admin support and granular role permissions
+- Progressive Web App (PWA) support
+- Further SEO improvements
+- Production monitoring and structured logging
+- Additional analytics and business reports
 
-The following files and information should not be committed:
+## 🎯 Project Purpose
 
-.env
-.env.local
-node_modules/
-dist/
-build/
+CaféNest was developed as a portfolio and freelancing demonstration project for restaurants, cafés, cloud kitchens, and food businesses.
 
+The project demonstrates practical full-stack development concepts, including:
 
-Sensitive credentials should always remain in environment variables.
+- React.js and responsive UI development
+- REST API development with Node.js and Express.js
+- MongoDB and Mongoose
+- JWT authentication and password hashing
+- Customer account management
+- Order processing and order history
+- Coupon and discount logic
+- Table reservation workflows
+- Email notification integration
+- Admin dashboard and CRUD operations
+- Frontend and backend integration
+- Git and GitHub
+- Deployment and environment configuration
 
+## 👨‍💻 Developer
 
+**Sandip Mandal — Full-Stack Developer**
 
-# 🔮 Future Improvements
+- **GitHub:** https://github.com/sandipmandalgithub
+- **Portfolio:** https://sandipmandalgithub.github.io/sandip-portfolio/
+- **LinkedIn:** https://www.linkedin.com/in/mrsandipmandal/
 
-Possible future improvements include:
+## 📄 License
 
-* Customer registration and login
-* Customer order history
-* Online payment integration
-* Razorpay/Stripe integration
-* Email order notifications
-* SMS notifications
-* Real-time order tracking
-* Cloud image storage
-* Advanced sales analytics
-* Coupon and discount system
-* Table reservation
-* Restaurant delivery management
-* Multi-admin support
-* Role-based admin permissions
-* Inventory management
-* Advanced search
-* PWA support
-* SEO improvements
-* Production monitoring
+This project was created for portfolio, learning, demonstration, and freelancing purposes. You may use it as a reference for learning full-stack web development, subject to the applicable rights of any third-party assets or dependencies.
 
+---
 
-
-# 🎯 Project Purpose
-
-This project was developed as a portfolio and freelancing demonstration project for restaurant, café, cloud kitchen, and food-business clients.
-
-It demonstrates practical full-stack development skills including:
-
-* React.js
-* JavaScript
-* Responsive UI development
-* React Router
-* Tailwind CSS
-* Node.js
-* Express.js
-* REST API development
-* MongoDB
-* Mongoose
-* JWT authentication
-* CRUD operations
-* Admin dashboard development
-* Order management
-* Form handling
-* Local storage
-* Git
-* GitHub
-* API integration
-* Responsive web design
-
-
-
-# 👨‍💻 Developer
-
-## Sandip Mandal
-
-Full-Stack Developer
-
-### GitHub
-
-https://github.com/sandipmandalgithub
-
-### Portfolio
-
-https://sandipmandalgithub.github.io/sandip-portfolio/
-
-### LinkedIn
-
-https://www.linkedin.com/in/mrsandipmandal/
-
-
-
-# 📄 License
-
-This project is created for portfolio, learning, demonstration, and freelancing purposes.
-
-You may use this project as a reference for learning full-stack web development.
-
-
-
-# ⭐ Acknowledgement
-
-CaféNest demonstrates how a modern restaurant website can combine:
-
-* Customer-facing UI
-* Food menu management
-* Shopping cart
-* Checkout
-* Order management
-* Order tracking
-* Gallery management
-* Customer enquiries
-* Reviews
-* Business settings
-* Admin dashboard
-* MongoDB database
-* REST APIs
-* JWT authentication
-* Responsive design
-
-The project is continuously improved as part of the developer's full-stack development and freelancing portfolio.
+CaféNest — A full-stack restaurant and café website.
