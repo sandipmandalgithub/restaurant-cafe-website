@@ -338,7 +338,7 @@ function Navbar() {
           ))}
         </div>
 
-        {/* Desktop Actions: Reservation → Cart → Account */}
+        {/* Desktop Actions: Reservation → Cart → Auth */}
         <div className="hidden shrink-0 items-center gap-1 xl:flex">
           {/* Reserve a Table */}
           <NavLink
@@ -375,6 +375,37 @@ function Navbar() {
               </span>
             )}
           </NavLink>
+
+          {/* Login / Sign Up for logged-out visitors */}
+          {!isAuthenticated && (
+            <div className="flex shrink-0 items-center gap-1.5 pl-1">
+              <NavLink
+                to="/customer/login"
+                className={({ isActive }) =>
+                  `inline-flex items-center justify-center whitespace-nowrap rounded-lg border px-3 py-2.5 text-xs font-semibold transition xl:text-sm ${
+                    isActive
+                      ? "border-orange-600 bg-orange-50 text-orange-700"
+                      : "border-gray-300 bg-white text-gray-700 hover:border-orange-500 hover:text-orange-600"
+                  }`
+                }
+              >
+                Login
+              </NavLink>
+
+              <NavLink
+                to="/customer/register"
+                className={({ isActive }) =>
+                  `inline-flex items-center justify-center whitespace-nowrap rounded-lg px-3 py-2.5 text-xs font-semibold transition xl:text-sm ${
+                    isActive
+                      ? "bg-orange-700 text-white"
+                      : "bg-orange-600 text-white hover:bg-orange-700"
+                  }`
+                }
+              >
+                Sign Up
+              </NavLink>
+            </div>
+          )}
 
           {/* Customer Account Dropdown */}
           {isAuthenticated && (
@@ -598,6 +629,39 @@ function Navbar() {
                   {cartItemCount > 99 ? "99+" : cartItemCount}
                 </span>
               </NavLink>
+
+              {/* Mobile Login / Sign Up for logged-out visitors */}
+              {!isAuthenticated && (
+                <div className="mt-2 grid grid-cols-2 gap-2 border-t border-gray-100 pt-3">
+                  <NavLink
+                    to="/customer/login"
+                    onClick={handleLinkClick}
+                    className={({ isActive }) =>
+                      `flex min-h-11 items-center justify-center rounded-lg border px-4 py-3 text-sm font-semibold transition ${
+                        isActive
+                          ? "border-orange-600 bg-orange-50 text-orange-700"
+                          : "border-gray-300 bg-white text-gray-700 hover:border-orange-500 hover:text-orange-600"
+                      }`
+                    }
+                  >
+                    Login
+                  </NavLink>
+
+                  <NavLink
+                    to="/customer/register"
+                    onClick={handleLinkClick}
+                    className={({ isActive }) =>
+                      `flex min-h-11 items-center justify-center rounded-lg px-4 py-3 text-sm font-semibold transition ${
+                        isActive
+                          ? "bg-orange-700 text-white"
+                          : "bg-orange-600 text-white hover:bg-orange-700"
+                      }`
+                    }
+                  >
+                    Sign Up
+                  </NavLink>
+                </div>
+              )}
 
               {/* Mobile Customer Account */}
               {isAuthenticated && (
